@@ -37,7 +37,7 @@ app.use("/api/withdraw", Withdraw);
 app.use("/api/cashback", Bonus)
 app.use("/api/stats", Stats);
 app.get("/", (req, res)=>{
-  res.send("Welcome to PPD server")
+  res.send("Welcome to Dotplayplay backend server")
 })
 
 mongoose.set('strictQuery', false);
