@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const mongoose = require('mongoose')
-
+const AllPLays = require("./routes/admin/PLayers/crashPlayers");
 const Stats = require("./routes/admin/statistic/statistics");
 const Affiliate = require("./routes/affiliate");
 const CrashGame = require("./routes/crashgame.js");
@@ -14,8 +14,6 @@ const Deposit = require("./routes/deposit");
 const Withdraw = require("./routes/withdraw")
 const Bonus = require('./routes/bonus')
 require("dotenv").config();
-
-
 // ============ Initilize the app ========================
 
 const app = express();
@@ -36,6 +34,7 @@ app.use("/api/deposit", Deposit);
 app.use("/api/withdraw", Withdraw);
 app.use("/api/cashback", Bonus)
 app.use("/api/stats", Stats);
+app.use("/admin/all-players", AllPLays);
 app.get("/", (req, res)=>{
   res.send("Welcome to Dotplayplay backend server")
 })
