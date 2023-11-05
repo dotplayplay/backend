@@ -16,12 +16,10 @@ const Bonus = require('./routes/bonus')
 require("dotenv").config();
 // ============ Initilize the app ========================
 
-
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
-
 
 // application routes
 app.use("/api/user/crash-game", CrashGame);
