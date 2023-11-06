@@ -135,6 +135,7 @@ const HandlePlayDice = ((req, res)=>{
     let row = { point : randomValue, server_seed:serverSeed, client_seed:clientSeed,hash, nonce }
     return row;
   }
+  
   handleDiceBet(user_id,data, generateRandomNumber(data.server_seed,data.client_seed, data.hash_seed,data.nonce ))
   res.status(200).json(generateRandomNumber(data.server_seed,data.client_seed, data.hash_seed,data.nonce ))
 })
