@@ -38,6 +38,7 @@ app.get("/", (req, res)=>{
   res.send("Welcome to Dotplayplay backend server")
 })
 
+
 mongoose.set('strictQuery', false);
 const dbUri = `mongodb+srv://ValiantCodez:dLyF3TFuDTTUcfVA@cluster0.gutge9q.mongodb.net/Main-Application?retryWrites=true&w=majority`;
 mongoose.connect(dbUri, { useNewUrlParser: true,  useUnifiedTopology: true })

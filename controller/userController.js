@@ -121,7 +121,7 @@ const Register = (async(req, res)=>{
         fa_is_activated: false,   
         earn_me: 0,
         commission_reward: 0,
-        usd_reward : 0, 
+        usd_reward : 100, 
         joined_at: currentTime,
         account_type: "normal",
         total_chat_messages:0,
