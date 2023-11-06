@@ -13,7 +13,7 @@ const handelLevelupBonuses = (async(bonus, user_id)=>{
                 earn_me: prev_earn_me + bonus,
                 usd_reward: prev_locked_usd - bonus
             })
-            const refss = AffiliateCodes.find({affiliate_code:ref})
+            const refss = await AffiliateCodes.find({affiliate_code:ref})
             let prev_bal = parseFloat(refss[0].available_usd_reward)
             let upper_line_id = refss[0].user_id
 
@@ -26,7 +26,8 @@ const handelLevelupBonuses = (async(bonus, user_id)=>{
                 crypto: "USDT",
                 amount: bonus,
                 time: new Date(),
-                status: "successful"
+                status: "successful",
+                is_consumed: false
             }
             await affiliate_commission_reward.create(reward)
         }
