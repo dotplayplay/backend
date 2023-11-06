@@ -139,6 +139,7 @@ const HandlePlayDice = ((req, res)=>{
   res.status(200).json(generateRandomNumber(data.server_seed,data.client_seed, data.hash_seed,data.nonce ))
 })
 
+
 const seedSettings = (async ( req, res )=>{
   
 const handleHashGeneration = (()=>{
