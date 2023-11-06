@@ -46,14 +46,14 @@ const handleDiceBet = (async(user_id, data, result)=>{
       bet_id: Math.floor(Math.random()*10000000)+ 72000000,
       cashout: rt.io,
       profit: rt.payoutIO,
-      client_seed: rt.client_seed,
-      server_seed: rt.server_seed,
+      client_seed: rt.client_seed ?  rt.client_seed : "-",
+      server_seed: rt.server_seed ? rt.server_seed : "-",
       time: rt.time,
       hidden_from_public: rt.hidden,
       payout: rt.payout,
       has_won : rt.has_won,
       chance: rt.chance,
-      game_nonce: rt.nonce
+      game_nonce: rt.nonce ? rt.nonce : "-"
     }
   try{
     await DiceGame.create(bet)
@@ -126,7 +126,6 @@ const handleDiceBet = (async(user_id, data, result)=>{
 const HandlePlayDice = ((req, res)=>{
   const {user_id} = req.id
   let {data} = req.body
-
   function generateRandomNumber(serverSeed, clientSeed, hash, nonce) {
     const combinedSeed = `${serverSeed}-${clientSeed}-${hash}-${nonce}-${salt}`;
     const hmac = crypto.createHmac('sha256', combinedSeed);
