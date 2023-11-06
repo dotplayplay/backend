@@ -31,11 +31,11 @@ const handleWagerIncrease = (async(user_id, bet_amount, crypto)=>{
         if( total_wagered >= 200 ){
                 next_hit = 1000
             prev_level_up < 3 &&   handelLevelups(3, user_id)
-           total_wagered >= 200 && total_wagered <= next_hit & handleProgressPercentage(200, next_hit, total_wagered, user_id)
+           total_wagered >= 200 && total_wagered <= next_hit && handleProgressPercentage(200, next_hit, total_wagered, user_id)
        }
         if( total_wagered >= 1000 ){
                 next_hit = 2000
-               total_wagered >= 1000 && total_wagered <= next_hit && handleProgressPercentage(1000, next_hit, total_wagered, user_id)
+        total_wagered >= 1000 && total_wagered <= next_hit && handleProgressPercentage(1000, next_hit, total_wagered, user_id)
             prev_level_up < 4 &&  handleAffiliateRewards(4, user_id)
             prev_level_up < 4 &&  handelLevelups(4, user_id)
        }
