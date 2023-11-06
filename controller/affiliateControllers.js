@@ -7,7 +7,7 @@ function genAffiliate(length) {
     if (length === 0) return '';
     const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
     return chars[Math.floor(Math.random() * chars.length)] + genAffiliate(length - 1);
-   }
+}
    
 
 const CreateAffiliate = (async(user_id)=>{
@@ -72,7 +72,6 @@ const handleFriendsInfo = (async(req, res)=>{
                     total_usd_bonus.push(result[0].earn_me)
                 }
         });
-
     setTimeout(()=>{
         let total_usd_reward = 0
         let total_commission_reward = 0
@@ -87,7 +86,7 @@ const handleFriendsInfo = (async(req, res)=>{
             total_earn_me += total_usd_bonus[i]
         }
         return res.status(200).json({total_commission_reward,total_earn_me , total_usd_reward, friends_list})
-    },300)
+    },700)
     } catch (error) {
       console.log(error.message)
     }
