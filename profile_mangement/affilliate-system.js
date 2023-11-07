@@ -8,12 +8,14 @@ const handelLevelupBonuses = (async(bonus, user_id)=>{
     const ref = dataEL[0].invited_code
     const prev_earn_me = parseFloat(dataEL[0].earn_me)
     const prev_locked_usd = parseFloat(dataEL[0].usd_reward)
-        if(ref){
+        if(ref !== "-"){
             await ProfileDB.updateOne({user_id},{
                 earn_me: prev_earn_me + bonus,
                 usd_reward: prev_locked_usd - bonus
             })
+
             const refss = await AffiliateCodes.find({affiliate_code:ref})
+            console.log(refss)
             let prev_bal = parseFloat(refss[0].available_usd_reward)
             let upper_line_id = refss[0].user_id
 
