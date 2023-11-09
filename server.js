@@ -13,6 +13,8 @@ const diceGame = require("./routes/diceGame");
 const Deposit = require("./routes/deposit");
 const Withdraw = require("./routes/withdraw")
 const Bonus = require('./routes/bonus')
+const { createsocket } = require("./socket/index.js");
+const { createServer } = require("node:http");
 require("dotenv").config();
 // ============ Initilize the app ========================
 
@@ -20,6 +22,12 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
+const server = createServer(app);
+
+async function main() {
+  createsocket(server);
+}
+main();
 
 // application routes
 app.use("/api/user/crash-game", CrashGame);
@@ -40,10 +48,10 @@ app.get("/", (req, res)=>{
 
 
 mongoose.set('strictQuery', false);
-const dbUri = `mongodb+srv://ValiantCodez:dLyF3TFuDTTUcfVA@cluster0.gutge9q.mongodb.net/Main-Application?retryWrites=true&w=majority`;
+const dbUri = `mongodb+srv://valiantjoe:rGqUkckVFJeYbCZm@highscore.muku4gg.mongodb.net/dotplayplay?retryWrites=true&w=majority`;
 mongoose.connect(dbUri, { useNewUrlParser: true,  useUnifiedTopology: true })
     .then((result)=>  console.log('Database connected'))
     .catch((err)=> console.log(err))
-app.listen(process.env.PORT, ()=>{
+  server.listen(process.env.PORT, ()=>{
     console.log("Running on port "+ process.env.PORT)
 })

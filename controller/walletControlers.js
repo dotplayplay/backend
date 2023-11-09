@@ -34,6 +34,7 @@ const GetPPFWallet = (async(req, res)=>{
     }
 })
 
+
 const GetPPLWallet = (async(req, res)=>{
     const {user_id} = req.id;
     if (!user_id) {
@@ -94,18 +95,24 @@ const UpdatedefaultWallet = (async(req, res)=>{
   const {user_id} = req.id;
   const data = req.body
   try {
+ await USDTWallet.updateOne({ user_id }, {
+    is_active: data.coin_name === "USDT" ? true : false
+   });
 
- await Wallet.updateOne({ user_id }, {
-    balance: data.balance,
-    coin_name: data.coin_name, 
-    coin_image:data.coin_image
+   await PPFWallet.updateOne({ user_id }, {
+    is_active: data.coin_name === "PPF" ? true : false
+   });
+
+   await PPDWallet.updateOne({ user_id }, {
+    is_active: data.coin_name === "PPD" ? true : false
+   });
+   await PPLWallet.updateOne({ user_id }, {
+    is_active: data.coin_name === "PPL" ? true : false
    });
 
   } catch (err) {
     res.status(501).json({ message: err.message });
   }
 })
-
-
 
 module.exports = {  GetPPDWallet, GetPPFWallet, GetPPLWallet, GetUSDTWallet, UpdatedefaultWallet, GetDefaultWallet, UpdatedefaultWallet}

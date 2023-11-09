@@ -5,7 +5,10 @@ const currentTime = format(new Date(), 'yyyy-MM-dd HH:mm:ss');
 const PPFWallet = require("../model/PPF-wallet")
 const Wallet = require("../model/wallet")
 const CrashGame = require("../model/crashgame")
-const DiceGame = require("../model/dice_game")
+const DiceGame = require("../model/dice_game");
+const PPDWallet = require("../model/PPD-wallet");
+const UsdtWallet = require("../model/Usdt-wallet");
+const PPLWallet = require("../model/PPL-wallet");
 
 const createProfile = (async(datas)=>{
   try{
@@ -43,7 +46,7 @@ const UpdateUser = (async(req, res)=>{
     const {data} = req.body
     if (!user_id) {
       res.status(500).json({ error: "No user found" });
-    } 
+    }
     else{
       try{
        await Profile.updateOne({ user_id }, {
@@ -58,17 +61,22 @@ const UpdateUser = (async(req, res)=>{
     }
 })
 
-
 const SingleUser = (async(req, res)=>{
   const {user_id} = req.id;
     if (!user_id) {
       res.status(500).json({ error: "No user found" });
     } else {
       try {
-        const users =   await Profile.find({user_id})
-        res.status(200).json(users)
+        const users = await Profile.find({user_id})
+        const usdt = await UsdtWallet.find({user_id})
+        const ppf = await PPFWallet.find({user_id})
+        const ppl = await PPLWallet.find({user_id})
+        const ppd = await PPDWallet.find({user_id})
+        let wallet = [usdt[0], ppf[0], ppl[0], ppd[0]]
+        res.status(200).json({users, wallet})
       } catch (err) {
         res.status(501).json({ message: err.message });
+        console.log(err)
       }
     }
 })

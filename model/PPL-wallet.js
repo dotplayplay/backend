@@ -23,6 +23,10 @@ const Userschema = new schema({
         type: String,
         required: true,
     },
+    is_active:{
+        type: Boolean,
+        required: true,
+    }
 }, { timestamp : true})
 
 module.exports = mongoose.model('ppl_wallet', Userschema)

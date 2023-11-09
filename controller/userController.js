@@ -90,13 +90,7 @@ const Register = (async(req, res)=>{
         }
         return result;
     }
-    let walletEl = {
-        user_id,
-        balance: 20000,
-        coin_image:"https://res.cloudinary.com/dxwhz3r81/image/upload/v1697828376/ppf_logo_ntrqwg.png", 
-        coin_name: "PPF", 
-        hidden_from_public :false
-    }
+
     let result = {
         born: "-",
         firstname: '-',
@@ -133,6 +127,7 @@ const Register = (async(req, res)=>{
         if(validateCode){
             invited_code = validateCode
         }
+        
     }
     const exist = await User.findOne({ user_id })
     if(!exist){
@@ -147,9 +142,9 @@ const Register = (async(req, res)=>{
             CreateAffiliate(user_id)
             handleCreatePPDunlocked(user_id)
             const Token = createToken(user_id)
-            handleDefaultWallet(walletEl)
+            let wallet =  handleDefaultWallet()
             createProfile(result)
-            res.status(200).json({Token,default_wallet:walletEl,result })
+            res.status(200).json({Token,wallet:wallet,result })
         }
         catch(err){
            res.status(401).json({error: err})
