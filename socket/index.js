@@ -9,6 +9,7 @@ const USDTWallet = require("../model/Usdt-wallet")
 const Chats = require("../model/public-chat")
 
 let maxRange = 100
+
 async function createsocket(httpServer){
 const io = new Server(httpServer, {
     cors: {
@@ -16,7 +17,6 @@ const io = new Server(httpServer, {
         // origin: "http://localhost:5173"
     },
 });
-
 
 const fetchActivePlayers = (async()=>{
     let data = await DiceGame.find()
@@ -34,6 +34,7 @@ const handleDiceBEt = (async(data)=>{
         console.log(error)
     }
 })
+
 
 const handleUpdatewallet = (async(data)=>{
     try{
@@ -93,8 +94,6 @@ const handleNewChatMessages = (async(data)=>{
     io.emit("new-messages", newMessage)
   await Chats.create(data)
 })
-
-
 
 io.on("connection", (socket)=>{
     socket.on("dice-bet", data=>{
