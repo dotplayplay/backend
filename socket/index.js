@@ -26,7 +26,7 @@ const fetchActivePlayers = (async()=>{
 
 setInterval(()=>{
     fetchActivePlayers()
-}, 60000)
+}, 600)
 
 
 const handleDiceBEt = (async(data)=>{
@@ -91,7 +91,7 @@ const handleDicePoints = ((e)=>{
 let newMessage = []
 setTimeout(async()=>{
     newMessage = await Chats.find()
-},60000)
+},6000)
 
 
 const handleNewChatMessages = (async(data)=>{
