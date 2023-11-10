@@ -18,6 +18,7 @@ const io = new Server(httpServer, {
     },
 });
 
+
 const fetchActivePlayers = (async()=>{
     let data = await DiceGame.find()
      io.emit("dice-gamePLayers", data)
@@ -25,7 +26,8 @@ const fetchActivePlayers = (async()=>{
 
 setInterval(()=>{
     fetchActivePlayers()
-}, 2000)
+}, 60000)
+
 
 const handleDiceBEt = (async(data)=>{
     try{
@@ -34,7 +36,6 @@ const handleDiceBEt = (async(data)=>{
         console.log(error)
     }
 })
-
 
 const handleUpdatewallet = (async(data)=>{
     try{
@@ -87,8 +88,11 @@ const handleDicePoints = ((e)=>{
     let kjks = generateRandomNumber(e.server_seed, e.client_seed, e.hash_seed, e.nonce )
     handleMybet(kjks, e)
 })
+let newMessage = []
+setTimeout(async()=>{
+    newMessage = await Chats.find()
+},60000)
 
-let newMessage = await Chats.find()
 
 const handleNewChatMessages = (async(data)=>{
     io.emit("new-messages", newMessage)
