@@ -61,6 +61,7 @@ const UpdateUser = (async(req, res)=>{
     }
 })
 
+
 const SingleUser = (async(req, res)=>{
   const {user_id} = req.id;
     if (!user_id) {

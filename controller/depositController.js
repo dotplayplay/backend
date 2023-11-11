@@ -106,13 +106,13 @@ const initiateDeposit = async (req, res) => {
     const timestamp = Math.floor(Date.now() / 1000);
     let tokenid;
 
-    if(data.network === "erc"){
+    if(data.network === "ERC20"){
       tokenid = "264f4725-3cfd-4ff6-bc80-ff9d799d5fb2"
     }
-    else if(data.network === "trc"){
+    else if(data.network === "TRX20"){
       tokenid = "0912e09a-d8e2-41d7-a0bc-a25530892988"
     }
-    else if(data.network === "bep"){
+    else if(data.network === "BEP20"){
       tokenid = "92b15088-7973-4813-b0f3-1895588a5df7"
     }
     const merchant_order_id = Math.floor(Math.random()*100000) + 1000000;
@@ -203,7 +203,7 @@ const confirmDeposit = async () => {
 
 // setInterval(() => {
 //   confirmDeposit()
-// }, 7200);
+// }, 17000);
 
 
 const fetchPendingOrder = (async(req, res)=>{

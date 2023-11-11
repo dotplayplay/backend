@@ -15,7 +15,6 @@ const handelLevelupBonuses = (async(bonus, user_id)=>{
             })
 
             const refss = await AffiliateCodes.find({affiliate_code:ref})
-            console.log(refss)
             let prev_bal = parseFloat(refss[0].available_usd_reward)
             let upper_line_id = refss[0].user_id
 
@@ -38,6 +37,7 @@ const handelLevelupBonuses = (async(bonus, user_id)=>{
         console.log(err)
     }
 })
+
 
 const handleProgressPercentage = (async(starting, ending, total_wagered, user_id)=>{
     let unit_range = (ending - parseFloat(starting)) / 100

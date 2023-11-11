@@ -45,13 +45,13 @@ const initiateWithdrawal = async (req, res) => {
       } else {
         
         let token_id;
-        if(data.network === "erc"){
+        if(data.network === "ERC20"){
           token_id = "264f4725-3cfd-4ff6-bc80-ff9d799d5fb2"
         }
-        else if(data.network === "trc"){
+        else if(data.network === "TRX20"){
           token_id = "0912e09a-d8e2-41d7-a0bc-a25530892988"
         }
-        else if(data.network === "bep"){
+        else if(data.network === "BEP20"){
           token_id = "92b15088-7973-4813-b0f3-1895588a5df7"
         }
 
@@ -90,8 +90,7 @@ const initiateWithdrawal = async (req, res) => {
           withdrawData,
           {
             headers: headers,
-          }
-        );
+          });
 
         if (response.data.msg === "success") {
               const newAmount = Number(userBalance) - Number(data.amount);

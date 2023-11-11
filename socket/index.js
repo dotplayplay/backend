@@ -7,7 +7,7 @@ const DiceEncrypt = require("../model/dice_encryped_seeds")
 const PPFWallet = require("../model/PPF-wallet")
 const USDTWallet = require("../model/Usdt-wallet")
 const Chats = require("../model/public-chat")
-
+const {handleWagerIncrease} = require("../profile_mangement/index")
 let maxRange = 100
 
 async function createsocket(httpServer){
@@ -26,12 +26,16 @@ const fetchActivePlayers = (async()=>{
 
 setInterval(()=>{
     fetchActivePlayers()
-}, 600)
+}, 6000)
 
 
 const handleDiceBEt = (async(data)=>{
+    let events = data[0]
     try{
-        await DiceGame.create(data)
+        if(events.token !== "PPF"){
+            handleWagerIncrease(events)
+        }
+        await DiceGame.create(events)
     }catch(error){
         console.log(error)
     }
@@ -88,16 +92,16 @@ const handleDicePoints = ((e)=>{
     let kjks = generateRandomNumber(e.server_seed, e.client_seed, e.hash_seed, e.nonce )
     handleMybet(kjks, e)
 })
-let newMessage = []
-setTimeout(async()=>{
-    newMessage = await Chats.find()
-},6000)
+
+
+let newMessage = await Chats.find()
 
 
 const handleNewChatMessages = (async(data)=>{
     io.emit("new-messages", newMessage)
   await Chats.create(data)
 })
+
 
 io.on("connection", (socket)=>{
     socket.on("dice-bet", data=>{
