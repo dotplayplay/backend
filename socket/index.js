@@ -8,6 +8,7 @@ const PPFWallet = require("../model/PPF-wallet")
 const USDTWallet = require("../model/Usdt-wallet")
 const Chats = require("../model/public-chat")
 const {handleWagerIncrease} = require("../profile_mangement/index")
+const Bills = require("../model/bill")
 let maxRange = 100
 
 async function createsocket(httpServer){
@@ -35,11 +36,27 @@ const handleDiceBEt = (async(data)=>{
         if(events.token !== "PPF"){
             handleWagerIncrease(events)
         }
-        await DiceGame.create(events)
+      let result =  await DiceGame.create(events)
+      if(result){
+        io.emit("dice-troo", [result])
+      }
     }catch(error){
         console.log(error)
     }
+    let bil = {
+       user_id: events.user_id,
+       transaction_type: "Classic Dice",
+       token_img:events.token_img,
+       token_name:events.token,
+       balance: events.current_amount,
+       trx_amount:events.has_won ? events.wining_amount :events.bet_amount ,
+       datetime: events.time,
+       status: events.has_won,
+       bill_id: events.bet_id
+    }
+    await Bills.create(bil)
 })
+
 
 const handleUpdatewallet = (async(data)=>{
     try{
@@ -47,10 +64,36 @@ const handleUpdatewallet = (async(data)=>{
             nonce: parseFloat(data.nonce) + 1
         })
         if(data.token === "PPF"){
-          await PPFWallet.updateOne({ user_id:data.user_id }, {balance: data.current_amount });
+            let sjj = await PPFWallet.find({ user_id:data.user_id })
+            let prev_bal = parseFloat(sjj[0].balance)
+            let wining_amount = parseFloat(data.wining_amount)
+            let bet_amount = parseFloat(data.bet_amount)
+            if(data.has_won){
+                let current_amount = prev_bal + wining_amount
+                io.emit("dice-wallet", [{...data,current_amount }])
+              await PPFWallet.updateOne({ user_id:data.user_id }, {balance: current_amount });
+            }
+            else{
+                let current_amount = prev_bal - bet_amount
+                io.emit("dice-wallet", [{...data,current_amount }])
+                await PPFWallet.updateOne({ user_id:data.user_id }, {balance: prev_bal - bet_amount });
+            }
         }
         else if(data.token === "USDT"){
-          await USDTWallet.updateOne({ user_id:data.user_id }, {balance: data.current_amount });
+            let sjj = await USDTWallet.find({ user_id:data.user_id })
+            let prev_bal = parseFloat(sjj[0].balance)
+            let wining_amount = parseFloat(data.wining_amount)
+            let bet_amount = parseFloat(data.bet_amount)
+            if(data.has_won){
+                let current_amount = prev_bal + wining_amount
+                io.emit("dice-wallet", [{...data,current_amount }])
+              await USDTWallet.updateOne({ user_id:data.user_id }, {balance: prev_bal + wining_amount });
+            }
+            else{
+                let current_amount = prev_bal - bet_amount
+                io.emit("dice-wallet", [{...data,current_amount }])
+                await USDTWallet.updateOne({ user_id:data.user_id }, {balance: current_amount });
+            }
         }
     }
     catch(error){
@@ -63,17 +106,15 @@ const handleMybet = ((e, user)=>{
         let prev_bal = parseFloat(user.prev_bal)
         let wining_amount = parseFloat(user.wining_amount)
         let current_amount = (parseFloat(prev_bal + wining_amount)).toFixed(4)
-        handleUpdatewallet({current_amount, ...user})
-       const data = [{...e, ...user, has_won: true,profit:wining_amount, bet_id: Math.floor(Math.random()*10000000)+ 72000000}]
-       io.emit("dice-troo", data)
+        handleUpdatewallet({has_won: true,current_amount, ...user})
+       const data = [{...e, ...user,current_amount ,has_won: true,profit:wining_amount, bet_id: Math.floor(Math.random()*100000000000)+ 720000000000}]
        handleDiceBEt(data)
     }else{
         let prev_bal = parseFloat(user.prev_bal)
         let bet_amount = parseFloat(user.bet_amount)
         let current_amount = (parseFloat(prev_bal - bet_amount)).toFixed(4)
-        handleUpdatewallet({current_amount, ...user})
-        const data = [{...e, ...user, has_won: false,profit:0, bet_id:Math.floor(Math.random()*10000000)+ 72000000}]
-        io.emit("dice-troo", data)
+        handleUpdatewallet({current_amount,has_won: false, ...user})
+        const data = [{...e, ...user,current_amount, has_won:false,profit:0, bet_id:Math.floor(Math.random()*100000000000)+ 720000000000}]
         handleDiceBEt(data)
     }
 })
@@ -95,8 +136,6 @@ const handleDicePoints = ((e)=>{
 
 
 let newMessage = await Chats.find()
-
-
 const handleNewChatMessages = (async(data)=>{
     io.emit("new-messages", newMessage)
   await Chats.create(data)
