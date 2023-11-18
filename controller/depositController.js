@@ -201,9 +201,9 @@ const confirmDeposit = async () => {
   }
 }
 
-// setInterval(() => {
-//   confirmDeposit()
-// }, 17000);
+setInterval(() => {
+  confirmDeposit()
+}, 17000);
 
 
 const fetchPendingOrder = (async(req, res)=>{
