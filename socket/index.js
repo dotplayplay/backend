@@ -14,8 +14,8 @@ let maxRange = 100
 async function createsocket(httpServer){
 const io = new Server(httpServer, {
     cors: {
-        origin:"https://dotplayplay.netlify.app"
-        // origin: "http://localhost:5173"
+        // origin:"https://dotplayplay.netlify.app"
+        origin: "http://localhost:5173"
     },
 });
 
@@ -102,21 +102,40 @@ const handleUpdatewallet = (async(data)=>{
 })
 
 const handleMybet = ((e, user)=>{
-    if(parseFloat(e.cashout) < parseFloat(user.chance)){
-        let prev_bal = parseFloat(user.prev_bal)
-        let wining_amount = parseFloat(user.wining_amount)
-        let current_amount = (parseFloat(prev_bal + wining_amount)).toFixed(4)
-        handleUpdatewallet({has_won: true,current_amount, ...user})
-       const data = [{...e, ...user,current_amount ,has_won: true,profit:wining_amount, bet_id: Math.floor(Math.random()*100000000000)+ 720000000000}]
-       handleDiceBEt(data)
-    }else{
-        let prev_bal = parseFloat(user.prev_bal)
-        let bet_amount = parseFloat(user.bet_amount)
-        let current_amount = (parseFloat(prev_bal - bet_amount)).toFixed(4)
-        handleUpdatewallet({current_amount,has_won: false, ...user})
-        const data = [{...e, ...user,current_amount, has_won:false,profit:0, bet_id:Math.floor(Math.random()*100000000000)+ 720000000000}]
+    if(user.is_roll_under){
+        if(parseFloat(e.cashout) < parseFloat(user.chance)){
+            let prev_bal = parseFloat(user.prev_bal)
+            let wining_amount = parseFloat(user.wining_amount)
+            let current_amount = (parseFloat(prev_bal + wining_amount)).toFixed(4)
+            handleUpdatewallet({has_won: true,current_amount, ...user})
+        const data = [{...e, ...user,current_amount ,has_won: true,profit:wining_amount, bet_id: Math.floor(Math.random()*100000000000)+ 720000000000}]
         handleDiceBEt(data)
+        }else{
+            let prev_bal = parseFloat(user.prev_bal)
+            let bet_amount = parseFloat(user.bet_amount)
+            let current_amount = (parseFloat(prev_bal - bet_amount)).toFixed(4)
+            handleUpdatewallet({current_amount,has_won: false, ...user})
+            const data = [{...e, ...user,current_amount, has_won:false,profit:0, bet_id:Math.floor(Math.random()*100000000000)+ 720000000000}]
+            handleDiceBEt(data)
+        }
+    }else{
+        if(parseFloat(e.cashout) > parseFloat(user.chance)){
+            let prev_bal = parseFloat(user.prev_bal)
+            let wining_amount = parseFloat(user.wining_amount)
+            let current_amount = (parseFloat(prev_bal + wining_amount)).toFixed(4)
+            handleUpdatewallet({has_won: true,current_amount, ...user})
+        const data = [{...e, ...user,current_amount ,has_won: true,profit:wining_amount, bet_id: Math.floor(Math.random()*100000000000)+ 720000000000}]
+        handleDiceBEt(data)
+        }else{
+            let prev_bal = parseFloat(user.prev_bal)
+            let bet_amount = parseFloat(user.bet_amount)
+            let current_amount = (parseFloat(prev_bal - bet_amount)).toFixed(4)
+            handleUpdatewallet({current_amount,has_won: false, ...user})
+            const data = [{...e, ...user,current_amount, has_won:false,profit:0, bet_id:Math.floor(Math.random()*100000000000)+ 720000000000}]
+            handleDiceBEt(data)
+        }
     }
+
 })
 
 
