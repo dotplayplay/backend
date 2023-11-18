@@ -9,6 +9,7 @@ const CrashGame = require("./routes/crashgame.js");
 const User = require("./routes/Users.js");
 const Profile = require("./routes/Profile.js");
 const Chat = require("./routes/chat");
+const minegame = require("./routes/mines");
 const Wallet = require("./routes/wallet.js");
 const diceGame = require("./routes/diceGame");
 const Deposit = require("./routes/deposit");
@@ -24,7 +25,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 const server = createServer(app);
-
 async function main() {
   createsocket(server);
 }
@@ -33,6 +33,7 @@ main();
 // application routes
 app.use("/api/user/crash-game", CrashGame);
 app.use("/api/user/dice-game", diceGame);
+app.use("/api/user/mine-game", minegame);
 app.use("/api/users", User);
 app.use("/api/public-chat", Chat);
 app.use("/api/profile", Profile);
