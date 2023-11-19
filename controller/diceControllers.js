@@ -60,28 +60,12 @@ const handleDiceBet = (async(user_id, data, result)=>{
     await DiceGame.create(bet)
     await DiceEncription.updateOne({user_id},{
       nonce:rt.nonce
-    })
+    })``
   }
-  
+   
   catch(error){
     console.log(error)
   }
-//         // let trx_rec = {
-//           //   user_id: data.user_id,
-//           //   transaction_type: data.has_won ? "Classic Dice-Win" : "Classic Dice-Betting", 
-//           //   sender_img: "-", 
-//           //   sender_name: "DPP_wallet", 
-//           //   sender_balance: 0,
-//           //   trx_amount: data.has_won ? data.payoutIO : data.bet_amount,
-//           //   receiver_balance: data.current_amount,
-//           //   datetime: currentTime, 
-//           //   receiver_name: data.bet_token_name,
-//           //   receiver_img: data.bet_token_img,
-//           //   status: 'successful',
-//           //   transaction_id: Math.floor(Math.random()*1000000000)+ 100000000,
-//           //   is_sending: 0
-//           // }
-//           // handleProfileTransactions(trx_rec)
     })
 
       let hidden;

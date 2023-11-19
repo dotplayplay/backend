@@ -28,7 +28,6 @@ setInterval(()=>{
     fetchActivePlayers()
 }, 6000)
 
-
 const handleDiceBEt = (async(data)=>{
     let events = data[0]
     try{
