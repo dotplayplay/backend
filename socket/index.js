@@ -19,6 +19,7 @@ const io = new Server(httpServer, {
     },
 });
 
+
 const fetchActivePlayers = (async()=>{
     let data = await DiceGame.find()
      io.emit("dice-gamePLayers", data)
