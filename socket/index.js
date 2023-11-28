@@ -26,9 +26,9 @@ const fetchActivePlayers = (async()=>{
      io.emit("dice-gamePLayers", data)
 })
 
-setInterval(()=>{
-    fetchActivePlayers()
-}, 2000)
+// setInterval(()=>{
+//     fetchActivePlayers()
+// }, 2000)
 
 
 const handleDiceBEt = (async(data)=>{
