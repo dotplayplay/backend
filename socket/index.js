@@ -24,6 +24,9 @@ const fetchActivePlayers = (async()=>{
      io.emit("dice-gamePLayers", data)
 })
 
+setInterval(()=>{
+    fetchActivePlayers()
+}, 1000)
 
 const handleDiceBEt = (async(data)=>{
     let events = data[0]
@@ -50,7 +53,6 @@ const handleDiceBEt = (async(data)=>{
        bill_id: events.bet_id
     }
     await Bills.create(bil)
-    fetchActivePlayers()
 })
 
 
