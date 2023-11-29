@@ -54,8 +54,6 @@ const handleDiceBEt = (async(data)=>{
        bill_id: events.bet_id
     }
     await Bills.create(bil)
-    fghhs.push(events)
-    fetchActivePlayers()
 })
 
 
