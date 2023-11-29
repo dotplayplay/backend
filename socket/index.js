@@ -11,8 +11,6 @@ const {handleWagerIncrease} = require("../profile_mangement/index")
 const Bills = require("../model/bill")
 let maxRange = 100
 
-
-
 async function createsocket(httpServer){
 const io = new Server(httpServer, {
     cors: {
@@ -21,10 +19,7 @@ const io = new Server(httpServer, {
     },
 });
 
-
 let fghhs = await DiceGame.find()
-
-
 const fetchActivePlayers = (async()=>{
     io.emit("dice-gamePLayers", fghhs)
 })
@@ -59,6 +54,7 @@ const handleDiceBEt = (async(data)=>{
        bill_id: events.bet_id
     }
     await Bills.create(bil)
+    fghhs.push(events)
     fetchActivePlayers()
 })
 
