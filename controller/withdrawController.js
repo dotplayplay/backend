@@ -1,6 +1,7 @@
 const { axios } = require("axios");
 const USDTwallet = require("../model/Usdt-wallet")
 const crypto = require("crypto");
+const { updateWithdrawalHistory } = require("./transactionHistories/updateWithdrawalHistory");
 
 const CCPAYMENT_API_ID = "202310051818371709996528511463424";
 const CC_APP_SECRET = "206aed2f03af1b70305fb11319f2f57b";
@@ -31,6 +32,7 @@ const initiateWithdrawal = async (req, res) => {
         status: false,
         message: "Amount must be greater than 6.4usdt",
       });
+
     }
 
     const currentTimestamp = Math.floor(Date.now() / 1000);
@@ -102,6 +104,8 @@ const initiateWithdrawal = async (req, res) => {
                 message: "Crypto withdrawn successfully",
                 data: response.data,
               });
+              const describtion =  "Crypto withdrawn successfully";
+              updateWithdrawalHistory(user_id, describtion, data.amount, userBalance, newAmount, "Successful");
         } else {
           res.status(400).json({
             status: false,
@@ -112,6 +116,7 @@ const initiateWithdrawal = async (req, res) => {
       }
   } catch (error) {
     console.error("Error processing withdrawal:", error);
+    // updateWithdrawalHistory(user_id, describtion, data.amount, userBalance, newAmount, "Failed");
     res.status(500).json({ status: false, message: "Internal server error" });
   }
 };

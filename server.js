@@ -16,6 +16,8 @@ const diceGame = require("./routes/diceGame");
 const Deposit = require("./routes/deposit");
 const Withdraw = require("./routes/withdraw")
 const Bonus = require('./routes/bonus')
+const TransactionHistory = require("./routes/transactionHistory.js");
+
 const { createsocket } = require("./socket/index.js");
 const { createServer } = require("node:http");
 require("dotenv").config();
@@ -42,9 +44,10 @@ app.use("/api/wallet", Wallet);
 app.use("/api/affiliate", Affiliate);
 app.use("/api/deposit", Deposit);
 app.use("/api/withdraw", Withdraw);
-app.use("/api/cashback", Bonus)
+app.use("/api/cashback", Bonus);
 app.use("/api/stats", Stats);
 app.use("/api/transaction", Transaction);
+app.use("/api/transaction-history", TransactionHistory);
 app.use("/admin/all-players", AllPLays);
 app.get("/", (req, res)=>{
   res.send("Welcome to Dotplayplay backend server")
