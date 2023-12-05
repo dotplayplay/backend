@@ -9,7 +9,16 @@ const { createPPF, createPPL, createPPD, createUsdt, handleDefaultWallet } = req
 const { InitializeDiceGame } = require("../controller/diceControllers")
 const { CreateAffiliate, CheckValidity } = require("./affiliateControllers")
 const { handleCreatePPDunlocked } = require("../profile_mangement/ppd_unlock")
-const { handleNewNewlyRegisteredCount } = require("../profile_mangement/cashbacks")
+const { handleNewNewlyRegisteredCount } = require("../profile_mangement/cashbacks");
+const Profile = require('../model/Profile');
+const CrashGame = require('../model/crashgame');
+const DiceGame = require('../model/dice_game');
+const MinesGame = require('../model/minesgameInit');
+const PPDWallet = require('../model/PPD-wallet');
+const UsdtWallet = require('../model/Usdt-wallet');
+const PPFWallet = require('../model/PPF-wallet');
+const PPLWallet = require('../model/PPL-wallet');
+const { pplConversion } = require('../utils/converstion');
 
 // Create Member controller
 const createMember = async (req, res, next) => {
@@ -49,39 +58,39 @@ const createMember = async (req, res, next) => {
         firstname: '-',
         lastname: '-',
         user_id: user_id,
-        email : email,  
+        email: email,
         hide_profile: false,
         hidden_from_public: false,
         refuse_friends_request: false,
-        refuse_tips: false, 
-        username : username ,  
+        refuse_tips: false,
+        username: username,
         profile_image: "https://img2.nanogames.io/avatar/head1.png",
         vip_level: vipLevel,
         kyc_is_activated: false,
         phone: phoneNumber,
-        next_level_point:1,
+        next_level_point: 1,
         total_wagered: 0,
         invited_code: invited_code ? invited_code : "-",
-        google_auth_is_activated : false,
+        google_auth_is_activated: false,
         is_suspend: false,
         vip_progress: 0,
-        fa_is_activated: false,   
+        fa_is_activated: false,
         earn_me: 0,
         commission_reward: 0,
-        usd_reward : 100, 
+        usd_reward: 100,
         joined_at: currentTime,
         account_type: "normal",
-        total_chat_messages:0,
+        total_chat_messages: 0,
         weekly_wagered: 0,
         monthly_wagered: 0
     }
 
-    if(invited_code){
-        let validateCode = await CheckValidity(invited_code,user_id )
-        if(validateCode){
+    if (invited_code) {
+        let validateCode = await CheckValidity(invited_code, user_id)
+        if (validateCode) {
             invited_code = validateCode
         }
-        
+
     }
 
     const user = {
@@ -102,13 +111,13 @@ const createMember = async (req, res, next) => {
             handleCreatePPDunlocked(user_id)
             CreateAffiliate(user_id)
             const default_wallet = await handleDefaultWallet(user_id)
-            let result = await createProfile(profileDetails)
+            let profile = await createProfile(profileDetails)
             return res.status(200).json({
                 success: true,
                 message: "User Resgistration Successfull",
                 data: {
                     default_wallet,
-                    result
+                    profile
                 }
             })
         } else {
@@ -126,27 +135,66 @@ const createMember = async (req, res, next) => {
 
 //Dashboard API 
 const adminDashbaord = async (req, res, next) => {
-
+    return res.json({
+        success: true,
+        message: 'Dashboard'
+    })
 }
 
 //Get Members List
- const getAllMembers = async (req, res, next) => {
-//     try {
-//         const members = await User.find();
-//         console.log(members.length);
-//         if (members.length === 0) {
-//             return res.status(404).json({
-//                 success: false,
-//                 message: 'Members not found'
-//             })
-//         }
-//         return res.status(200).json({
-//             success: true,
-//             data: members
-//         })
-//     } catch (err) {
-//         return res.json({ error: err })
-//     }
+const getAllMembers = async (req, res, next) => {
+    try {
+        const members = await User.find();
+        if (members.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Members not found'
+            })
+        }
+
+        const membersDataFromProfile = await Promise.all(
+            members.map(async (user) => {
+                //Get User Profile
+                const profile = await Profile.findOne({ user_id: user.user_id }).sort({ createdAt: -1 })
+                //Get Number of Crash Game Won
+                let crashGameWon = await CrashGame.find({ user_id: user.user_id, has_won: true })
+                //Get Number of Crash Game Loss
+                let crashGameLoss = CrashGame.find({ user_id: user.user_id, has_won: false })
+                //Get Number of Dice Game Won
+                let diceGameWon = DiceGame.find({ user_id: user.user_id, has_won: true })
+                //Get Number of Dice Game Loss
+                let diceGameLoss = DiceGame.find({ user_id: user.user_id, has_won: false })
+                //Get Number of Mines Game Won
+                let minesGameWon = MinesGame.find({ user_id: user.user_id, has_won: true })
+                //Get Number of Mines Game Loss
+                let minesGameLoss = MinesGame.find({ user_id: user.user_id, has_won: false })
+                // const ggr = (crashGameWon + diceGameWon + minesGameWon) / (crashGameLoss + diceGameLoss + minesGameLoss)
+                // console.log(crashGameWon)
+                //Get Wallet Balance for USDT, PPD AND PPL
+                const usdt_balance = await UsdtWallet.findOne({ user_id: user.user_id})
+                const ppd_balance = await PPDWallet.findOne({ user_id: user.user_id})
+                const ppl_balance = await PPLWallet.findOne({ user_id: user.user_id})
+
+                //Sum in USD
+                const totalBalance = (usdt_balance.balance + ppd_balance.balance + ppl_balance.balance)
+                return {
+                    ...user._doc,
+                    profile,
+                    totalBalance,
+                    ggr: "To be Computed"
+                }
+            })
+        )
+        //concatenate both user post and friend posts
+        // return res.status(200).json(meber.concat(...friendsPost))
+        return res.status(200).json({
+            success: true,
+            data: membersDataFromProfile
+        })
+    } catch (err) {
+        // return res.json({ error: err })
+        console.log(err)
+    }
 
 }
 
