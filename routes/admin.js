@@ -9,14 +9,14 @@ const router = express.Router()
 /* READ */
 
 /* Get Admin Dashboard */
-router.get('/dashboard', adminDashbaord)
-router.get('/members', getAllMembers)
+router.get('/dashboard', requireAuth, adminDashbaord)
+router.get('/members',  requireAuth, getAllMembers)
 
 
 /* CREATE */
 
 /* Create Member */
-router.post('/create', createMember)
+router.post('/create',  requireAuth, createMember)
 
 
 module.exports = router
