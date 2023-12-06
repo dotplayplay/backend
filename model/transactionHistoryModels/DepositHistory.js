@@ -10,29 +10,22 @@ const DepositHistorySchema = new mongoose.Schema(
         type: String,
         require: true,
     },
-    coin_icon: {
-      type: String,
-      require: true,
-    },
     status: {
         type: String,
         require: true
-    }, 
+    },
     amount: {
-      type: Number,
-      required: true,
+        type: Number,
+        require: true,
+      },
+    coinImage: {
+        type: String,
     },
     previous_balance: {
       type: String,
-      require: true,
     },
     available_balance: {
       type: Number,
-      require: true,
-    },
-    describtion: {
-      type: String,
-      require: true,
     },
   },
   { timestamps: true }

@@ -1,7 +1,6 @@
 const DepositHistory = require("../../model/transactionHistoryModels/DepositHistory");
 
 const getDepositHistory = ( async (req, res) => {
-    console.log("get deposit history");
     try{
         const {user_id} = req.id;
         // const {user_id} = req.body;
