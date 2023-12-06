@@ -81,8 +81,9 @@ const handleSuccessfulDeposit = (async(event)=>{
   let result = await USDTwallet.updateOne({user_id}, {
       balance:prev_bal + order_amount
     })
-    console.log(result )
-    updateDepositHistory(user_id, event.merchant_order_id, describtion, order_amount, prev_bal, result );
+    const message = "Deposit successful";
+    console.log(result)
+    updateDepositHistory(user_id, event.merchant_order_id, message, order_amount, prev_bal, result );
 })
 
 const handleFailedTransaction = (async(event)=>{
@@ -93,10 +94,10 @@ const handleFailedTransaction = (async(event)=>{
       status:event.status,
       contract: event.contract
     })
+    updateDepositHistory(user_id, event.merchant_order_id, describtion);
   }
   catch(err){
     console.log(err)
-    updateDepositHistory(user_id, event.merchant_order_id, describtion);
   }
 })
 

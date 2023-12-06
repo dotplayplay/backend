@@ -8,102 +8,168 @@ const PPD_wallet = require("../model/PPD-wallet")
 const PPL_wallet = require("../model/PPL-wallet");
 const bill = require("../model/bill");
 const UsdtWallet = require("../model/Usdt-wallet");
+const { usdtIcon, pplIcon, ppdIcon } = require("../lib/coinIcons");
+const { updateSwapHistory } = require("./transactionHistories/updateSwapHistory");
 
 const handleSwap = (async (req,res)=>{
-    const {user_id} = req.id
-    const data = req.body
-    let event_timedate =currentTime
-    let wallet = ''
-    let sender_img = ''
-    // Sender Wallet
-    if(data.senderCoin === "USDT"){
-        wallet = `usdt_wallet` 
-        sender_img = "https://assets.coingecko.com/coins/images/325/large/Tether.png?1668148663"
-    }
-    else if(data.senderCoin === "PPD"){
-        wallet = `ppd_wallet` 
-        sender_img = "https://res.cloudinary.com/dxwhz3r81/image/upload/v1697828435/dpp_logo_sd2z9d.png"
-    }
-    else if(data.senderCoin === "PPL"){
-        wallet = `ppl_wallet` 
-        sender_img = "https://res.cloudinary.com/dxwhz3r81/image/upload/v1698011384/type_1_w_hqvuex.png"
+    console.log("req body: ", req.body);
+    const {user_id} = req.id;
+    const data = req.body;
+    const swappingDetails = data;
+    console.log(req)
+    // let sender_img = '';
+    setCoinIcon(data);
+    swapCoin(swappingDetails);
+
+    const swapCoin = async (swappingDetails) => {
+        const senderCoin = swappingDetails.senderCoin; 
+        const recieverCoin = swappingDetails.receiverCoin;
+
+        if(senderCoin == "USDT" && recieverCoin == "PPD"){
+            swap_USDT_to_PPD();
+        }
+
+        if(senderCoin == "USDT" && recieverCoin == "PPL"){
+            swap_USDT_to_PPL();
+        }
+
+        if(senderCoin == "PPD" && recieverCoin == "USDT"){
+            swap_PPD_to_USDT();
+        }
+
+        if(senderCoin == "PPD" && recieverCoin == "PPL"){
+            swap_PPD_to_PPL();
+        }
+
+        if(senderCoin == "PPL" && recieverCoin == "USDT"){
+            swap_PPL_to_USDT();
+        }
+
+        if(senderCoin == "PPL" && recieverCoin == "USDT"){
+            swap_PPL_to_PPD();
+        }
     }
 
-    // Receiver wallet
-    let receiverWallet = ''
-    if(data.receivedCoin === "USDT"){
-        receiverWallet = `usdt_wallet` 
-    }
-    else if(data.receivedCoin === "PPD"){
-        receiverWallet = `ppd_wallet` 
-    }
-    else if(data.receivedCoin === "PPL"){
-        receiverWallet = `ppl_wallet` 
+    const swap_PPL_to_PPD = () => {
+        const senderCoinIcon = pplIcon;
+        const receiverCoinIcon = ppdIcon;
+        const amountToBeSwapped = swappingDetails.amount;
+        const equivalentAmountInPPD = amountToBeSwapped / 10;
+        if(checkWalletBalance(PPL_wallet, amountToBeSwapped, user_id)){
+            deductFromWalletBalance(PPL_wallet, amountToBeSwapped, user_id);
+            addToWalletBalance(PPD_wallet, equivalentAmountInPPD, user_id );
+            updateSwapHistory(swappingDetails, user_id, senderCoinIcon, receiverCoinIcon, amountToBeSwapped, PPL_wallet, PPD_wallet);
+        }
     }
 
-    // sender DB
-    let gdrrx = await Wallet.find({user_id})
-    let jkdrrex = number(gdrrx[0].balance)
-    handleOlderSenderBal(jkdrrex)
+    const swap_PPL_to_USDT = () => {
+        const senderCoinIcon = pplIcon;
+        const receiverCoinIcon = usdtIcon;
+        const amountToBeSwapped = swappingDetails.amount;
+        const equivalentAmountInUSDT = amountToBeSwapped / 10;
+        if(checkWalletBalance(PPL_wallet, amountToBeSwapped, user_id)){
+            deductFromWalletBalance(PPL_wallet, amountToBeSwapped, user_id);
+            addToWalletBalance(USDT_wallet, equivalentAmountInUSDT, user_id );
+            updateSwapHistory(swappingDetails, user_id, senderCoinIcon, receiverCoinIcon, amountToBeSwapped, PPL_wallet, USDT_wallet);
+        }
+    }
 
-    // const usdt = await  UsdtWallet.find({user_id})
-    // if(usdt.balance < req.body.value){
-    //     res.status(200).json({res: "insufficient fund"})
-    // }else{
-    //     const newUsdtBalance = usdt.balance - req.body.value;
-    //     await UsdtWallet.updateOne({$where: {
-    //         balance: newUsdtBalance
-    //     }})
+    const swap_PPD_to_PPL = () => {
+        const senderCoinIcon = ppdIcon;
+        const receiverCoinIcon = pplIcon;
+        const amountToBeSwapped = swappingDetails.amount;
+        const equivalentAmountInPPL = amountToBeSwapped * 10;
+        if(checkWalletBalance(PPD_wallet, amountToBeSwapped, user_id)){
+            deductFromWalletBalance(PPD_wallet, amountToBeSwapped, user_id);
+            addToWalletBalance(PPL_wallet, equivalentAmountInPPL, user_id );
+            updateSwapHistory(swappingDetails, user_id, senderCoinIcon, receiverCoinIcon, amountToBeSwapped, PPD_wallet, PPL_wallet);
+        }
+    }
 
-    //     const 
-    //     const pplBalance = await PPL-wallet.
+    const swap_PPD_to_USDT = () => {
+        const senderCoinIcon = ppdIcon;
+        const receiverCoinIcon = usdtIcon;
+        const amountToBeSwapped = swappingDetails.amount;
+        const equivalentAmountInPPL = amountToBeSwapped * 1;
+        if(checkWalletBalance(PPD_wallet, amountToBeSwapped, user_id)){
+            deductFromWalletBalance(PPD_wallet, amountToBeSwapped, user_id);
+            addToWalletBalance(USDT_wallet, equivalentAmountInPPL, user_id );
+            updateSwapHistory(swappingDetails, user_id, senderCoinIcon, receiverCoinIcon, amountToBeSwapped, PPD_wallet, USDT_wallet);
+        }
+    }
+
+    const swap_USDT_to_PPL = () => {
+        const senderCoinIcon = usdtIcon;
+        const receiverCoinIcon = pplIcon;
+        const amountToBeSwapped = swappingDetails.amount;
+        const equivalentAmountInPPL = amountToBeSwapped * 10;
+        if(checkWalletBalance(USDT_wallet, amountToBeSwapped, user_id)){
+            deductFromWalletBalance(USDT_wallet, amountToBeSwapped, user_id);
+            addToWalletBalance(PPL_wallet,equivalentAmountInPPL, user_id );
+            updateSwapHistory(swappingDetails, user_id, senderCoinIcon, receiverCoinIcon, amountToBeSwapped, USDT_wallet, PPL_wallet);
+        }
+    }
+
+    const swap_USDT_to_PPD = () => {
+        const senderCoinIcon = usdtIcon;
+        const receiverCoinIcon = ppdIcon;
+        const amountToBeSwapped = swappingDetails.amount;
+        const equivalentAmountInPPD = amountToBeSwapped * 1;
+        if(checkWalletBalance(USDT_wallet, amountToBeSwapped, user_id)){
+            deductFromWalletBalance(USDT_wallet, amountToBeSwapped, user_id);
+            addToWalletBalance(PPD_wallet, equivalentAmountInPPD, user_id );
+            updateSwapHistory(swappingDetails, user_id, senderCoinIcon, receiverCoinIcon, amountToBeSwapped, USDT_wallet, PPD_wallet);
+        }
+    }
+
+    const deductFromWalletBalance = async(wallet, amount, user_id) => {
+        const wallet_details = await wallet.find({user_id});
+        const available_balance = wallet_details.balance;
+        const new_balance = available_balance - amount;
+        await wallet.findOneAndUpdate({user_id}, {balance: new_balance});
+    }
+
+    const addToWalletBalance = async(wallet, amount, user_id) => {
+        const wallet_details = await wallet.find({user_id});
+        const available_balance = wallet_details.balance;
+        const new_balance = available_balance + amount;
+        await wallet.findOneAndUpdate({user_id}, {balance: new_balance});
+    }
+
+    const checkWalletBalance = async (wallet, amount, user_id) => {
+        const wallet_details = await wallet.find({user_id});
+        const available_balance = wallet_details.balance;
+        if(available_balance < amount){
+            res.status(403).json({res: "Insufficient fund"})
+        }
+        return true;
+    }
+
+    // const setCoinIcon = (data) => {
+    //     // let event_timedate =currentTime
+    //     // sender DB
+    //     // let gdrrx = await Wallet.find({user_id})
+    //     // let jkdrrex = number(gdrrx[0].balance)
+    //     // handleOlderSenderBal(jkdrrex)
+
+    //     // let wallet = ''
+    //     // Sender Wallet
+    //     if(data.senderCoin === "USDT"){
+    //         // wallet = `usdt_wallet` 
+    //         sender_img = "https://assets.coingecko.com/coins/images/325/large/Tether.png?1668148663"
+    //     }
+    //     else if(data.senderCoin === "PPD"){
+    //         // wallet = `ppd_wallet` 
+    //         sender_img = "https://res.cloudinary.com/dxwhz3r81/image/upload/v1697828435/dpp_logo_sd2z9d.png"
+    //     }
+    //     else if(data.senderCoin === "PPL"){
+    //         // wallet = `ppl_wallet` 
+    //         sender_img = "https://res.cloudinary.com/dxwhz3r81/image/upload/v1698011384/type_1_w_hqvuex.png"
+    //     }
+        
     // }
-
-    // usdt.balance
-
-//////////////////////////////////////////////////////////////////////////////////////////////////
-
-    // let query = `SELECT balance FROM ${wallet}  WHERE user_id = "${user_id}"`;
-    // connection.query(query, async (error, data)=>{
-    //     let olderSenderBalance = data[0].balance
-    //     handleOlderSenderBal(olderSenderBalance)
-    // })
-
-    // // Receiver DB
-
-    // let query1 = `SELECT balance FROM ${receiverWallet}  WHERE user_id = "${user_id}"`;
-    // connection.query(query1, async (error, data)=>{
-    //     let olderSenderBalance = data[0].balance
-    //     handleOlderReceiveBal(olderSenderBalance)
-    // })
-
-    // const handleOlderSenderBal = ((e)=>{
-    //     let result =  parseInt(e) - parseInt(data.sentAmount)
-    //     let sql = `UPDATE ${wallet} SET balance="${result}"  WHERE user_id = "${user_id}"`;
-    //     connection.query(sql, function (err, result) {
-    //       if (err) throw err;
-    //       console.log(result)
-    //     });
-
-    //        // update default wallet
-    //     let sql3 = `UPDATE wallet SET  balance="${result}", coin_name="${data.senderCoin}", 
-    //     coin_image="${sender_img}"  WHERE user_id = "${user_id}"`;
-    //     connection.query(sql3, function (err, result) {
-    //     if (err) throw err;
-    //     result
-    //     });
-    // })
-
-    // const handleOlderReceiveBal = ((e)=>{
-    //     let result = parseInt(e) + parseInt(data.receivedAmount)
-    //     let sql = `UPDATE ${receiverWallet} SET balance="${result}"  WHERE user_id = "${user_id}"`;
-    //     connection.query(sql, function (err, result) {
-    //       if (err) throw err;
-    //       res.status(200).json(result)
-    //     });
-    // })
-
 })
+
 
 const handleBills = (async(req,res)=>{
     const { user_id } = req.id
