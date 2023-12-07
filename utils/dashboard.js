@@ -18,23 +18,40 @@ const removeDuplicatePlayer = (data) => {
 
 //Show total gross gaming revenue (win/lose)
 const getGGR = async (user_id) => {
-    let crashGameTotalStakeWon = 0;
-    let diceGameTotalStakeWon = 0;
-    let minesGameTotalStakeWon = 0;
+    // let crashGameTotalStakeWon = 0;
+    // let diceGameTotalStakeWon = 0;
+    // let minesGameTotalStakeWon = 0;
 
     let crashGameTotalStakeLoss = 0;
     let diceGameTotalStakeLoss = 0;
     let minesGameTotalStakeLoss = 0;
     if (user_id) {
         console.log("From inisde select by UserId for Individual User");
-        //Get Number of Crash Game Won Amount
-        const crashGameWon = await CrashGame.find({ user_id: user_id, has_won: true })
-        if (crashGameWon.length > 0) {
-            crashGameTotalStakeWon = crashGameWon.map((game) => {
-                return game.bet_amount
-            })
-        }
+        // //Get the total wins across all games
+        // //Get Number of Crash Game Won Amount
+        // const crashGameWon = await CrashGame.find({ user_id: user_id, has_won: true })
+        // if (crashGameWon.length > 0) {
+        //     crashGameTotalStakeWon = crashGameWon.map((game) => {
+        //         return game.bet_amount
+        //     })
+        // }
 
+        // //Get Number of Dice Game Won Amount
+        // const diceGameWon = await DiceGame.find({ user_id: user_id, has_won: true })
+        // if (diceGameWon.length > 0) {
+        //     diceGameTotalStakeWon = diceGameWon.map((game) => {
+        //         return game.bet_amount
+        //     })
+        // }
+
+        // //Get Number of Mines Game Won Amount
+        // const minesGameWon = await MinesGame.find({ user_id: user_id, has_won: true })
+        // if (minesGameWon.length > 0) {
+        //     minesGameTotalStakeWon = minesGameWon.map((game) => {
+        //         return game.bet_amount
+        //     })
+        // }
+        // //Get the total wagered at loss
         //Get Number of Crash Game Loss Amount
         const crashGameLoss = await CrashGame.find({ user_id: user_id, has_won: false })
         if (crashGameLoss.length > 0) {
@@ -43,13 +60,7 @@ const getGGR = async (user_id) => {
             })
         }
 
-        //Get Number of Dice Game Won Amount
-        const diceGameWon = await DiceGame.find({ user_id: user_id, has_won: true })
-        if (diceGameWon.length > 0) {
-            diceGameTotalStakeWon = diceGameWon.map((game) => {
-                return game.bet_amount
-            })
-        }
+
 
         //Get Number of Dice Game Loss Amount
         const diceGameLoss = await DiceGame.find({ user_id: user_id, has_won: false })
@@ -59,13 +70,7 @@ const getGGR = async (user_id) => {
             })
         }
 
-        //Get Number of Mines Game Won Amount
-        const minesGameWon = await MinesGame.find({ user_id: user_id, has_won: true })
-        if (minesGameWon.length > 0) {
-            minesGameTotalStakeWon = minesGameWon.map((game) => {
-                return game.bet_amount
-            })
-        }
+        
         //Get Number of Mines Game Won Amount
         const minesGameLoss = await MinesGame.find({ user_id: user_id, has_won: false })
         if (minesGameLoss.length > 0) {
@@ -73,32 +78,40 @@ const getGGR = async (user_id) => {
                 return game.bet_amount
             })
         }
-        const sumOfWon = crashGameTotalStakeWon + diceGameTotalStakeWon + minesGameTotalStakeWon
+        // const sumOfWon = crashGameTotalStakeWon + diceGameTotalStakeWon + minesGameTotalStakeWon
         const sumOfLoss = crashGameTotalStakeLoss + diceGameTotalStakeLoss + minesGameTotalStakeLoss
 
-        return ggr = sumOfWon + "/" + sumOfLoss
+        return ggr = sumOfLoss
     } else {
         console.log("From inisde select by All Games Won AND Loss");
-        //Get Number of Crash Game Won Amount
-        const crashGameWon = await CrashGame.find({ has_won: true })
-        if (crashGameWon.length > 0) {
-            crashGameTotalStakeWon = crashGameWon.map((game) => {
-                return game.bet_amount
-            })
-        }
+        // //Get Number of Crash Game Won Amount
+        // const crashGameWon = await CrashGame.find({ has_won: true })
+        // if (crashGameWon.length > 0) {
+        //     crashGameTotalStakeWon = crashGameWon.map((game) => {
+        //         return game.bet_amount
+        //     })
+        // }
+
+        // //Get Number of Dice Game Won Amount
+        // const diceGameWon = await DiceGame.find({ has_won: true })
+        // if (diceGameWon.length > 0) {
+        //     diceGameTotalStakeWon = diceGameWon.map((game) => {
+        //         return game.bet_amount
+        //     })
+        // }
+
+        // //Get Number of Mines Game Won Amount
+        // const minesGameWon = await MinesGame.find({ has_won: true })
+        // if (minesGameWon.length > 0) {
+        //     minesGameTotalStakeWon = minesGameWon.map((game) => {
+        //         return game.bet_amount
+        //     })
+        // }
 
         //Get Number of Crash Game Loss Amount
         const crashGameLoss = await CrashGame.find({ has_won: false })
         if (crashGameLoss.length > 0) {
             crashGameTotalStakeLoss = crashGameLoss.map((game) => {
-                return game.bet_amount
-            })
-        }
-
-        //Get Number of Dice Game Won Amount
-        const diceGameWon = await DiceGame.find({ has_won: true })
-        if (diceGameWon.length > 0) {
-            diceGameTotalStakeWon = diceGameWon.map((game) => {
                 return game.bet_amount
             })
         }
@@ -110,14 +123,6 @@ const getGGR = async (user_id) => {
                 return game.bet_amount
             })
         }
-
-        //Get Number of Mines Game Won Amount
-        const minesGameWon = await MinesGame.find({ has_won: true })
-        if (minesGameWon.length > 0) {
-            minesGameTotalStakeWon = minesGameWon.map((game) => {
-                return game.bet_amount
-            })
-        }
         //Get Number of Mines Game Loss Amount
         const minesGameLoss = await MinesGame.find({ has_won: false })
         if (minesGameLoss.length > 0) {
@@ -125,11 +130,11 @@ const getGGR = async (user_id) => {
                 return game.bet_amount
             })
         }
-        
-        const sumOfWon = crashGameTotalStakeWon + diceGameTotalStakeWon + minesGameTotalStakeWon
+
+        // const sumOfWon = crashGameTotalStakeWon + diceGameTotalStakeWon + minesGameTotalStakeWon
         const sumOfLoss = crashGameTotalStakeLoss + diceGameTotalStakeLoss + minesGameTotalStakeLoss
 
-        return ggr = sumOfWon + "/" + sumOfLoss
+        return ggr = sumOfLoss
     }
 
 
