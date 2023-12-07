@@ -10,12 +10,15 @@ const User = require("./routes/Users.js");
 const Profile = require("./routes/Profile.js");
 const Chat = require("./routes/chat");
 require("./controller/crashEngine.js");
+require("./controller/lotteryEngine.js");
+require("./controller/cronScheduler.js");
 const minegame = require("./routes/mines");
 const Wallet = require("./routes/wallet.js");
 const diceGame = require("./routes/diceGame");
 const Deposit = require("./routes/deposit");
 const Withdraw = require("./routes/withdraw")
-const Bonus = require('./routes/bonus')
+const Bonus = require('./routes/bonus');
+const Lottery = require('./routes/lottery');
 const { createsocket } = require("./socket/index.js");
 const { createServer } = require("node:http");
 require("dotenv").config();
@@ -45,6 +48,7 @@ app.use("/api/withdraw", Withdraw);
 app.use("/api/cashback", Bonus)
 app.use("/api/stats", Stats);
 app.use("/api/transaction", Transaction);
+app.use("/api/lottery", Lottery);
 app.use("/admin/all-players", AllPLays);
 app.get("/", (req, res)=>{
   res.send("Welcome to Dotplayplay backend server")
@@ -56,6 +60,7 @@ const dbUri = `mongodb+srv://valiantjoe:jspW8bJDiu5lnvc4@highscore.muku4gg.mongo
 mongoose.connect(dbUri, { useNewUrlParser: true,  useUnifiedTopology: true })
     .then((result)=>  console.log('Database connected'))
     .catch((err)=> console.log(err))
-server.listen(process.env.PORT, ()=>{
-    console.log("Running on port "+ process.env.PORT)
+const PORT = process.env.PORT || 8000;
+server.listen(PORT, () => {
+  console.log("Running on port " + PORT)
 })
