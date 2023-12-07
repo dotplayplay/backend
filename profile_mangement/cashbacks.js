@@ -49,6 +49,7 @@ const createCashbackTable = (async(user_id)=>{
     nextMonday: Nextmonday(),
     nextMonth: startOfMonth(dt)
   }
+  
   try{
   await  CashBackDB.create(data)
   }

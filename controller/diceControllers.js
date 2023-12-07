@@ -46,48 +46,32 @@ const handleDiceBet = (async(user_id, data, result)=>{
       bet_id: Math.floor(Math.random()*10000000)+ 72000000,
       cashout: rt.io,
       profit: rt.payoutIO,
-      client_seed: rt.client_seed,
-      server_seed: rt.server_seed,
+      client_seed: rt.client_seed ?  rt.client_seed : "-",
+      server_seed: rt.server_seed ? rt.server_seed : "-",
       time: rt.time,
       hidden_from_public: rt.hidden,
       payout: rt.payout,
       has_won : rt.has_won,
       chance: rt.chance,
-      game_nonce: rt.nonce
+      game_nonce: rt.nonce ? rt.nonce : "-"
     }
+    
   try{
     await DiceGame.create(bet)
     await DiceEncription.updateOne({user_id},{
       nonce:rt.nonce
-    })
+    })``
   }
+   
   catch(error){
     console.log(error)
   }
-//         // let trx_rec = {
-//           //   user_id: data.user_id,
-//           //   transaction_type: data.has_won ? "Classic Dice-Win" : "Classic Dice-Betting", 
-//           //   sender_img: "-", 
-//           //   sender_name: "DPP_wallet", 
-//           //   sender_balance: 0,
-//           //   trx_amount: data.has_won ? data.payoutIO : data.bet_amount,
-//           //   receiver_balance: data.current_amount,
-//           //   datetime: currentTime, 
-//           //   receiver_name: data.bet_token_name,
-//           //   receiver_img: data.bet_token_img,
-//           //   status: 'successful',
-//           //   transaction_id: Math.floor(Math.random()*1000000000)+ 100000000,
-//           //   is_sending: 0
-//           // }
-//           // handleProfileTransactions(trx_rec)
     })
 
-
-        let hidden;
-        if(data.bet_token_name !== "PPF"){
-          handleWagerIncrease(user_id, data.bet_amount, data.bet_token_img)
-        }
-
+      let hidden;
+      if(data.bet_token_name !== "PPF"){
+        handleWagerIncrease(user_id, data.bet_amount, data.bet_token_img)
+      }
           if(parseFloat(data.chance) > parseFloat(result.point)){
             try {
               let sjbhsj = await Wallet.find({user_id})
@@ -126,7 +110,6 @@ const handleDiceBet = (async(user_id, data, result)=>{
 const HandlePlayDice = ((req, res)=>{
   const {user_id} = req.id
   let {data} = req.body
-
   function generateRandomNumber(serverSeed, clientSeed, hash, nonce) {
     const combinedSeed = `${serverSeed}-${clientSeed}-${hash}-${nonce}-${salt}`;
     const hmac = crypto.createHmac('sha256', combinedSeed);
@@ -136,9 +119,11 @@ const HandlePlayDice = ((req, res)=>{
     let row = { point : randomValue, server_seed:serverSeed, client_seed:clientSeed,hash, nonce }
     return row;
   }
-  handleDiceBet(user_id,data, generateRandomNumber(data.server_seed,data.client_seed, data.hash_seed,data.nonce ))
+  // handleDiceBet(user_id,data, generateRandomNumber(data.server_seed,data.client_seed, data.hash_seed,data.nonce ))
   res.status(200).json(generateRandomNumber(data.server_seed,data.client_seed, data.hash_seed,data.nonce ))
 })
+
+
 
 const seedSettings = (async ( req, res )=>{
   

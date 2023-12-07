@@ -5,28 +5,39 @@ const Userschema = new schema({
     user_id: {
         type: String,
         required: true,
-        unique : true
+    },
+    transaction_type: {
+        type: String,
+        required: true,
+    },
+    token_img: {
+        type: String,
+        required: true,
+    },
+    token_name: {
+        type: String,
+        required: true,
     },
     balance: {
         type: Number,
         required: true,
     },
-    coin_image: {
-        type: String,
+    trx_amount: {
+        type: Number,
         required: true,
     },
-    coin_fname: {
-        type: String,
+    bill_id: {
+        type: Number,
         required: true,
     },
-    coin_name: {
-        type: String,
+    datetime: {
+        type: Date,
         required: true,
     },
-    is_active:{
+    status: {
         type: Boolean,
         required: true,
     }
 }, { timestamp : true})
 
-module.exports = mongoose.model('ppl_wallet', Userschema)
+module.exports = mongoose.model('bill', Userschema)

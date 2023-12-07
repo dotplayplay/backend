@@ -1,47 +1,48 @@
 const ProfileDB = require("../model/Profile")
+const AffiliateCodes = require("../model/affiliate_codes")
+const affiliate_commission_reward = require("../model/affiliate_commission_reward")
 
-const handelLevelupBonuses = ((bonus, user_id)=>{
-    // let query5 = `SELECT * FROM  profiles  WHERE user_id="${user_id}"`;
-    // connection.query(query5, async function(error, data){
-    //     const ref = data[0].invited_code
-    //     const prev_earn_me = parseFloat(data[0].earn_me)
-    //     const prev_locked_usd = parseFloat(data[0].usd_reward)
-    //     if(ref){  
-    //         let sql2 = `UPDATE profiles SET earn_me="${prev_earn_me + bonus}", usd_reward="${prev_locked_usd - bonus}" WHERE user_id="${user_id}"`;
-    //         connection.query(sql2, function (err, result){
-    //             if (err) throw err;
-    //         })
-    //         let query5 = `SELECT * FROM affiliate_code WHERE affiliate_code="${ref}"`;
-    //         connection.query(query5, async function(error, refss){
-    //             let prev_bal = parseFloat(refss[0].available_usd_reward)
-    //             let upper_line_id = refss[0].user_id
-    //             let sql2 = `UPDATE affiliate_code SET available_usd_reward="${prev_bal + bonus}" WHERE affiliate_code="${ref}"`;
-    //             connection.query(sql2, function (err, result) {
-    //                 if (err) throw err;
-    //                 let reward ={
-    //                     user_id: upper_line_id,
-    //                     amount: bonus,
-    //                     time: new Date(),
-    //                     status: "successful"
-    //                 }
-    //                 let sql = `INSERT INTO affiliate_usd_reward SET ?`;
-    //                 connection.query(sql, reward, (err, data)=>{
-    //                     if(err){
-    //                     (err)
-    //                     }else{
-    //                     (data)
-    //                 }
-    //                 })
-    //             })
-    //         })
-    //     }
-    // })
+const handelLevelupBonuses = (async(bonus, user_id)=>{
+    try{
+    const dataEL = await ProfileDB.find({user_id})
+    const ref = dataEL[0].invited_code
+    const prev_earn_me = parseFloat(dataEL[0].earn_me)
+    const prev_locked_usd = parseFloat(dataEL[0].usd_reward)
+        if(ref !== "-"){
+            await ProfileDB.updateOne({user_id},{
+                earn_me: prev_earn_me + bonus,
+                usd_reward: prev_locked_usd - bonus
+            })
+
+            const refss = await AffiliateCodes.find({affiliate_code:ref})
+            let prev_bal = parseFloat(refss[0].available_usd_reward)
+            let upper_line_id = refss[0].user_id
+
+             await AffiliateCodes.updateOne({affiliate_code: ref},{
+                available_usd_reward:prev_bal + bonus
+            })
+
+            let reward = {
+                user_id: upper_line_id,
+                crypto: "USDT",
+                amount: bonus,
+                time: new Date(),
+                status: "successful",
+                is_consumed: false
+            }
+            await affiliate_commission_reward.create(reward)
+        }
+    }
+    catch(err){
+        console.log(err)
+    }
 })
 
+
 const handleProgressPercentage = (async(starting, ending, total_wagered, user_id)=>{
-    let unit_range = (ending - starting) / 100
-    let range = (total_wagered - starting)
-    let progressPercent = range / unit_range
+    let unit_range = (ending - parseFloat(starting)) / 100
+    let range = (total_wagered - starting).toFixed(0)
+    let progressPercent = (range / unit_range).toFixed(0)
     await ProfileDB.updateOne({user_id},{
         vip_progress: progressPercent
     })
@@ -174,79 +175,76 @@ const handleAffiliateRewards = ((data, user_id)=>{
 })
 
 
-const handleAffiliateCommission = ((user_id, bet_amount , crypto)=>{
-    // let query5 = `SELECT * FROM  profiles  WHERE user_id="${user_id}"`;
-    // connection.query(query5, async function(error, data){
-    //     const ref = data[0].invited_code
-    //     const prev_commission_reward = parseFloat(data[0].commission_reward)
-    //     let new_commission_reward =  parseFloat(bet_amount) * 0.01 * 0.15
-    //     if(ref){  
-    //         let sql2 = `UPDATE profiles SET commission_reward="${prev_commission_reward + new_commission_reward}" WHERE user_id="${user_id}"`;
-    //         connection.query(sql2, function (err, result){
-    //             if (err) throw err;
-    //         })
+const handleAffiliateCommission = (async(user_id, bet_amount , crypto)=>{
+    try{
+    const vie = await ProfileDB.find({user_id})
+    const ref = vie[0].invited_code
+    const prev_commission_reward = parseFloat(vie[0].commission_reward)
+    let new_commission_reward =  parseFloat(bet_amount) * 0.01 * 0.15
+    if(ref !== "-"){
+       await ProfileDB.updateOne({user_id},{
+            commission_reward:prev_commission_reward + new_commission_reward
+        })
 
-    //         let query5 = `SELECT * FROM affiliate_code WHERE affiliate_code="${ref}"`;
-    //         connection.query(query5, async function(error, refss){
-    //             let upper_line_id = refss[0].user_id
-    //             let yesterday_commission = parseFloat(refss[0].today_commission)
-    //             let sql2 = `UPDATE affiliate_code SET today_commission="${new_commission_reward + yesterday_commission}" WHERE user_id="${upper_line_id}"`;
-    //             connection.query(sql2, function (err, result){
-    //                 if (err) throw err;
-    //             })
+      let foo =  await AffiliateCodes.find({affiliate_code: ref})
+      let upper_line_id = foo[0].user_id
+      let yesterday_commission = parseFloat(foo[0].today_commission)
 
-    //             let reward ={
-    //                 user_id: upper_line_id,
-    //                 amount: new_commission_reward,
-    //                 time: new Date(),
-    //                 crypto:crypto,
-    //                 status: "successful",
-    //                 is_consumed: 0
-    //             }
-    //             let sql = `INSERT INTO affiliate_commission_reward SET ?`;
-    //             connection.query(sql, reward, (err, data)=>{
-    //                 if(err){
-    //                 (err)
-    //                 }else{
-    //             (data)
-    //                 }
-    //             })
-    //         })
-    //     }
-    // })
+      await AffiliateCodes.updateOne({user_id:upper_line_id},{
+        today_commission: new_commission_reward + yesterday_commission
+      })
+    let reward ={
+        user_id: upper_line_id,
+        amount: new_commission_reward,
+        time: new Date(),
+        crypto:crypto,
+        status: "successful",
+        is_consumed: 0
+    }
+
+    await affiliate_commission_reward.create(reward)
+
+    }
+}
+catch(error){
+    console.log(error)
+}
 })
 
 
+const handleUpdateCommision = (async(user_id)=>{
+    try{
+    const refss = await AffiliateCodes.find({user_id})
+    let yesterday_bonus = parseFloat(refss[0].today_commission)
+    let prev_bonus = parseFloat(refss[0].commission_reward)
 
-const handleUpdateCommision = ((user_id)=>{
-    // let query5 = `SELECT * FROM affiliate_code WHERE user_id="${user_id}"`;
-    // connection.query(query5, async function(error, refss){
-    //     let yesterday_bonus = parseFloat(refss[0].today_commission)
-    //     let prev_bonus = parseFloat(refss[0].commission_reward)
-    //     let sql2 = `UPDATE affiliate_code SET today_commission="${0}", commission_reward="${yesterday_bonus + prev_bonus}" WHERE user_id="${user_id}"`;
-    //     connection.query(sql2, function (err, result){
-    //         if (err) throw err;
-    //     })
-    //     let sql1 = `UPDATE affiliate_commission_reward SET is_consumed="${1}" WHERE user_id="${user_id}"`;
-    //     connection.query(sql1, function (err, result){
-    //         if (err) throw err;
-    //     })
-    // })
+    await AffiliateCodes.updateOne({user_id},{
+        today_commission: 0,
+        commission_reward: yesterday_bonus + prev_bonus
+    })
+    await affiliate_commission_reward.updateOne({user_id},{
+        is_consumed: true
+    })
+    }
+    catch(err){
+        console.log(err)
+    }
 })
 
-const handleCommissionCalculation = (()=>{
-    // let query5 = `SELECT * FROM affiliate_commission_reward WHERE is_consumed="${0}"`;
-    // connection.query(query5, async function(error, refss){
-    //     let now = new Date()
-    //     for(let i = 0; i < refss.length; i++){
-    //         let time = refss[i].time
-    //         if(time.getDate() !== now.getDate()){
-    //             let user = refss[i].user_id
-    //             handleUpdateCommision(user)
-    //         }
-    //     }
-    // })
+const handleCommissionCalculation = (async()=>{
+    try{
+        const reff = await affiliate_commission_reward.find({is_consumed: false})
+        let now = new Date()
+        reff.forEach(element => {
+            if(new Date(element.time).getDate() !== now.getDate()){
+                handleUpdateCommision(element.user_id)
+            }
+        });
+    }
+    catch(eror){
+        console.log(eror)
+    }
 })
-// setInterval(() => handleCommissionCalculation(), 6000);
+setInterval(() => handleCommissionCalculation(), 60000);
 
 module.exports = { handleAffiliateRewards, handleAffiliateCommission , handleProgressPercentage}

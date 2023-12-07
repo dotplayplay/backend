@@ -5,28 +5,31 @@ const Userschema = new schema({
     user_id: {
         type: String,
         required: true,
-        unique : true
     },
-    balance: {
+    server_seed: {
+        type: String,
+        required: true,
+    },
+    client_seed: {
+        type: String,
+        required: true,
+    },
+    hash_seed: {
+        type: String,
+        required: true,
+    },
+    nonce: {
         type: Number,
         required: true,
     },
-    coin_image: {
-        type: String,
-        required: true,
-    },
-    coin_fname: {
-        type: String,
-        required: true,
-    },
-    coin_name: {
-        type: String,
-        required: true,
-    },
-    is_active:{
+    is_open: {
         type: Boolean,
+        required: true,
+    },
+    updated_at: {
+        type: Date,
         required: true,
     }
 }, { timestamp : true})
 
-module.exports = mongoose.model('ppl_wallet', Userschema)
+module.exports = mongoose.model('mines_encryped_seed', Userschema)

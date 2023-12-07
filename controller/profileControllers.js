@@ -5,7 +5,10 @@ const currentTime = format(new Date(), 'yyyy-MM-dd HH:mm:ss');
 const PPFWallet = require("../model/PPF-wallet")
 const Wallet = require("../model/wallet")
 const CrashGame = require("../model/crashgame")
-const DiceGame = require("../model/dice_game")
+const DiceGame = require("../model/dice_game");
+const PPDWallet = require("../model/PPD-wallet");
+const UsdtWallet = require("../model/Usdt-wallet");
+const PPLWallet = require("../model/PPL-wallet");
 
 const createProfile = (async(datas)=>{
   try{
@@ -43,7 +46,7 @@ const UpdateUser = (async(req, res)=>{
     const {data} = req.body
     if (!user_id) {
       res.status(500).json({ error: "No user found" });
-    } 
+    }
     else{
       try{
        await Profile.updateOne({ user_id }, {
@@ -60,24 +63,33 @@ const UpdateUser = (async(req, res)=>{
 
 
 const SingleUser = (async(req, res)=>{
+  try {
   const {user_id} = req.id;
-    if (!user_id) {
-      res.status(500).json({ error: "No user found" });
-    } else {
-      try {
-        const users =   await Profile.find({user_id})
-        res.status(200).json(users)
-      } catch (err) {
-        res.status(501).json({ message: err.message });
-      }
+      if (!user_id) {
+        res.status(500).json({ error: "No user found" });
+      } 
+      else {
+
+        const users = await Profile.find({user_id})
+        const usdt = await UsdtWallet.find({user_id})
+        const ppf = await PPFWallet.find({user_id})
+        const ppl = await PPLWallet.find({user_id})
+        const ppd = await PPDWallet.find({user_id})
+        let wallet = [usdt[0], ppf[0], ppl[0], ppd[0]]
+        res.status(200).json({users, wallet})
+      
     }
+  } catch (err) {
+    res.status(501).json({ message: err.message });
+    console.log(err)
+  }
 })
 
 
 const handleHiddenProfile = (async(req, res)=>{
+  try{
   const {user_id} = req.id
   const { profile_state } = req.body
-  try{
    let response = await Profile.updateOne({user_id},{
       hide_profile: profile_state
     })
@@ -90,9 +102,10 @@ const handleHiddenProfile = (async(req, res)=>{
 
 
 const handleRefusefriendRequest = (async(req, res)=>{
+  try{
   const {user_id} = req.id
   const { profile_state } = req.body
-  try{
+
     let response = await Profile.updateOne({user_id},{
       refuse_friends_request: profile_state
     })
@@ -104,9 +117,10 @@ const handleRefusefriendRequest = (async(req, res)=>{
 })
 
 const handleRefuseTip = (async(req, res)=>{
+  try{
   const {user_id} = req.id
   const { profile_state } = req.body
-  try{
+ 
     let response = await Profile.updateOne({user_id},{
       refuse_tips: profile_state
     })
@@ -118,14 +132,11 @@ const handleRefuseTip = (async(req, res)=>{
 })
 
 const handlePublicUsername = (async(req, res)=>{
+  try{
   const {user_id} = req.id
   const { profile_state } = req.body
-  try{
-    await Profile.updateOne({user_id},{
-      hidden_from_public: profile_state
-    })
 
-    await Wallet.updateOne({user_id},{
+    await Profile.updateOne({user_id},{
       hidden_from_public: profile_state
     })
 
@@ -144,8 +155,8 @@ const handlePublicUsername = (async(req, res)=>{
 })
 
 const handleDailyPPFbonus =  (async(req, res)=>{
-  const {user_id} = req.id
   try{
+  const {user_id} = req.id
     let result = await PPFWallet.find({user_id})
     let prev_bal = result[0].balance
     let pre_date = result[0].date
@@ -158,23 +169,6 @@ const handleDailyPPFbonus =  (async(req, res)=>{
         date:now
        });
     }
-  
-    let trx_rec = {
-      user_id,
-      transaction_type: "PPF daily bonus", 
-      sender_img: "---", 
-      sender_name: "DPP_wallet", 
-      sender_balance: 0,
-      trx_amount: 20000,
-      receiver_balance: prev_bal + 20000,
-      datetime: currentTime, 
-      receiver_name: "PPF",
-      receiver_img: "https://res.cloudinary.com/dxwhz3r81/image/upload/v1697828376/ppf_logo_ntrqwg.png",
-      status: 'successful',
-      transaction_id: Math.floor(Math.random()*1000000000)+ 100000000,
-      is_sending: 0
-    }
-    handleProfileTransactions(trx_rec)
     res.status(200).json({message: "daily ppf added successfully"})
   }
   catch(err){

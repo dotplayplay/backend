@@ -13,6 +13,7 @@ const { InitializeDiceGame } = require("../controller/diceControllers")
 const { CreateAffiliate, CheckValidity } = require("./affiliateControllers")
 const { handleCreatePPDunlocked } = require("../profile_mangement/ppd_unlock")
 const { handleNewNewlyRegisteredCount } = require("../profile_mangement/cashbacks")
+const { InitializeMinesGame } = require("../controller/minesControllers")
 const createToken = ((_id)=>{
    return  jwt.sign({_id}, SECRET, { expiresIn: '4d' })
 })
@@ -46,6 +47,7 @@ const CreateAccount = (async (req, res)=>{
         createUsdt(user_id)
         InitializeDiceGame(user_id)
         createCashbackTable(user_id)
+        InitializeMinesGame(user_id)
         handleCreatePPDunlocked(user_id)
         CreateAffiliate(user_id)
         const Token = createToken(user_id)
@@ -90,13 +92,7 @@ const Register = (async(req, res)=>{
         }
         return result;
     }
-    let walletEl = {
-        user_id,
-        balance: 20000,
-        coin_image:"https://res.cloudinary.com/dxwhz3r81/image/upload/v1697828376/ppf_logo_ntrqwg.png", 
-        coin_name: "PPF", 
-        hidden_from_public :false
-    }
+
     let result = {
         born: "-",
         firstname: '-',
@@ -121,7 +117,7 @@ const Register = (async(req, res)=>{
         fa_is_activated: false,   
         earn_me: 0,
         commission_reward: 0,
-        usd_reward : 0, 
+        usd_reward : 100, 
         joined_at: currentTime,
         account_type: "normal",
         total_chat_messages:0,
@@ -133,6 +129,7 @@ const Register = (async(req, res)=>{
         if(validateCode){
             invited_code = validateCode
         }
+        
     }
     const exist = await User.findOne({ user_id })
     if(!exist){
@@ -143,13 +140,14 @@ const Register = (async(req, res)=>{
             createPPD(user_id)
             createUsdt(user_id)
             InitializeDiceGame(user_id)
+            InitializeMinesGame(user_id)
             createCashbackTable(user_id)
             CreateAffiliate(user_id)
             handleCreatePPDunlocked(user_id)
             const Token = createToken(user_id)
-            handleDefaultWallet(walletEl)
+            let wallet =  handleDefaultWallet()
             createProfile(result)
-            res.status(200).json({Token,default_wallet:walletEl,result })
+            res.status(200).json({Token,wallet:wallet,result })
         }
         catch(err){
            res.status(401).json({error: err})

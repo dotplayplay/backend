@@ -27,6 +27,10 @@ const Userschema = new schema({
         type: Date,
         required: true,
     },
+    is_active:{
+        type: Boolean,
+        required: true,
+    }
 }, { timestamp : true})
 
 module.exports = mongoose.model('ppf_wallet', Userschema)

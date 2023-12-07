@@ -5,7 +5,8 @@ const currentTime = format(new Date(), 'yyyy-MM-dd HH:mm:ss');
 const Wallet = require("../model/wallet")
 const USDT_wallet = require("../model/Usdt-wallet")
 const PPD_wallet = require("../model/PPD-wallet")
-const PPL_wallet = require("../model/PPL-wallet")
+const PPL_wallet = require("../model/PPL-wallet");
+const bill = require("../model/bill");
 
 const handleSwap = (async (req,res)=>{
     const {user_id} = req.id
@@ -86,4 +87,14 @@ const handleSwap = (async (req,res)=>{
 
 })
 
-module.exports = { handleSwap }
+const handleBills = (async(req,res)=>{
+    const { user_id } = req.id
+    if(user_id){
+        let jjsaa = await bill.find({user_id})
+        res.status(200).json(jjsaa)
+    }else{
+        res.status(401).json({error: "Invalid user"})
+    }
+})
+
+module.exports = { handleSwap, handleBills }
