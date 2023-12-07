@@ -1,5 +1,3 @@
-
-const jwt = require('jsonwebtoken');
 const User = require("../model/User")
 const { createProfile } = require("./profileControllers")
 const { format } = require('date-fns');
@@ -9,19 +7,17 @@ const { createPPF, createPPL, createPPD, createUsdt, handleDefaultWallet } = req
 const { InitializeDiceGame } = require("../controller/diceControllers")
 const { CreateAffiliate, CheckValidity } = require("./affiliateControllers")
 const { handleCreatePPDunlocked } = require("../profile_mangement/ppd_unlock")
-const { handleNewNewlyRegisteredCount } = require("../profile_mangement/cashbacks");
 const Profile = require('../model/Profile');
-const CrashGame = require('../model/crashgame');
-const DiceGame = require('../model/dice_game');
-const MinesGame = require('../model/minesgameInit');
+const DepositRequest = require('../model/deposit_request');
 const PPDWallet = require('../model/PPD-wallet');
 const UsdtWallet = require('../model/Usdt-wallet');
-const PPFWallet = require('../model/PPF-wallet');
 const PPLWallet = require('../model/PPL-wallet');
+const { removeDuplicatePlayer, getGGR, getTotalPlayerBalance, totalGamesWon, totalGamesLoss } = require("../utils/dashboard");
+const { conversion } = require("../utils/conversion");
 
 // Create Member controller
 const createMember = async (req, res, next) => {
-    const { username, password, comfirmPassword, email, phoneNumber, vipLevel, affilliateModel, user_id } = req.body;
+    const { username, password, confirmPassword, email, phoneNumber, vipLevel, affilliateModel, user_id } = req.body;
     let google_auth = false;
     let provider = "password";
     let emailVerified = false;
@@ -31,14 +27,16 @@ const createMember = async (req, res, next) => {
     let invited_code = ""
 
     //Checking that all field are submitted
-    if (!username || !password || !comfirmPassword || !email || !phoneNumber || !affilliateModel || !user_id) {
+    // if (!username || !password || !confirmPassword || !email || !phoneNumber || !affilliateModel || !user_id) 
+    if ([username, password, confirmPassword, email, phoneNumber, affilliateModel, user_id].includes('')) {
         return res.status(400).json({
             success: false,
             message: 'Kindly provide all field are required.'
         })
     }
     //Check if Email already Exist
-    let check_email = await User.find({ email: email });
+    let check_email = await User.find({ email: email }).explain('executionStats');
+    // console.log(await User.find({ email: email }).explain('executionStats'))
     if (check_email.length > 0) {
         return res.status(400).json({
             success: false,
@@ -46,7 +44,7 @@ const createMember = async (req, res, next) => {
         })
     }
     //Confirm if password do match
-    if (password !== comfirmPassword) {
+    if (password !== confirmPassword) {
         return res.status(400).json({
             success: false,
             message: 'Password do not match.'
@@ -131,79 +129,60 @@ const createMember = async (req, res, next) => {
     }
 }
 
-
-//Dashboard API 
-const adminDashbaord = async (req, res, next) => {
-    return res.json({
-        success: true,
-        message: 'Dashboard'
-    })
-}
-
 //Get Members List
 const getAllMembers = async (req, res, next) => {
     try {
+        //Get all members
         const members = await User.find();
-        if (members.length === 0) {
+        if (members.length <= 0) {
             return res.status(404).json({
                 success: false,
                 message: 'Members not found'
             })
         }
 
+        //Get all members Full details individually
+        //takes in individual user as an iterable of promises as input and returns a single Promise
         const membersDataFromProfile = await Promise.all(
             members.map(async (user) => {
                 //Get User Profile
                 const profile = await Profile.findOne({ user_id: user.user_id }).sort({ createdAt: -1 })
-                //Get Number of Crash Game Won [20, 40]
-                let crashGameWon = [20, 40].reduce((a,b) => {
-                    return a+b
-                })
-                // await CrashGame.find({ user_id: user.user_id, has_won: true })
-                //Get Number of Crash Game Loss
-                let crashGameLoss = [4, 10].reduce((a,b) => {
-                    return a+b
-                })
-                // await CrashGame.find({ user_id: user.user_id, has_won: false })
-                //Get Number of Dice Game Won
-                let diceGameWon = [20, 4].reduce((a,b) => {
-                    return a+b
-                })
-                // await DiceGame.find({ user_id: user.user_id, has_won: true })
-                //Get Number of Dice Game Loss
-                let diceGameLoss = [10, 40].reduce((a,b) => {
-                    return a+b
-                })
-                // await DiceGame.find({ user_id: user.user_id, has_won: false })
-                //Get Number of Mines Game Won
-                let minesGameWon = [1, 40].reduce((a,b) => {
-                    return a+b
-                })
-                //  await MinesGame.find({ user_id: user.user_id, has_won: true })
-                //Get Number of Mines Game Loss
-                let minesGameLoss = [10, 34].reduce((a,b) => {
-                    return a+b
-                })
-                // await MinesGame.find({ user_id: user.user_id, has_won: false })
-                let ggr = (crashGameWon + diceGameWon + minesGameWon) / (crashGameLoss + diceGameLoss + minesGameLoss)
-            
+                //Get Individual GGR by ID
+                let ggr = await getGGR(user.user_id)
                 //Get Wallet Balance for USDT, PPD AND PPL
-                const usdt_balance = await UsdtWallet.findOne({ user_id: user.user_id})
-                const ppd_balance = await PPDWallet.findOne({ user_id: user.user_id})
-                const ppl_balance = await PPLWallet.findOne({ user_id: user.user_id})
+                const usdt_balance = await UsdtWallet.findOne({ user_id: user.user_id })
+                const ppd_balance = await PPDWallet.findOne({ user_id: user.user_id })
+                const ppl_balance = await PPLWallet.findOne({ user_id: user.user_id })
+
+                //Get First and Last Time Delopsited By Individual Member/User
+                let userFirstAndLastDeposit = {}
+                const userDeposit = await DepositRequest.find({ user_id: user.user_id, status: 'success' })
+                // const userDeposit = [{created_at: '5625/2/2323'}, {created_at: '5625/2/2330'}, {created_at: '5625/2/2340'}, {created_at: '5625/2/2350'}]
+                if (userDeposit.length <= 0) {
+                    userFirstAndLastDeposit = {
+                        first_deposit: 'No deposit.',
+                        last_deposit: ''
+                    }
+                } else {
+                    userFirstAndLastDeposit = {
+                        first_deposit: userDeposit[0].created_at,
+                        last_deposit: userDeposit[userDeposit.length - 1].created_at
+                    }
+                }
+
 
                 //Sum in USD
-                const totalBalance = (usdt_balance.balance + ppd_balance.balance + ppl_balance.balance)
+                const totalBalance = (usdt_balance.balance + ppd_balance.balance + conversion(ppl_balance.balance))
+                
                 return {
                     ...user._doc,
                     profile,
+                    userFirstAndLastDeposit,
                     totalBalance,
-                    ggr: +ggr.toFixed(2)
+                    ggr: ggr
                 }
             })
         )
-        //concatenate both user post and friend posts
-        // return res.status(200).json(meber.concat(...friendsPost))
         return res.status(200).json({
             success: true,
             data: membersDataFromProfile
@@ -214,9 +193,100 @@ const getAllMembers = async (req, res, next) => {
     }
 
 }
+//Dashboard API 
+const adminDashbaord = async (req, res, next) => {
+    try {
+        //Show total deposited players that are successfully completed
+        const totalDeposit = await DepositRequest.find()
+        let totalSuccessfullDeposit = []
+        //Filter successfull transaction from all transactions
+        if (totalDeposit.length > 0) {
+            totalDeposit.forEach(successfullDeposit => {
+                if (successfullDeposit.status === 'success') {
+                    totalSuccessfullDeposit.push(successfullDeposit)
+                }
+            })
+        }
 
+        //remove duplicate player from the list of successful deposit to avoid repition and return it length
+
+        const totalDepositedPlayers = removeDuplicatePlayer(totalSuccessfullDeposit)
+
+        //Show total gross gaming revenue (win/lose)
+
+        const grossGamingRevenue = await getGGR()
+
+        // Show total player balance of all players across all wallet
+        const totalPlayerBalance = await getTotalPlayerBalance()
+
+        //Get Total  Wagered
+        //Get all profile and calculated the total Wagered from them
+        const allUserAvailable = await Profile.find()
+
+        const allWagered = allUserAvailable.map(user => {
+            return user.total_wagered
+        })
+        const totalWageredFromAllUsers = allWagered.reduce((a, b) => {
+            return a + b
+        })
+
+        //Total Won from all Games
+
+        const totalWon = await totalGamesWon()
+
+        //Total Loss from all Games
+
+        const totalLoss = await totalGamesLoss()
+
+        return res.status(200).json({
+            success: true,
+            data: {
+                totalDepositedPlayers,
+                grossGamingRevenue,
+                totalPlayerBalance: totalPlayerBalance,
+                totalWagered: totalWageredFromAllUsers,
+                totalWon: totalWon,
+                totalLoss: totalLoss
+            }
+        })
+    } catch (err) {
+        return res.json({ error: err })
+    }
+}
+
+const findUserById = async (req, res, next) => {
+    try {
+        const { user_id } = req.params
+        const user = await User.findOne({ user_id }).select('-password')
+        const profile = await Profile.findOne({ user_id })
+        return res.status(200).json({
+            ...user._doc,
+            ...profile._doc,
+        })
+
+    } catch (err) {
+        return res.json({ error: err })
+    }
+}
+
+const findUserByUsername = async (req, res, next) => {
+    try {
+        const { username } = req.params
+        const profile = await Profile.findOne({ username })
+        const user = await User.findOne({ user_id: profile.user_id }).select('-password')
+        return res.status(200).json({
+            ...user._doc,
+            ...profile._doc,
+        })
+
+    } catch (err) {
+        return res.json({ error: err })
+    }
+}
 module.exports = {
     createMember,
     getAllMembers,
-    adminDashbaord
+    adminDashbaord,
+    findUserById,
+    findUserByUsername
 }
