@@ -104,14 +104,14 @@ const initiateWithdrawal = async (req, res) => {
                 message: "Crypto withdrawn successfully",
                 data: response.data,
               });
-              updateWithdrawalHistory(user_id, "Successful", data.amount, userBalance, newAmount);
+              await updateWithdrawalHistory(user_id, "Successful", data.amount, userBalance, newAmount);
         } else {
           res.status(400).json({
             status: false,
             message: `${response.data.msg}`,
           });
           console.log(response.data)
-          updateWithdrawalHistory(user_id, "Failed", data.amount);
+          await updateWithdrawalHistory(user_id, "Failed", data.amount);
         }
       }
   } catch (error) {

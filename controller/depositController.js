@@ -72,7 +72,7 @@ const handleSuccessfulDeposit = (async(event)=>{
     let user_id = eyyn[0].user_id
     let order_amount = parseFloat(eyyn[0].amount)
       // handleFirstDeposit(user_id, order_amount, data.length)
-      await DepositRequest.updateOne({user_id, merchant_order_id: event.merchant_order_id }, {
+      const currentDeposit = await DepositRequest.updateOne({user_id, merchant_order_id: event.merchant_order_id }, {
         status:event.status,
         contract: event.contract
       })
@@ -81,7 +81,9 @@ const handleSuccessfulDeposit = (async(event)=>{
   let result = await USDTwallet.updateOne({user_id}, {
       balance:prev_bal + order_amount
     })
-    updateDepositHistory(user_id, event.merchant_order_id,  "Successful" , order_amount, result.coin_image , prev_bal, result.balance  );
+
+    const order_id = currentDeposit.order_id;
+    await updateDepositHistory(order_id, DepositRequest);
 })
 
 const handleFailedTransaction = (async(event)=>{
@@ -93,7 +95,9 @@ const handleFailedTransaction = (async(event)=>{
       status:event.status,
       contract: event.contract
     })
-    updateDepositHistory(user_id, event.merchant_order_id, "Failed", order_amount, result.coin_image);
+    const currentDeposit = await DepositRequest.findOne({user_id, merchant_order_id: event.merchant_order_id })
+    const order_id = currentDeposit.order_id;
+    await updateDepositHistory(order_id, DepositRequest);
   }
   catch(err){
     console.log(err)
