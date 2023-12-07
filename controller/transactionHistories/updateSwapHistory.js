@@ -3,7 +3,6 @@ const SwapHistory = require("../../model/transactionHistoryModels/SwapHistory");
  const updateSwapHistory = ( async (swappingDetails, user_id, senderCoinIcon, receiverCoinIcon, amountSwapped, senderWallet, receiverWallet) => {
     const senderCoin = swappingDetails.senderCoin;
     const receiverCoin = swappingDetails.receiverCoin;
-    // const amountSwapped = swappingDetails.amount;
     const senderBalances = await getSenderCoinBalances(senderWallet, amountSwapped, user_id);
     const receiverBalances = await getReceiverCoinBalances(receiverWallet, amountSwapped, user_id);
     const senderCoin_previous_balance = senderBalances.previous;
@@ -35,7 +34,7 @@ const SwapHistory = require("../../model/transactionHistoryModels/SwapHistory");
 
 
 const getSenderCoinBalances = async (wallet, amountSwapped, user_id) => {
-    const wallet_details = await wallet.find({user_id});
+    const wallet_details = await wallet.findOne({user_id});
     const available_balance = wallet_details.balance;
     const previousBalance = available_balance + amountSwapped;
     const senderCoinBalances = {
@@ -46,7 +45,7 @@ const getSenderCoinBalances = async (wallet, amountSwapped, user_id) => {
 }
 
 const getReceiverCoinBalances = async (wallet, amountSwapped, user_id) => {
-    const wallet_details = await wallet.find({user_id});
+    const wallet_details = await wallet.findOne({user_id});
     const available_balance = wallet_details.balance;
     const previousBalance = available_balance - amountSwapped;
     const receiverCoinBalances = {

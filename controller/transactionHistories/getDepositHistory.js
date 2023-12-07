@@ -3,7 +3,6 @@ const DepositHistory = require("../../model/transactionHistoryModels/DepositHist
 const getDepositHistory = ( async (req, res) => {
     try{
         const {user_id} = req.id;
-        // const {user_id} = req.body;
         const current_user_transaction_history = await DepositHistory.find({user_id});
         res.status(200).json(current_user_transaction_history);
     }catch(error){

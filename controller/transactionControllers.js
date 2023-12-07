@@ -13,136 +13,159 @@ const { updateSwapHistory } = require("./transactionHistories/updateSwapHistory"
 
 const handleSwap = (async (req,res)=>{
     console.log(req.body.amount, typeof req.body.amount);
-    // const {user_id} = req.id;
-    const user_id = "6543bb0691475af55146493b";
+    const {user_id} = req.id;
+    // const user_id = "6543bb0691475af55146493b";
     const data = req.body;
     const swappingDetails = data;
-    // let sender_img = '';
-    // setCoinIcon(data);
 
     const deductFromWalletBalance = async(wallet, amount, user_id) => {
-        const wallet_details = await wallet.find({user_id});
-        const available_balance = wallet_details.balance;
-        const new_balance = parseFloat(available_balance) - parseFloat(amount);
-        await wallet.findOneAndUpdate({user_id}, {balance: new_balance});
+        const wallet_details = await wallet.findOne({user_id});
+        if(wallet_details){
+            const available_balance = wallet_details.balance;
+            const new_balance = parseFloat(available_balance) - parseFloat(amount);
+            await wallet.findOneAndUpdate({user_id}, {balance: new_balance});
+        }
     }
     
     const addToWalletBalance = async(wallet, amount, user_id) => {
-        const wallet_details = await wallet.find({user_id});
-        const available_balance = wallet_details.balance;
-        const new_balance = parseFloat(available_balance) + parseFloat(amount);
-        await wallet.findOneAndUpdate({user_id}, {balance: new_balance});
+        let new_balance = amount;
+        const wallet_details = await wallet.findOne({user_id});
+        if(wallet_details){
+            const available_balance = wallet_details.balance;
+            new_balance = parseFloat(available_balance) + parseFloat(amount);
+            await wallet.findOneAndUpdate({user_id}, {balance: new_balance});
+        }
     }
     
     const checkWalletBalance = async (wallet, amount, user_id) => {
-        const wallet_details = await wallet.find({user_id});
-        const available_balance = wallet_details.balance;
-        if(parseFloat(available_balance) < parseFloat(amount)){
-            res.status(403).json({res: "Insufficient fund"})
+        const wallet_details = await wallet.findOne({user_id});
+        if(wallet_details){
+            const available_balance = wallet_details.balance;
+            if(parseFloat(available_balance) < parseFloat(amount)){
+                return false;
+            }
+            return true;
         }
-        return true;
+        return false;
     }
 
-    const swap_PPL_to_PPD = () => {
+    const swap_PPL_to_PPD = async () => {
         const senderCoinIcon = pplIcon;
         const receiverCoinIcon = ppdIcon;
         const amountToBeSwapped = swappingDetails.amount;
         const equivalentAmountInPPD = amountToBeSwapped / 10;
-        if(checkWalletBalance(PPL_wallet, amountToBeSwapped, user_id)){
-            deductFromWalletBalance(PPL_wallet, amountToBeSwapped, user_id);
-            addToWalletBalance(PPD_wallet, equivalentAmountInPPD, user_id );
-            updateSwapHistory(swappingDetails, user_id, senderCoinIcon, receiverCoinIcon, amountToBeSwapped, PPL_wallet, PPD_wallet);
+        if(await checkWalletBalance(PPL_wallet, amountToBeSwapped, user_id)){
+            await deductFromWalletBalance(PPL_wallet, amountToBeSwapped, user_id);
+            await addToWalletBalance(PPD_wallet, equivalentAmountInPPD, user_id );
+            await updateSwapHistory(swappingDetails, user_id, senderCoinIcon, receiverCoinIcon, amountToBeSwapped, PPL_wallet, PPD_wallet);
+            res.status(200).json({message: "You've successfully swapped from PPL to PPD"});
+        }else{
+            res.status(403).json({messsage: "Insufficient fund"})
         }
     }
     
-    const swap_PPL_to_USDT = () => {
+    const swap_PPL_to_USDT = async () => {
         const senderCoinIcon = pplIcon;
         const receiverCoinIcon = usdtIcon;
         const amountToBeSwapped = swappingDetails.amount;
         const equivalentAmountInUSDT = amountToBeSwapped / 10;
-        if(checkWalletBalance(PPL_wallet, amountToBeSwapped, user_id)){
-            deductFromWalletBalance(PPL_wallet, amountToBeSwapped, user_id);
-            addToWalletBalance(USDT_wallet, equivalentAmountInUSDT, user_id );
-            updateSwapHistory(swappingDetails, user_id, senderCoinIcon, receiverCoinIcon, amountToBeSwapped, PPL_wallet, USDT_wallet);
+        if(await checkWalletBalance(PPL_wallet, amountToBeSwapped, user_id)){
+            await deductFromWalletBalance(PPL_wallet, amountToBeSwapped, user_id);
+            await addToWalletBalance(USDT_wallet, equivalentAmountInUSDT, user_id );
+            await updateSwapHistory(swappingDetails, user_id, senderCoinIcon, receiverCoinIcon, amountToBeSwapped, PPL_wallet, USDT_wallet);
+            res.status(200).json({message: "You've successfully swapped from PPL to USDT"});
+        }else{
+            res.status(403).json({message: "Insufficient fund"})
         }
     }
     
-    const swap_PPD_to_PPL = () => {
+    const swap_PPD_to_PPL = async () => {
         const senderCoinIcon = ppdIcon;
         const receiverCoinIcon = pplIcon;
         const amountToBeSwapped = swappingDetails.amount;
         const equivalentAmountInPPL = amountToBeSwapped * 10;
-        if(checkWalletBalance(PPD_wallet, amountToBeSwapped, user_id)){
-            deductFromWalletBalance(PPD_wallet, amountToBeSwapped, user_id);
-            addToWalletBalance(PPL_wallet, equivalentAmountInPPL, user_id );
-            updateSwapHistory(swappingDetails, user_id, senderCoinIcon, receiverCoinIcon, amountToBeSwapped, PPD_wallet, PPL_wallet);
+        if(await checkWalletBalance(PPD_wallet, amountToBeSwapped, user_id)){
+            await deductFromWalletBalance(PPD_wallet, amountToBeSwapped, user_id);
+            await addToWalletBalance(PPL_wallet, equivalentAmountInPPL, user_id );
+            await updateSwapHistory(swappingDetails, user_id, senderCoinIcon, receiverCoinIcon, amountToBeSwapped, PPD_wallet, PPL_wallet);
+            res.status(200).json({message: "You've successfully swapped from PPD to PPL"});
+        }else{
+            res.status(403).json({message: "Insufficient fund"})
         }
     }
     
-    const swap_PPD_to_USDT = () => {
+    const swap_PPD_to_USDT = async () => {
         const senderCoinIcon = ppdIcon;
         const receiverCoinIcon = usdtIcon;
         const amountToBeSwapped = swappingDetails.amount;
-        console.log("it is here 💥💥", amountToBeSwapped, user_id);
         const equivalentAmountInPPL = amountToBeSwapped * 1;
-        if(checkWalletBalance(PPD_wallet, amountToBeSwapped, user_id)){
-            deductFromWalletBalance(PPD_wallet, amountToBeSwapped, user_id);
-            addToWalletBalance(USDT_wallet, equivalentAmountInPPL, user_id );
-            updateSwapHistory(swappingDetails, user_id, senderCoinIcon, receiverCoinIcon, amountToBeSwapped, PPD_wallet, USDT_wallet);
+
+        if(await checkWalletBalance(PPD_wallet, amountToBeSwapped, user_id)){
+            await deductFromWalletBalance(PPD_wallet, amountToBeSwapped, user_id);
+            await addToWalletBalance(USDT_wallet, equivalentAmountInPPL, user_id );
+            await updateSwapHistory(swappingDetails, user_id, senderCoinIcon, receiverCoinIcon, amountToBeSwapped, PPD_wallet, USDT_wallet);
+            res.status(200).json({message: "You've successfully swapped from PPD to USDT"})
+        }else{
+            res.status(403).json({message: "Insufficient fund"});
         }
     }
     
-    const swap_USDT_to_PPL = () => {
+    const swap_USDT_to_PPL = async () => {
         const senderCoinIcon = usdtIcon;
         const receiverCoinIcon = pplIcon;
         const amountToBeSwapped = swappingDetails.amount;
         const equivalentAmountInPPL = amountToBeSwapped * 10;
-        if(checkWalletBalance(USDT_wallet, amountToBeSwapped, user_id)){
-            deductFromWalletBalance(USDT_wallet, amountToBeSwapped, user_id);
-            addToWalletBalance(PPL_wallet,equivalentAmountInPPL, user_id );
-            updateSwapHistory(swappingDetails, user_id, senderCoinIcon, receiverCoinIcon, amountToBeSwapped, USDT_wallet, PPL_wallet);
+        if(await checkWalletBalance(USDT_wallet, amountToBeSwapped, user_id)){
+            await deductFromWalletBalance(USDT_wallet, amountToBeSwapped, user_id);
+            await addToWalletBalance(PPL_wallet,equivalentAmountInPPL, user_id );
+            await updateSwapHistory(swappingDetails, user_id, senderCoinIcon, receiverCoinIcon, amountToBeSwapped, USDT_wallet, PPL_wallet);
+            res.status(200).json({message: "You've successfully swapped from USDT to PPL"});
+        }else{
+            res.status(403).json({message: "Insufficient fund"})
         }
     }
     
-    const swap_USDT_to_PPD = () => {
+    const swap_USDT_to_PPD = async () => {
         const senderCoinIcon = usdtIcon;
         const receiverCoinIcon = ppdIcon;
         const amountToBeSwapped = swappingDetails.amount;
         const equivalentAmountInPPD = amountToBeSwapped * 1;
-        if(checkWalletBalance(USDT_wallet, amountToBeSwapped, user_id)){
-            deductFromWalletBalance(USDT_wallet, amountToBeSwapped, user_id);
-            addToWalletBalance(PPD_wallet, equivalentAmountInPPD, user_id );
-            updateSwapHistory(swappingDetails, user_id, senderCoinIcon, receiverCoinIcon, amountToBeSwapped, USDT_wallet, PPD_wallet);
+        if(await checkWalletBalance(USDT_wallet, amountToBeSwapped, user_id)){
+            await deductFromWalletBalance(USDT_wallet, amountToBeSwapped, user_id);
+            await addToWalletBalance(PPD_wallet, equivalentAmountInPPD, user_id );
+            await updateSwapHistory(swappingDetails, user_id, senderCoinIcon, receiverCoinIcon, amountToBeSwapped, USDT_wallet, PPD_wallet);
+            res.status(200).json({message: "You've successfully swapped from USDT to PPD"});
+        }else{
+            res.status(403).json({message: "Insufficient fund"})
         }
     }
     
-
 
         const senderCoin = swappingDetails.senderCoin; 
         const recieverCoin = swappingDetails.receiverCoin;
 
         if(senderCoin == "USDT" && recieverCoin == "PPD"){
-            swap_USDT_to_PPD();
+            await swap_USDT_to_PPD();
         }
 
         if(senderCoin == "USDT" && recieverCoin == "PPL"){
-            swap_USDT_to_PPL();
+            await swap_USDT_to_PPL();
         }
 
         if(senderCoin == "PPD" && recieverCoin == "USDT"){
-            swap_PPD_to_USDT();
+            await swap_PPD_to_USDT();
         }
 
         if(senderCoin == "PPD" && recieverCoin == "PPL"){
-            swap_PPD_to_PPL();
+            await swap_PPD_to_PPL();
         }
 
         if(senderCoin == "PPL" && recieverCoin == "USDT"){
-            swap_PPL_to_USDT();
+            await swap_PPL_to_USDT();
         }
 
         if(senderCoin == "PPL" && recieverCoin == "USDT"){
-            swap_PPL_to_PPD();
+            await swap_PPL_to_PPD();
         }
 
 
