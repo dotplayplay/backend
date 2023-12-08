@@ -285,6 +285,7 @@ const findUserByUsername = async (req, res, next) => {
         return res.json({ error: err })
     }
 }
+
 //Get User STATS 
 const registeredUserstats = async (req, res, next) => {
     // const today = new Date()
@@ -457,6 +458,7 @@ const totalLossRanking = async (req, res, next) => {
 }
 
 const dailyReport = async (req, res, next) => {
+
     const { todayDate, tomorrowDate } = getTodayAndTomorrowsDate()
     const users = await User.find({
         created_at: {
@@ -477,6 +479,7 @@ const dailyReport = async (req, res, next) => {
             return a.amount + b.amount
         })
     }
+
     let reDepositAmount = 0;
     for (let i = 0; i < deposit; i++) {
         let users = await DepositRequest.find({ user_id: deposit[i].user_id, created_at: { $lt: new Date(todayDate) } })
@@ -497,6 +500,7 @@ const dailyReport = async (req, res, next) => {
         totalWagered: totalWagered
     })
 }
+
 
 const gameReport = async (req, res, next) => {
     const { todayDate, tomorrowDate } = getTodayAndTomorrowsDate()
@@ -563,6 +567,7 @@ const gameReport = async (req, res, next) => {
         totalPlayerCount
     })
 }
+
 module.exports = {
     createMember,
     getAllMembers,
@@ -576,4 +581,5 @@ module.exports = {
     totalLossRanking,
     dailyReport,
     gameReport
+
 }

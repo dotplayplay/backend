@@ -23,6 +23,7 @@ const getGGR = async (user_id) => {
     let diceGameTotalStake = 0;
     let minesGameTotalStake = 0;
 
+
     let crashGameTotalStakeLoss = 0;
     let diceGameTotalStakeLoss = 0;
     let minesGameTotalStakeLoss = 0;
@@ -63,7 +64,6 @@ const getGGR = async (user_id) => {
 
             return ggr = sumOfLoss
         } else {
-
             //Get Number of Crash Game Loss Amount
             const crashGameLoss = await CrashGame.find({ has_won: false })
             if (crashGameLoss.length > 0) {
@@ -392,6 +392,7 @@ const totalWonByMonth = async () => {
     return totalAmountWon
 }
 const userWon = async (user_id) => {
+
     let crashGameTotalStake = 0;
     let diceGameTotalStake = 0;
     let minesGameTotalStake = 0;
@@ -427,6 +428,7 @@ const userWon = async (user_id) => {
             return game.bet_amount
         })
         minesGameTotalStakeWon = minesGameTotalStake.reduce((a, b) => a + b)
+
     }
 
     const sumOfWon = crashGameTotalStakeWon + diceGameTotalStakeWon + minesGameTotalStakeWon
@@ -444,6 +446,7 @@ const userLoss = async (user_id) => {
 
     // //Get the total won across all games
     // //Get Number of Crash Game Won Amount
+
     const crashGame = await CrashGame.find({ user_id: user_id, has_won: false })
     if (crashGame.length > 0) {
         crashGameTotalStake = crashGame.map((game) => {
@@ -468,6 +471,7 @@ const userLoss = async (user_id) => {
             return game.bet_amount
         })
         minesGameTotalStakeLoss = minesGameTotalStake.reduce((a, b) => a + b)
+
     }
 
     const sumOfLoss = crashGameTotalStakeLoss + diceGameTotalStakeLoss + minesGameTotalStakeLoss
@@ -750,7 +754,6 @@ const playerCount = async (today, tomorrow, type) => {
         }
     
     }
-
 }
 module.exports = {
     removeDuplicatePlayer,
@@ -766,4 +769,5 @@ module.exports = {
     dailyGamesWon,
     betCount,
     playerCount
+
 }

@@ -7,7 +7,8 @@ const CC_APP_SECRET = "206aed2f03af1b70305fb11319f2f57b";
 const CCPAYMENT_API_URL = "https://admin.ccpayment.com";
 const { handleProfileTransactions } = require("../profile_mangement/index")
 const { handlePPDunLockUpdate } = require("../profile_mangement/ppd_unlock")
-const { handleTotalNewDepsitCount } = require("../profile_mangement/cashbacks")
+const { handleTotalNewDepsitCount } = require("../profile_mangement/cashbacks");
+const { updateDepositHistory } = require("./transactionHistories/updateDepositHistory");
 
 const RequestTransaction = (async(event)=>{
   // Get the current date and time
@@ -71,7 +72,7 @@ const handleSuccessfulDeposit = (async(event)=>{
     let user_id = eyyn[0].user_id
     let order_amount = parseFloat(eyyn[0].amount)
       // handleFirstDeposit(user_id, order_amount, data.length)
-      await DepositRequest.updateOne({user_id, merchant_order_id: event.merchant_order_id }, {
+      const currentDeposit = await DepositRequest.updateOne({user_id, merchant_order_id: event.merchant_order_id }, {
         status:event.status,
         contract: event.contract
       })
@@ -80,17 +81,23 @@ const handleSuccessfulDeposit = (async(event)=>{
   let result = await USDTwallet.updateOne({user_id}, {
       balance:prev_bal + order_amount
     })
-    console.log(result )
+
+    const order_id = currentDeposit.order_id;
+    await updateDepositHistory(order_id, DepositRequest);
 })
 
 const handleFailedTransaction = (async(event)=>{
   try{
     let eyyn = await DepositRequest.find({merchant_order_id:event.merchant_order_id })
-    let user_id = eyyn[0].user_id
+    let user_id = eyyn[0].user_id;
+    let order_amount = parseFloat(eyyn[0].amount);
     await DepositRequest.updateMany({user_id, merchant_order_id: event.merchant_order_id }, {
       status:event.status,
       contract: event.contract
     })
+    const currentDeposit = await DepositRequest.findOne({user_id, merchant_order_id: event.merchant_order_id })
+    const order_id = currentDeposit.order_id;
+    await updateDepositHistory(order_id, DepositRequest);
   }
   catch(err){
     console.log(err)

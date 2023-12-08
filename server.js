@@ -18,6 +18,8 @@ const diceGame = require("./routes/diceGame");
 const Deposit = require("./routes/deposit");
 const Withdraw = require("./routes/withdraw")
 const Bonus = require('./routes/bonus')
+const TransactionHistory = require("./routes/transactionHistory.js");
+
 const { createsocket } = require("./socket/index.js");
 const { createServer } = require("node:http");
 require("dotenv").config();
@@ -44,9 +46,10 @@ app.use("/api/wallet", Wallet);
 app.use("/api/affiliate", Affiliate);
 app.use("/api/deposit", Deposit);
 app.use("/api/withdraw", Withdraw);
-app.use("/api/cashback", Bonus)
+app.use("/api/cashback", Bonus);
 app.use("/api/stats", Stats);
 app.use("/api/transaction", Transaction);
+app.use("/api/transaction-history", TransactionHistory);
 app.use("/admin/all-players", AllPLays);
 
 //admin routes
@@ -58,7 +61,9 @@ app.get("/", (req, res)=>{
 
 mongoose.set('strictQuery', false);
 // mongodb://localhost:27017/dpp
+
 // const dbUri = `mongodb+srv://ValiantCodez:dLyF3TFuDTTUcfVA@cluster0.gutge9q.mongodb.net/Main-Application?retryWrites=true&w=majority`
+
 const dbUri = `mongodb://localhost:27017/dpp`;
 mongoose.connect(dbUri, { useNewUrlParser: true,  useUnifiedTopology: true })
     .then((result)=>  console.log('Database connected'))
