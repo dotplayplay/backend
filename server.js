@@ -61,7 +61,7 @@ app.get("/", (req, res)=>{
 mongoose.set('strictQuery', false);
 // mongodb://localhost:27017/dpp
 // mongodb+srv://ValiantCodez:dLyF3TFuDTTUcfVA@cluster0.gutge9q.mongodb.net/Main-Application?retryWrites=true&w=majority
-const dbUri = `mongodb+srv://adegokeabdulazeez653:dpppassword@cluster0.df8rish.mongodb.net/`;
+const dbUri = `mongodb://localhost:27017/dpp`;
 mongoose.connect(dbUri, { useNewUrlParser: true,  useUnifiedTopology: true })
     .then((result)=>  console.log('Database connected'))
     .catch((err)=> console.log(err))

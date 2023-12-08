@@ -278,7 +278,7 @@ const totalWageredByMonth = async () => {
 
     // console.log(totalAmountByMonth);
     // const sum = crashGameTotalStake + diceGameTotalStake + minesGameTotalStake
-     totalAmountByMonth = totalAmountByMonth.map((obj) => {
+    totalAmountByMonth = totalAmountByMonth.map((obj) => {
         return {
             month: monthsArray[obj.month - 1],
             totalAmount: obj.totalAmount
@@ -361,7 +361,7 @@ const totalWonByMonth = async () => {
 
     // console.log(totalAmountWon);
     // const sum = crashGameTotalStake + diceGameTotalStake + minesGameTotalStake
-     totalAmountWon = totalAmountWon.map((obj) => {
+    totalAmountWon = totalAmountWon.map((obj) => {
         return {
             month: monthsArray[obj.month - 1],
             totalAmount: obj.totalAmount
@@ -437,6 +437,53 @@ const userLoss = async (user_id) => {
     const sumOfLoss = crashGameTotalStakeLoss + diceGameTotalStakeLoss + minesGameTotalStakeLoss
     return sumOfLoss
 }
+
+const dailyTotalWagered = async (today, tomorrow) => {
+    let crashGameTotalStake = 0;
+    let diceGameTotalStake = 0;
+    let minesGameTotalStake = 0;
+    //Get Number of Crash Game Won Amount
+    const crashGame = await CrashGame.find({
+        created_at: {
+            $gte: new Date(today),
+            $lt: new Date(tomorrow)
+        }
+    })
+    if (crashGame.length > 0) {
+        crashGameTotalStake = crashGame.map((game) => {
+            return game.bet_amount
+        })
+    }
+
+    //Get Number of Dice Game Won Amount
+    const diceGame = await DiceGame.find({
+        created_at: {
+            $gte: new Date(today),
+            $lt: new Date(tomorrow)
+        }
+    })
+    if (diceGame.length > 0) {
+        diceGameTotalStake = diceGame.map((game) => {
+            return game.bet_amount
+        })
+    }
+
+    //Get Number of Mines Game Won Amount
+    const minesGame = await MinesGame.find({
+        created_at: {
+            $gte: new Date(today),
+            $lt: new Date(tomorrow)
+        }
+    })
+    if (minesGame.length > 0) {
+        minesGameTotalStake = minesGame.map((game) => {
+            return game.bet_amount
+        })
+    }
+
+    const sum = crashGameTotalStake + diceGameTotalStake + minesGameTotalStake
+    return sum
+}
 module.exports = {
     removeDuplicatePlayer,
     getGGR,
@@ -446,5 +493,6 @@ module.exports = {
     totalWageredByMonth,
     totalWonByMonth,
     userWon,
-    userLoss
+    userLoss,
+    dailyTotalWagered
 }
