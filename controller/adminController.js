@@ -482,7 +482,7 @@ const dailyReport = async (req, res, next) => {
         let users = await DepositRequest.find({ user_id: deposit[i].user_id, created_at: { $lt: new Date(todayDate) } })
         if (users.length > 0) {
             reDepositAmount = users.reduce((a, b) => {
-                return a.amount + b.acount
+                return a.amount + b.amount
             })
         }
     }

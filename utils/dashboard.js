@@ -19,22 +19,26 @@ const removeDuplicatePlayer = (data) => {
 //Show total gross gaming revenue (win/lose)
 const getGGR = async (user_id) => {
 
+    let crashGameTotalStake = 0;
+    let diceGameTotalStake = 0;
+    let minesGameTotalStake = 0;
+
     let crashGameTotalStakeLoss = 0;
     let diceGameTotalStakeLoss = 0;
     let minesGameTotalStakeLoss = 0;
 
     try {
         if (user_id) {
-            console.log("From inisde select by UserId for Individual User");
             // //Get the total wagered at loss
             //Get Number of Crash Game Loss Amount
             const crashGameLoss = await CrashGame.find({ user_id: user_id, has_won: false })
-            if (crashGameLoss.length > 0) {
-                crashGameTotalStakeLoss = crashGameLoss.map((game) => {
+            if (crashGame.length > 0) {
+                crashGameTotalStake = crashGame.map((game) => {
                     return game.bet_amount
                 })
-            }
 
+            crashGameTotalStakeLoss = crashGameTotalStake.reduce((a,b) => a + b)
+            }
 
 
             //Get Number of Dice Game Loss Amount
@@ -43,8 +47,8 @@ const getGGR = async (user_id) => {
                 diceGameTotalStakeLoss = diceGameLoss.map((game) => {
                     return game.bet_amount
                 })
+            diceGameTotalStakeLoss = diceGameTotalStake.reduce((a,b) => a + b)
             }
-
 
             //Get Number of Mines Game Won Amount
             const minesGameLoss = await MinesGame.find({ user_id: user_id, has_won: false })
@@ -52,12 +56,13 @@ const getGGR = async (user_id) => {
                 minesGameTotalStakeLoss = minesGameLoss.map((game) => {
                     return game.bet_amount
                 })
+            minesGameTotalStakeLoss = minesGameTotalStake.reduce((a,b) => a + b)
             }
+
             const sumOfLoss = crashGameTotalStakeLoss + diceGameTotalStakeLoss + minesGameTotalStakeLoss
 
             return ggr = sumOfLoss
         } else {
-            console.log("From inisde select by All Games Won AND Loss");
 
             //Get Number of Crash Game Loss Amount
             const crashGameLoss = await CrashGame.find({ has_won: false })
@@ -65,6 +70,7 @@ const getGGR = async (user_id) => {
                 crashGameTotalStakeLoss = crashGameLoss.map((game) => {
                     return game.bet_amount
                 })
+                crashGameTotalStakeLoss = crashGameTotalStake.reduce((a,b) => a + b)
             }
 
             //Get Number of Dice Game Loss Amount
@@ -73,6 +79,7 @@ const getGGR = async (user_id) => {
                 diceGameTotalStakeLoss = diceGameLoss.map((game) => {
                     return game.bet_amount
                 })
+                diceGameTotalStakeLoss = diceGameTotalStake.reduce((a,b) => a + b)
             }
             //Get Number of Mines Game Loss Amount
             const minesGameLoss = await MinesGame.find({ has_won: false })
@@ -80,6 +87,7 @@ const getGGR = async (user_id) => {
                 minesGameTotalStakeLoss = minesGameLoss.map((game) => {
                     return game.bet_amount
                 })
+                minesGameTotalStakeLoss = minesGameTotalStake.reduce((a,b) => a + b)
             }
 
             const sumOfLoss = crashGameTotalStakeLoss + diceGameTotalStakeLoss + minesGameTotalStakeLoss
