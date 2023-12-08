@@ -12,8 +12,9 @@ const DepositRequest = require('../model/deposit_request');
 const PPDWallet = require('../model/PPD-wallet');
 const UsdtWallet = require('../model/Usdt-wallet');
 const PPLWallet = require('../model/PPL-wallet');
-const { removeDuplicatePlayer, getGGR, getTotalPlayerBalance, totalGamesWon, totalGamesLoss, totalWageredByMonth, totalWonByMonth, userWon, userLoss } = require("../utils/dashboard");
+const { removeDuplicatePlayer, getGGR, getTotalPlayerBalance, totalGamesWon, totalGamesLoss, totalWageredByMonth, totalWonByMonth, userWon, userLoss, dailyTotalWagered } = require("../utils/dashboard");
 const { conversion } = require("../utils/conversion");
+const { getTodayAndTomorrowsDate } = require("../utils/time");
 
 // Create Member controller
 const createMember = async (req, res, next) => {
@@ -455,6 +456,48 @@ const totalLossRanking = async (req, res, next) => {
         console.log(err)
     }
 }
+
+const report = async (req, res, next) => {
+    const { todayDate, tomorrowDate } = getTodayAndTomorrowsDate()
+    const users = await User.find({
+        created_at: {
+            $gte: new Date(todayDate),
+            $lt: new Date(tomorrowDate)
+        }
+    })
+    const deposit = await DepositRequest.find({
+        status: 'success',
+        created_at: {
+            $gte: new Date(todayDate),
+            $lt: new Date(tomorrowDate)
+        }
+    })
+    let depositAmount = 0;
+    if (deposit.length > 0) {
+        depositAmount = deposit.reduce((a, b) => {
+            return a.amount + b.amount
+        })
+    }
+let reDepositAmount = 0;
+ for (let i = 0; i < deposit; i ++){
+    let users = await DepositRequest.find({user_id: deposit[i].user_id, created_at: { $lt: new Date(todayDate)} })
+    if(users.length > 0) {
+         reDepositAmount = users.reduce((a, b) => {
+            return a.amount + b.acount
+        })
+    }
+ }
+ const totalWagered = await dailyTotalWagered(todayDate, tomorrowDate)
+    return res.status(200).json({
+        date: todayDate,
+        userCount: users.length,
+        depositCount: deposit.length,
+        depositAmount: depositAmount,
+        reDepositAmount: reDepositAmount,
+        totalDeposit: depositAmount + reDepositAmount,
+        totalWagered: totalWagered
+    })
+}
 module.exports = {
     createMember,
     getAllMembers,
@@ -465,5 +508,6 @@ module.exports = {
     totalWageredAndTotalWon,
     totalWageredRanking,
     totalWonRanking,
-    totalLossRanking
+    totalLossRanking,
+    report
 }
