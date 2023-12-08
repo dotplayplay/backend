@@ -82,6 +82,8 @@ const handleHasLost = (async(req, res)=>{
 
 })
 
+// I will be starting here
+
 const handleMinesHistory = (async(req, res)=>{
   try{
     const { user_id} = req.id
