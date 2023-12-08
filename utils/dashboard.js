@@ -45,7 +45,6 @@ const getGGR = async (user_id) => {
                 })
             }
 
-
             //Get Number of Mines Game Won Amount
             const minesGameLoss = await MinesGame.find({ user_id: user_id, has_won: false })
             if (minesGameLoss.length > 0) {
@@ -58,7 +57,6 @@ const getGGR = async (user_id) => {
             return ggr = sumOfLoss
         } else {
             console.log("From inisde select by All Games Won AND Loss");
-
             //Get Number of Crash Game Loss Amount
             const crashGameLoss = await CrashGame.find({ has_won: false })
             if (crashGameLoss.length > 0) {
@@ -81,6 +79,7 @@ const getGGR = async (user_id) => {
                     return game.bet_amount
                 })
             }
+
 
             const sumOfLoss = crashGameTotalStakeLoss + diceGameTotalStakeLoss + minesGameTotalStakeLoss
 
@@ -384,6 +383,7 @@ const totalWonByMonth = async () => {
     return totalAmountWon
 }
 const userWon = async (user_id) => {
+
     let crashGameTotalStake = 0;
     let diceGameTotalStake = 0;
     let minesGameTotalStake = 0;
@@ -460,6 +460,7 @@ const userLoss = async (user_id) => {
             return game.bet_amount
         })
         minesGameTotalStakeLoss = minesGameTotalStake.reduce((a, b) => a + b)
+
     }
 
     const sumOfLoss = crashGameTotalStakeLoss + diceGameTotalStakeLoss + minesGameTotalStakeLoss
@@ -742,7 +743,6 @@ const playerCount = async (today, tomorrow, type) => {
         }
     
     }
-
 }
 module.exports = {
     removeDuplicatePlayer,
@@ -758,4 +758,5 @@ module.exports = {
     dailyGamesWon,
     betCount,
     playerCount
+
 }

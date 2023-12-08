@@ -35,6 +35,7 @@ router.get('/report', dailyReport)
 router.get('/gamereport', gameReport)
 
 
+
 /* CREATE */
 
 /* Create Member */
