@@ -12,12 +12,13 @@ const DepositRequest = require('../model/deposit_request');
 const PPDWallet = require('../model/PPD-wallet');
 const UsdtWallet = require('../model/Usdt-wallet');
 const PPLWallet = require('../model/PPL-wallet');
-const { removeDuplicatePlayer, getGGR, getTotalPlayerBalance, totalGamesWon, totalGamesLoss } = require("../utils/dashboard");
+const { removeDuplicatePlayer, getGGR, getTotalPlayerBalance, totalGamesWon, totalGamesLoss, totalWageredByMonth, totalWonByMonth, userWon, userLoss } = require("../utils/dashboard");
 const { conversion } = require("../utils/conversion");
 
 // Create Member controller
 const createMember = async (req, res, next) => {
-    const { username, password, confirmPassword, email, phoneNumber, vipLevel, affilliateModel, user_id } = req.body;
+    const { username, password, confirmPassword, email, phoneNumber, affilliateModel, user_id } = req.body;
+    let vipLevel = 0;
     let google_auth = false;
     let provider = "password";
     let emailVerified = false;
@@ -28,7 +29,7 @@ const createMember = async (req, res, next) => {
 
     //Checking that all field are submitted
     // if (!username || !password || !confirmPassword || !email || !phoneNumber || !affilliateModel || !user_id) 
-    if ([username, password, confirmPassword, email, phoneNumber, affilliateModel, user_id].includes('')) {
+    if ([username, password, confirmPassword, email, phoneNumber, user_id].includes('')) {
         return res.status(400).json({
             success: false,
             message: 'Kindly provide all field are required.'
@@ -173,7 +174,7 @@ const getAllMembers = async (req, res, next) => {
 
                 //Sum in USD
                 const totalBalance = (usdt_balance.balance + ppd_balance.balance + conversion(ppl_balance.balance))
-                
+
                 return {
                     ...user._doc,
                     profile,
@@ -283,10 +284,186 @@ const findUserByUsername = async (req, res, next) => {
         return res.json({ error: err })
     }
 }
+
+//Get User STATS 
+const registeredUserstats = async (req, res, next) => {
+    // const today = new Date()
+    // const lastYear = today.setFullYear(today.setFullYear() - 1)
+
+    const monthsArray = [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+    ];
+    try {
+        const data = await User.aggregate([
+            {
+                $project: {
+                    month: {
+                        $month: "$created_at"
+                    },
+                    year: {
+                        $year: "$created_at"
+                    }
+                },
+            },
+            {
+                $group: {
+                    _id: "$month",
+                    total: { $sum: 1 }
+                }
+            }
+        ])
+        console.log(data)
+        //Sort month in accending order
+        await data.sort((a, b) => {
+            return a._id - b._id
+        })
+        //Replace _id return in number as month to a word in month from the monthArray
+        const registeredUser = data.map((user) => {
+            return {
+                month: monthsArray[user._id - 1],
+                noOfRegisteredUsers: user.total
+            }
+        })
+        return res.status(200).json({
+            success: true,
+            registeredUser: registeredUser
+        })
+    } catch (err) {
+        //    return res.status(500).json({ error: err})
+        console.log(err)
+    }
+}
+
+const totalWageredAndTotalWon = async (req, res, next) => {
+
+    try {
+        const wagered = await totalWageredByMonth()
+        const totalWon = await totalWonByMonth()
+
+        return res.status(200).json({
+            success: true,
+            totalWagered: wagered,
+            totalWon: totalWon
+        })
+    } catch (err) {
+        // return res.status(500).json({ error: err })
+        console.log(err)
+    }
+}
+
+const totalWageredRanking = async (req, res, next) => {
+    try {
+        //Set all User Profile
+        const users = await Profile.find()
+        //Sort the ranking from the highest wagered to the lowest
+        const totalWageredRanking = users.sort((a, b) => {
+            return b.total_wagered - a.total_wagered
+        })
+        return res.status(200).json(totalWageredRanking)
+    } catch (err) {
+        return res.json({ error: err })
+    }
+
+}
+
+const totalWonRanking = async (req, res, next) => {
+    try {
+        //Get all members
+        const members = await User.find();
+        if (members.length <= 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Members not found'
+            })
+        }
+
+        //Get all members Full details individually
+        //takes in individual user as an iterable of promises as input and returns a single Promise
+        const membersWonData = await Promise.all(
+            members.map(async (user) => {
+                //Get User Profile
+                const profile = await Profile.findOne({ user_id: user.user_id }).sort({ createdAt: -1 })
+                //Get Individual GGR by ID
+                let totalWon = await userWon(user.user_id)
+                return {
+                    ...user._doc,
+                    profile,
+                    totalWon
+                }
+            }))
+        //Sort Members won from the highest won to the lowest won
+        // console.log(membersWonData)
+        membersWonData.sort((a, b) => {
+            return b.totalWon - a.totalWon
+        })
+        return res.status(200).json({
+            success: true,
+            wonRanking: membersWonData
+        })
+    } catch (err) {
+        // return res.json({ error: err })
+        console.log(err)
+    }
+}
+const totalLossRanking = async (req, res, next) => {
+    try {
+        //Get all members
+        const members = await User.find();
+        if (members.length <= 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Members not found'
+            })
+        }
+
+        //Get all members Full details individually
+        //takes in individual user as an iterable of promises as input and returns a single Promise
+        const membersLossData = await Promise.all(
+            members.map(async (user) => {
+                //Get User Profile
+                const profile = await Profile.findOne({ user_id: user.user_id }).sort({ createdAt: -1 })
+                //Get Individual GGR by ID
+                let totalLoss = await userLoss(user.user_id)
+                return {
+                    ...user._doc,
+                    profile,
+                    totalLoss
+                }
+            }))
+        //Sort Members Loss from the highest Loss to the lowest Loss
+        // console.log(membersLossData)
+        membersLossData.sort((a, b) => {
+            return b.totalLoss - a.totalLoss
+        })
+        return res.status(200).json({
+            success: true,
+            lossRanking: membersLossData
+        })
+    } catch (err) {
+        // return res.json({ error: err })
+        console.log(err)
+    }
+}
 module.exports = {
     createMember,
     getAllMembers,
     adminDashbaord,
     findUserById,
-    findUserByUsername
+    findUserByUsername,
+    registeredUserstats,
+    totalWageredAndTotalWon,
+    totalWageredRanking,
+    totalWonRanking,
+    totalLossRanking
 }
