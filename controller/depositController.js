@@ -156,7 +156,6 @@ const confirmDeposit = async () => {
     let usersID = []
     let deoop = await DepositRequest.find()
     if(deoop > 0){
-
       deoop.forEach(element => {
         if(element.status === "Pending"){
           usersID.push(element.merchant_order_id)

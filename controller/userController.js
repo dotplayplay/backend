@@ -71,7 +71,7 @@ const Register = (async(req, res)=>{
     const data = req.body
     let email = (data.user.email)
     let emailVerified = (data.user.emailVerified)
-    let google_auth = 0
+    let google_auth = false
     let user_id = (data.user.uid)
     const created_at =  currentTime
     const lastLoginAt = currentTime
