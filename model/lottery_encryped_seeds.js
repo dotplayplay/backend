@@ -3,7 +3,7 @@ const schema = mongoose.Schema
 
 const LotterySchema = new schema({
     game_id: {
-        type: Nunber,
+        type: Number,
         required: true,
     },
     server_seed_hash: {
