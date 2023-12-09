@@ -185,9 +185,14 @@ const previousChats = (async(req, res)=>{
     }
 })
 
+const twoFactorAuth =( async (req, res) => {
+    res.json({message: "welcome to two factor auth"});
+})
+
 module.exports = { 
     CreateAccount, 
     Register, 
     previousChats,
-    SingleUserByID
+    SingleUserByID,
+    twoFactorAuth
 }
