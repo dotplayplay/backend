@@ -97,6 +97,7 @@ const initiateWithdrawal = async (req, res) => {
               await USDTwallet.updateOne({user_id},{
                 balance: newAmount
               });
+              
               res.status(201).json({
                 status: true,
                 message: "Crypto withdrawn successfully",

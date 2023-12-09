@@ -12,7 +12,7 @@ const DepositRequest = require('../model/deposit_request');
 const PPDWallet = require('../model/PPD-wallet');
 const UsdtWallet = require('../model/Usdt-wallet');
 const PPLWallet = require('../model/PPL-wallet');
-const { removeDuplicatePlayer, getGGR, getTotalPlayerBalance, totalGamesWon, totalGamesLoss, totalWageredByMonth, totalWonByMonth, userWon, userLoss, dailyTotalWagered, dailyGamesWon, betCount, playerCount } = require("../utils/dashboard");
+const { removeDuplicatePlayer, getGGR, getTotalPlayerBalance, totalGamesWon, totalGamesLoss, totalWageredByMonth, totalWonByMonth, userWon, userLoss, dailyTotalWagered, dailyGamesWon, betCount, playerCount, dailyLottery } = require("../utils/dashboard");
 const { conversion } = require("../utils/conversion");
 const { getTodayAndTomorrowsDate } = require("../utils/time");
 
@@ -174,13 +174,13 @@ const getAllMembers = async (req, res, next) => {
 
 
                 //Sum in USD
-                const totalBalance = (usdt_balance.balance + ppd_balance.balance + conversion(ppl_balance.balance))
+                // const totalBalance = (usdt_balance.balance + ppd_balance.balance + conversion(ppl_balance.balance))
 
                 return {
                     ...user._doc,
                     profile,
                     userFirstAndLastDeposit,
-                    totalBalance,
+                    // totalBalance,
                     ggr: ggr
                 }
             })
@@ -246,7 +246,7 @@ const adminDashbaord = async (req, res, next) => {
                 totalDepositedPlayers,
                 grossGamingRevenue,
                 totalPlayerBalance: totalPlayerBalance,
-                totalWagered: totalWageredFromAllUsers,
+                totalWagered: totalWageredFromAllUsers.toFixed(2),
                 totalWon: totalWon,
                 totalLoss: totalLoss
             }
@@ -487,14 +487,20 @@ const dailyReport = async (req, res, next) => {
         }
     }
     const totalWagered = await dailyTotalWagered(todayDate, tomorrowDate)
+    const totalPayout = await totalGamesWon(todayDate, tomorrowDate)
+    const dailyLotterys = await dailyLottery(todayDate, tomorrowDate)
     return res.status(200).json({
         date: new Date(todayDate).toLocaleString("en-GB", { day: "numeric", month: "long", year: "numeric", }),
+        dauCount: totalWagered.totalDailyUserActive,
         userCount: users.length,
         depositCount: deposit.length,
         depositAmount: depositAmount,
         reDepositAmount: reDepositAmount,
         totalDeposit: depositAmount + reDepositAmount,
-        totalWagered: totalWagered
+        totalWagered: totalWagered.totalWagered,
+        totalPayout: Number(totalPayout),
+        totalGGR: Number(totalWagered.totalWagered) - Number(totalPayout),
+        dailyLotterys
     })
 }
 
