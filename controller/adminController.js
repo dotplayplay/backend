@@ -571,7 +571,6 @@ const gameReport = async (req, res, next) => {
         totalPlayerCount
     })
 }
-t
 
 const gameReport = async (req, res, next) => {
     const { todayDate, tomorrowDate } = getTodayAndTomorrowsDate()

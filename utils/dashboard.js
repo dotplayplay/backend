@@ -33,6 +33,7 @@ const getGGR = async (user_id) => {
         if (user_id) {
             // //Get the total wagered at loss
             //Get Number of Crash Game Loss Amount
+
             const crashGame = await CrashGame.find({ user_id: user_id, has_won: false })
             if (crashGame.length > 0) {
                 crashGameTotalStake = crashGame.map((game) => {
@@ -58,6 +59,7 @@ const getGGR = async (user_id) => {
                 minesGameTotalStake = minesGameLoss.map((game) => {
                     return game.bet_amount
                 })
+
                 minesGameTotalStakeLoss = minesGameTotalStake.reduce((a, b) => a + b)
             }
 
@@ -71,6 +73,7 @@ const getGGR = async (user_id) => {
                 crashGameTotalStake = crashGameLoss.map((game) => {
                     return game.bet_amount
                 })
+
                 crashGameTotalStakeLoss = crashGameTotalStake.reduce((a, b) => a + b)
             }
 
@@ -80,7 +83,8 @@ const getGGR = async (user_id) => {
                 diceGameTotalStake = diceGameLoss.map((game) => {
                     return game.bet_amount
                 })
-                diceGameTotalStakeLoss = diceGameTotalStake.reduce((a, b) => a + b)
+                diceGameTotalStakeLoss = diceGameTotalStake.reduce((a,b) => a + b)
+
             }
             //Get Number of Mines Game Loss Amount
             const minesGameLoss = await MinesGame.find({ has_won: false })
@@ -88,7 +92,7 @@ const getGGR = async (user_id) => {
                 minesGameTotalStake = minesGameLoss.map((game) => {
                     return game.bet_amount
                 })
-                minesGameTotalStakeLoss = minesGameTotalStake.reduce((a, b) => a + b)
+                minesGameTotalStakeLoss = minesGameTotalStake.reduce((a,b) => a + b)
             }
 
 
@@ -527,6 +531,7 @@ const userLoss = async (user_id) => {
             return game.bet_amount
         })
         minesGameTotalStakeLoss = minesGameTotalStake.reduce((a, b) => a + b)
+
     }
 
     const sumOfLoss = crashGameTotalStakeLoss + diceGameTotalStakeLoss + minesGameTotalStakeLoss
@@ -708,6 +713,7 @@ const dailyGamesWon = async (today, tomorrow, type) => {
     }
 
 }
+
 
 const dailyLottery = async (today, tomorrow) => {
         //Get Number of Crash Game Won Amount
