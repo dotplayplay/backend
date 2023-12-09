@@ -4,6 +4,7 @@ const MinesGame = require('../model/minesgameInit');
 const PPDWallet = require('../model/PPD-wallet');
 const UsdtWallet = require('../model/Usdt-wallet');
 const PPLWallet = require('../model/PPL-wallet');
+const LotteryTicket = require('../model/lottery_ticktet');
 
 //remove duplicate player from the list of successful deposit to avoid repition
 const removeDuplicatePlayer = (data) => {
@@ -19,71 +20,81 @@ const removeDuplicatePlayer = (data) => {
 //Show total gross gaming revenue (win/lose)
 const getGGR = async (user_id) => {
 
+    let crashGameTotalStake = 0;
+    let diceGameTotalStake = 0;
+    let minesGameTotalStake = 0;
+
+
     let crashGameTotalStakeLoss = 0;
     let diceGameTotalStakeLoss = 0;
     let minesGameTotalStakeLoss = 0;
 
     try {
         if (user_id) {
-            console.log("From inisde select by UserId for Individual User");
             // //Get the total wagered at loss
             //Get Number of Crash Game Loss Amount
-            const crashGameLoss = await CrashGame.find({ user_id: user_id, has_won: false })
-            if (crashGameLoss.length > 0) {
-                crashGameTotalStakeLoss = crashGameLoss.map((game) => {
+            const crashGame = await CrashGame.find({ user_id: user_id, has_won: false })
+            if (crashGame.length > 0) {
+                crashGameTotalStake = crashGame.map((game) => {
                     return game.bet_amount
                 })
-            }
 
+                crashGameTotalStakeLoss = crashGameTotalStake.reduce((a, b) => a + b)
+            }
 
 
             //Get Number of Dice Game Loss Amount
             const diceGameLoss = await DiceGame.find({ user_id: user_id, has_won: false })
             if (diceGameLoss.length > 0) {
-                diceGameTotalStakeLoss = diceGameLoss.map((game) => {
+                diceGameTotalStake = diceGameLoss.map((game) => {
                     return game.bet_amount
                 })
+                diceGameTotalStakeLoss = diceGameTotalStake.reduce((a, b) => a + b)
             }
 
             //Get Number of Mines Game Won Amount
             const minesGameLoss = await MinesGame.find({ user_id: user_id, has_won: false })
             if (minesGameLoss.length > 0) {
-                minesGameTotalStakeLoss = minesGameLoss.map((game) => {
+                minesGameTotalStake = minesGameLoss.map((game) => {
                     return game.bet_amount
                 })
+                minesGameTotalStakeLoss = minesGameTotalStake.reduce((a, b) => a + b)
             }
+
             const sumOfLoss = crashGameTotalStakeLoss + diceGameTotalStakeLoss + minesGameTotalStakeLoss
 
-            return ggr = sumOfLoss
+            return ggr = sumOfLoss.toFixed(2)
         } else {
-            console.log("From inisde select by All Games Won AND Loss");
             //Get Number of Crash Game Loss Amount
             const crashGameLoss = await CrashGame.find({ has_won: false })
             if (crashGameLoss.length > 0) {
-                crashGameTotalStakeLoss = crashGameLoss.map((game) => {
+                crashGameTotalStake = crashGameLoss.map((game) => {
                     return game.bet_amount
                 })
+                crashGameTotalStakeLoss = crashGameTotalStake.reduce((a, b) => a + b)
             }
 
             //Get Number of Dice Game Loss Amount
             const diceGameLoss = await DiceGame.find({ has_won: false })
             if (diceGameLoss.length > 0) {
-                diceGameTotalStakeLoss = diceGameLoss.map((game) => {
+                diceGameTotalStake = diceGameLoss.map((game) => {
                     return game.bet_amount
                 })
+                diceGameTotalStakeLoss = diceGameTotalStake.reduce((a, b) => a + b)
             }
             //Get Number of Mines Game Loss Amount
             const minesGameLoss = await MinesGame.find({ has_won: false })
             if (minesGameLoss.length > 0) {
-                minesGameTotalStakeLoss = minesGameLoss.map((game) => {
+                minesGameTotalStake = minesGameLoss.map((game) => {
                     return game.bet_amount
                 })
+                minesGameTotalStakeLoss = minesGameTotalStake.reduce((a, b) => a + b)
             }
 
 
             const sumOfLoss = crashGameTotalStakeLoss + diceGameTotalStakeLoss + minesGameTotalStakeLoss
 
-            return ggr = sumOfLoss
+            return ggr = sumOfLoss.toFixed(2)
         }
     } catch (err) {
         console.log(err)
@@ -104,7 +115,7 @@ const getTotalPlayerBalance = async () => {
         const getBalanceUSDT = usersWithBalanceGreaterThanZeroUSDT.map((user) => {
             return user.balance
         })
-        console.log(getBalanceUSDT)
+        // console.log(getBalanceUSDT)
         USDTTotalBalance = getBalanceUSDT.reduce((a, b) => {
             return a + b
         })
@@ -118,7 +129,7 @@ const getTotalPlayerBalance = async () => {
         const getBalancePPD = usersWithBalanceGreaterThanZeroPPD.map((user) => {
             return user.balance
         })
-        console.log(getBalancePPD)
+        // console.log(getBalancePPD)
         PPDTotalBalance = getBalancePPD.reduce((a, b) => {
             return a + b
         })
@@ -131,15 +142,15 @@ const getTotalPlayerBalance = async () => {
         const getBalancePPL = usersWithBalanceGreaterThanZeroPPL.map((user) => {
             return user.balance
         })
-        console.log(getBalancePPL)
+        // console.log(getBalancePPL)
         PPLTotalBalance = getBalancePPL.reduce((a, b) => {
             return a + b
         })
     }
-    return totalPlayerBalance = (USDTTotalBalance + PPDTotalBalance + PPLTotalBalance)
+    return totalPlayerBalance = (USDTTotalBalance + PPDTotalBalance + PPLTotalBalance).toFixed(2)
 }
 
-const totalGamesWon = async () => {
+const totalGamesWon = async (today, tomorrow) => {
     let crashGameTotalStake = 0;
     let diceGameTotalStake = 0;
     let minesGameTotalStake = 0;
@@ -147,35 +158,91 @@ const totalGamesWon = async () => {
     let crashGameTotalStakeWon = 0;
     let diceGameTotalStakeWon = 0;
     let minesGameTotalStakeWon = 0;
-    //Get Number of Crash Game Won Amount
-    const crashGame = await CrashGame.find({ has_won: true })
-    if (crashGame.length > 0) {
-        crashGameTotalStake = crashGame.map((game) => {
-            return game.bet_amount
-        })
-        crashGameTotalStakeWon = crashGameTotalStake.reduce((a, b) => a + b)
-    }
 
-    //Get Number of Dice Game Won Amount
-    const diceGame = await DiceGame.find({ has_won: true })
-    if (diceGame.length > 0) {
-        diceGameTotalStake = diceGame.map((game) => {
-            return game.bet_amount
+try{
+    if (today && tomorrow) {
+        console.log("Daily")
+        //Get Number of Crash Game Won Amount
+        const crashGame = await CrashGame.find({
+            created_at: {
+                $gte: new Date(today),
+                $lt: new Date(tomorrow)
+            }, has_won: true
         })
-        diceGameTotalStakeWon = diceGameTotalStake.reduce((a, b) => a + b)
-    }
+        if (crashGame.length > 0) {
+            crashGameTotalStake = crashGame.map((game) => {
+                return game.bet_amount
+            })
+            crashGameTotalStakeWon = crashGameTotalStake.reduce((a, b) => a + b)
+        }
 
-    //Get Number of Mines Game Won Amount
-    const minesGame = await MinesGame.find({ has_won: true })
-    if (minesGame.length > 0) {
-        minesGameTotalStake = minesGame.map((game) => {
-            return game.bet_amount
+        //Get Number of Dice Game Won Amount
+        const diceGame = await DiceGame.find({
+            created_at: {
+                $gte: new Date(today),
+                $lt: new Date(tomorrow)
+            }, has_won: true
         })
-        minesGameTotalStakeWon = minesGameTotalStake.reduce((a, b) => a + b)
+
+        if (diceGame.length > 0) {
+            diceGameTotalStake = diceGame.map((game) => {
+                return game.bet_amount
+            })
+            diceGameTotalStakeWon = diceGameTotalStake.reduce((a, b) => a + b)
+        }
+
+        //Get Number of Mines Game Won Amount
+        const minesGame = await MinesGame.find({
+            created_at: {
+                $gte: new Date(today),
+                $lt: new Date(tomorrow)
+            }, has_won: true
+        })
+
+        if (minesGame.length > 0) {
+            minesGameTotalStake = minesGame.map((game) => {
+                return game.bet_amount
+            })
+            minesGameTotalStakeWon = minesGameTotalStake.reduce((a, b) => a + b)
+        }
+
+    } else {
+        console.log("Overall")
+        //Get Number of Crash Game Won Amount
+        const crashGame = await CrashGame.find({ has_won: true})
+        if (crashGame.length > 0) {
+            crashGameTotalStake = crashGame.map((game) => {
+                return game.bet_amount
+            })
+            crashGameTotalStakeWon = crashGameTotalStake.reduce((a, b) => a + b)
+        }
+
+        //Get Number of Dice Game Won Amount
+        const diceGame = await DiceGame.find({ has_won: true})
+        if (diceGame.length > 0) {
+            diceGameTotalStake = diceGame.map((game) => {
+                return game.bet_amount
+            })
+            diceGameTotalStakeWon = diceGameTotalStake.reduce((a, b) => a + b)
+        }
+
+        //Get Number of Mines Game Won Amount
+        const minesGame = await MinesGame.find({ has_won: true})
+        if (minesGame.length > 0) {
+            minesGameTotalStake = minesGame.map((game) => {
+                return game.bet_amount
+            })
+            minesGameTotalStakeWon = minesGameTotalStake.reduce((a, b) => a + b)
+        }
+
     }
 
     const sum = crashGameTotalStakeWon + diceGameTotalStakeWon + minesGameTotalStakeWon
-    return sum
+    return sum.toFixed(2)
+}catch(err){
+    // return res.json({error: err})
+    console.log(err)
+}
 }
 
 const totalGamesLoss = async () => {
@@ -214,7 +281,7 @@ const totalGamesLoss = async () => {
     }
 
     const sum = crashGameTotalStakeLoss + diceGameTotalStakeLoss + minesGameTotalStakeLoss
-    return sum
+    return sum.toFixed(2)
 }
 
 const totalWageredByMonth = async () => {
@@ -460,7 +527,6 @@ const userLoss = async (user_id) => {
             return game.bet_amount
         })
         minesGameTotalStakeLoss = minesGameTotalStake.reduce((a, b) => a + b)
-
     }
 
     const sumOfLoss = crashGameTotalStakeLoss + diceGameTotalStakeLoss + minesGameTotalStakeLoss
@@ -475,6 +541,11 @@ const dailyTotalWagered = async (today, tomorrow, type) => {
     let crashGameTotalWagered = 0;
     let diceGameTotalWagered = 0;
     let minesGameTotalWagered = 0;
+
+    let crashGameDailyUserActive = 0;
+    let diceGameDailyUserActive = 0;
+    let minesGameDailyUserActive = 0;
+
     if (type === undefined) {
         //Get Number of Crash Game Won Amount
         const crashGame = await CrashGame.find({
@@ -488,6 +559,8 @@ const dailyTotalWagered = async (today, tomorrow, type) => {
                 return game.bet_amount
             })
             crashGameTotalWagered = crashGameTotalStake.reduce((a, b) => a + b)
+            crashGameDailyUserActive = crashGameTotalStake.length
+
         }
 
         //Get Number of Dice Game Won Amount
@@ -502,6 +575,7 @@ const dailyTotalWagered = async (today, tomorrow, type) => {
                 return game.bet_amount
             })
             diceGameTotalWagered = diceGameTotalStake.reduce((a, b) => a + b)
+            diceGameDailyUserActive = diceGameTotalStake.length
         }
 
         //Get Number of Mines Game Won Amount
@@ -516,10 +590,15 @@ const dailyTotalWagered = async (today, tomorrow, type) => {
                 return game.bet_amount
             })
             minesGameTotalWagered = minesGameTotalStake.reduce((a, b) => a + b)
+            minesGameDailyUserActive = minesGameTotalStake.length
         }
+        let totalDailyUserActive = crashGameDailyUserActive + diceGameDailyUserActive + minesGameDailyUserActive
 
         const sum = crashGameTotalWagered + diceGameTotalWagered + minesGameTotalWagered
-        return sum
+        return {
+            totalWagered: sum,
+            totalDailyUserActive
+        }
     } else {
         if (type === 'crashgame') {
             let crashGameTotalStakeDaily = 0;
@@ -630,6 +709,48 @@ const dailyGamesWon = async (today, tomorrow, type) => {
 
 }
 
+const dailyLottery = async (today, tomorrow) => {
+        //Get Number of Crash Game Won Amount
+        let totalTicket = 0
+        let totalPrize = 0
+        try{
+            //Get total Lottery Ticket and Prize for the day
+            const lotteryTickets = await LotteryTicket.find({
+                created_at: {
+                    $gte: new Date(today),
+                    $lt: new Date(tomorrow)
+                }
+            })
+            // const lotteryTickets  = [{amount: 30, prize: 10},{amount: 30, prize: 10},{amount: 30, prize: 10}]
+            if(lotteryTickets.length > 0) {
+                console.log("Yes")
+                let tickets = lotteryTickets.map(lotteryTicket => {
+                     return {
+                        amount : lotteryTicket.amount,
+                        prize: lotteryTicket.prize
+                    }
+                    
+                })
+                for(let i = 0; i < tickets.length; i++) {
+                    totalTicket += tickets[i].amount
+                    totalPrize += tickets[i].prize
+                }
+                return{
+                    totalTicket, totalPrize
+                }
+            }else{
+                return {
+                    totalTicket: 'Nil',
+                    totalPrize: 'Nil'
+                }
+            }
+            
+        }catch(err){
+           console.log(err)
+        }
+            
+}
+
 const betCount = async (today, tomorrow, type) => {
     let crashGameTotalStake = 0;
     let diceGameTotalStake = 0;
@@ -687,20 +808,18 @@ const playerCount = async (today, tomorrow, type) => {
             }
         })
         if (crashGame.length > 0) {
-           //Remove repition, One player might play crash game 10 times a day
-           const uniqueID = []
-           crashGame.forEach(value => {
-            console.log(value)
-               if (!uniqueID.includes(value.user_id)) {
-                   uniqueID.push(value.user_id)
-               }
-           })
-           console.log(uniqueID)
-           return uniqueID.length  
-        }else{
+            //Remove repition, One player might play crash game 10 times a day
+            const uniqueID = []
+            crashGame.forEach(value => {
+                if (!uniqueID.includes(value.user_id)) {
+                    uniqueID.push(value.user_id)
+                }
+            })
+            return uniqueID.length
+        } else {
             return 0;
         }
-        
+
     } else if (type === 'dicegame') {
         //Get Number of Dice Game Won Amount
         const diceGame = await DiceGame.find({
@@ -718,7 +837,7 @@ const playerCount = async (today, tomorrow, type) => {
                 }
             })
             return uniqueID.length
-        }else{
+        } else {
             return 0;
         }
     } else if (type === 'minesgame') {
@@ -738,12 +857,13 @@ const playerCount = async (today, tomorrow, type) => {
                 }
             })
             return uniqueID.length
-        }else{
+        } else {
             return 0;
         }
-    
+
     }
 }
+
 module.exports = {
     removeDuplicatePlayer,
     getGGR,
@@ -757,6 +877,7 @@ module.exports = {
     dailyTotalWagered,
     dailyGamesWon,
     betCount,
-    playerCount
+    playerCount,
+    dailyLottery
 
 }
