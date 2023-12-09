@@ -285,6 +285,7 @@ const findUserByUsername = async (req, res, next) => {
         return res.json({ error: err })
     }
 }
+
 //Get User STATS 
 const registeredUserstats = async (req, res, next) => {
     // const today = new Date()
@@ -582,4 +583,5 @@ module.exports = {
     totalLossRanking,
     dailyReport,
     gameReport
+
 }

@@ -24,6 +24,7 @@ const getGGR = async (user_id) => {
     let diceGameTotalStake = 0;
     let minesGameTotalStake = 0;
 
+
     let crashGameTotalStakeLoss = 0;
     let diceGameTotalStakeLoss = 0;
     let minesGameTotalStakeLoss = 0;
@@ -857,9 +858,6 @@ const playerCount = async (today, tomorrow, type) => {
     }
 
 }
-
-
-
 
 module.exports = {
     removeDuplicatePlayer,
