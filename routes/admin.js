@@ -12,7 +12,8 @@ const {
     totalWageredRanking, 
     totalWonRanking, 
     totalLossRanking,
-    report
+    dailyReport,
+    gameReport
 } = require('../controller/adminController')
 
 const router = express.Router()
@@ -30,7 +31,9 @@ router.get('/lossranking', totalLossRanking)
 router.get('/members', getAllMembers)
 router.get('/member/:user_id', findUserById)
 router.get('/member/username/:username', findUserByUsername)
-router.get('/report', report)
+router.get('/report', dailyReport)
+router.get('/gamereport', gameReport)
+
 
 
 /* CREATE */
