@@ -67,7 +67,6 @@ const getGGR = async (user_id) => {
 
             return ggr = sumOfLoss.toFixed(2)
         } else {
-
             //Get Number of Crash Game Loss Amount
             const crashGameLoss = await CrashGame.find({ has_won: false })
             if (crashGameLoss.length > 0) {
@@ -95,6 +94,7 @@ const getGGR = async (user_id) => {
                 })
                 minesGameTotalStakeLoss = minesGameTotalStake.reduce((a,b) => a + b)
             }
+
 
             const sumOfLoss = crashGameTotalStakeLoss + diceGameTotalStakeLoss + minesGameTotalStakeLoss
 
@@ -202,6 +202,7 @@ try{
                 $lt: new Date(tomorrow)
             }, has_won: true
         })
+
         if (minesGame.length > 0) {
             minesGameTotalStake = minesGame.map((game) => {
                 return game.bet_amount
@@ -453,6 +454,7 @@ const totalWonByMonth = async () => {
     return totalAmountWon
 }
 const userWon = async (user_id) => {
+
     let crashGameTotalStake = 0;
     let diceGameTotalStake = 0;
     let minesGameTotalStake = 0;
@@ -563,6 +565,7 @@ const dailyTotalWagered = async (today, tomorrow, type) => {
             })
             crashGameTotalWagered = crashGameTotalStake.reduce((a, b) => a + b)
             crashGameDailyUserActive = crashGameTotalStake.length
+
         }
 
         //Get Number of Dice Game Won Amount
@@ -882,4 +885,5 @@ module.exports = {
     betCount,
     playerCount,
     dailyLottery
+
 }

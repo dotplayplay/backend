@@ -493,7 +493,7 @@ const dailyReport = async (req, res, next) => {
     const dailyLotterys = await dailyLottery(todayDate, tomorrowDate)
     return res.status(200).json({
         date: new Date(todayDate).toLocaleString("en-GB", { day: "numeric", month: "long", year: "numeric", }),
-        dauCount: totalWagered.totalDailyUserActive,
+        dauCount: totalWagered.totalDailyUserActive
         userCount: users.length,
         depositCount: deposit.length,
         depositAmount: depositAmount,
@@ -571,7 +571,6 @@ const gameReport = async (req, res, next) => {
         totalPlayerCount
     })
 }
-
 
 const gameReport = async (req, res, next) => {
     const { todayDate, tomorrowDate } = getTodayAndTomorrowsDate()
