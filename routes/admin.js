@@ -14,7 +14,6 @@ const {
     totalLossRanking,
     dailyReport,
     gameReport
-
 } = require('../controller/adminController')
 
 const router = express.Router()
