@@ -3,6 +3,7 @@ const router = express.Router()
 const requireAuth = require('../middleware/requireAuth')
 
 // auth middleware
+//done
 router.use(requireAuth)
 const { handleCashout, handleInitialze,handleHasLost,handleMinesHistory,  handleMinesEncryption, handleActiveMines} = require('../controller/minesControllers')
 
