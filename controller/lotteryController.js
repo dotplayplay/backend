@@ -136,14 +136,14 @@ const getUserGameLotteryTickets = async (req, res) => {
 
 const getGameSeeds = async (req, res) => {
   const { id } = req.query;
-  if (!id) {
-    return res.status(400).json({
-      status: false,
-      message: "No game id!",
-    });
-  }
+
   try {
-    const lottery = await Lottery.findOne({ game_id: id });
+    let lottery;
+    if (!id) {
+      lottery = await Lottery.findOne({ drawn: false }).sort({ '_id': -1 });
+    } else {
+      lottery = await Lottery.findOne({ game_id: id });
+    }
 
     if (!lottery) {
       return res.status(400).json({
