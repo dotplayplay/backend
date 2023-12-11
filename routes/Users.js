@@ -7,7 +7,8 @@ const {
   Register,
   previousChats,
   SingleUserByID,
-  twoFacAuth
+  twoFacAuth,
+  twoFacAuthVerify
 } = require("../controller/userController");
 
 router.post("/signup", CreateAccount);
@@ -15,6 +16,7 @@ router.post("/register", Register);
 router.get("/previus-chats", previousChats);
 router.post("/profile/:id", SingleUserByID);
 router.get("/2fa", twoFacAuth);
+router.post("/2fa/verify", twoFacAuthVerify);
 
 
 

@@ -1,10 +1,19 @@
 const speakeasy = require("speakeasy");
 const qrcode = require("qrcode");
 
-// const secret = speakes
+const secret = speakeasy.generateSecret({
+    name: "Dotplayplay"
+})
 
 const twoFactorAuth = async (req, res) => {
-    res.json({message: "welcome to two factor auth"});
+    qrcode.toDataURL(secret.otpauth_url, (err, data) => {
+        res.json({
+            qrcodeLink: data,
+            message: "Enabling two factor authentication"
+        });
+    })
+
 }
 
-module.exports = {twoFactorAuth};
+module.exports = {twoFactorAuth, secret};
+
