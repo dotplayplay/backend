@@ -12,7 +12,7 @@ const DepositRequest = require('../model/deposit_request');
 const PPDWallet = require('../model/PPD-wallet');
 const UsdtWallet = require('../model/Usdt-wallet');
 const PPLWallet = require('../model/PPL-wallet');
-const { removeDuplicatePlayer, getGGR, getTotalPlayerBalance, totalGamesWon, totalGamesLoss, totalWageredByMonth, totalWonByMonth, userWon, userLoss, dailyTotalWagered, dailyGamesWon, betCount, playerCount, dailyLottery } = require("../utils/dashboard");
+const { removeDuplicatePlayer, getGGR, getTotalPlayerBalance, totalGamesWon, totalGamesLoss, totalWageredByMonth, totalWonByMonth, userWon, userLoss, dailyTotalWagered, dailyGamesWon, betCount, playerCount, dailyLottery, withdrawalHistory, cashBack, ggrByDate } = require("../utils/dashboard");
 const { conversion } = require("../utils/conversion");
 const { getTodayAndTomorrowsDate } = require("../utils/time");
 
@@ -488,10 +488,13 @@ const dailyReport = async (req, res, next) => {
             })
         }
     }
+    const totalWithdrawalAmounts = await withdrawalHistory(todayDate, tomorrowDate)
     const totalWagered = await dailyTotalWagered(todayDate, tomorrowDate)
     const totalPayout = await totalGamesWon(todayDate, tomorrowDate)
+    const otherBonuses = await cashBack()
     const dailyLotterys = await dailyLottery(todayDate, tomorrowDate)
     return res.status(200).json({
+        success: true,
         date: new Date(todayDate).toLocaleString("en-GB", { day: "numeric", month: "long", year: "numeric", }),
         dauCount: totalWagered.totalDailyUserActive,
         userCount: users.length,
@@ -499,9 +502,11 @@ const dailyReport = async (req, res, next) => {
         depositAmount: depositAmount,
         reDepositAmount: reDepositAmount,
         totalDeposit: depositAmount + reDepositAmount,
+        totalWithdrawalAmounts,
         totalWagered: totalWagered.totalWagered,
         totalPayout: Number(totalPayout),
         totalGGR: Number(totalWagered.totalWagered) - Number(totalPayout),
+        otherBonuses,
         dailyLotterys
     })
 }
@@ -572,71 +577,47 @@ const gameReport = async (req, res, next) => {
     })
 }
 
-// const gameReport = async (req, res, next) => {
-//     const { todayDate, tomorrowDate } = getTodayAndTomorrowsDate()
-//     // Daily Total Wagered Across all Games
-//     const crashDailyTotalWagered = await dailyTotalWagered(todayDate, tomorrowDate, 'crashgame')
-//     const diceDailyTotalWagered = await dailyTotalWagered(todayDate, tomorrowDate, 'dicegame')
-//     const minesDailyTotalWagered = await dailyTotalWagered(todayDate, tomorrowDate, 'minesgame')
-//     const totalWagered = {
-//         crashDailyTotalWagered,
-//         diceDailyTotalWagered,
-//         minesDailyTotalWagered
-//     }
-//     //Daily Total Payout Across all games
-//     const crashDailyPayout = await dailyGamesWon(todayDate, tomorrowDate, 'crashgame')
-//     const diceDailyPayout = await dailyGamesWon(todayDate, tomorrowDate, 'dicegame')
-//     const minesDailyPayout = await dailyGamesWon(todayDate, tomorrowDate, 'minesgame')
-//     const totalPayout = {
-//         crashDailyPayout,
-//         diceDailyPayout,
-//         minesDailyPayout
-//     }
-//     //Daily GGR Across all games
-//     const totalGGR = {
-//         crashDailyGGR: crashDailyTotalWagered - crashDailyPayout,
-//         diceDailyGGR: diceDailyTotalWagered - diceDailyPayout,
-//         minesDailyGGR: minesDailyTotalWagered - minesDailyPayout
+const ggrReport = async (req, res, next) => {
+    const { todayDate, tomorrowDate } = getTodayAndTomorrowsDate()
+    try {
+        //Get all members
+        const users = await User.find();
+        if (users.length <= 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Members not found'
+            })
+        }
 
-//     }
-//     //GGR Percentage
+        //Get all members Full details individually
+        //takes in individual user as an iterable of promises as input and returns a single Promise
+        const usersDataFromProfile = await Promise.all(
+            users.map(async (user) => {
+                //Get User Profile
+                const profile = await Profile.findOne({ user_id: user.user_id }).sort({ createdAt: -1 })
+                //Get Individual GGR by ID
+                let payout = await ggrByDate(todayDate, tomorrowDate, user.user_id)
 
-//     const totalGGRPercentage = {
-//         crashDailyGGRPercentage: `${(totalGGR.crashDailyGGR) / 100}%`,
-//         diceDailyGGRPercentage: `${(totalGGR.diceDailyGGR) / 100}%`,
-//         minesDailyGGRPercentage: `${(totalGGR.minesDailyGGR) / 100}%`
-//     }
+                const userData = {
+                    profile,
+                    totalWagered: profile.total_wagered,
+                    totalPayout: payout,
+                    ggr: Number(profile.total_wagered) - Number(payout)
 
-//     //Bet Count Per Game
-//     const crashBetCount = await betCount(todayDate, tomorrowDate, 'crashgame')
-//     const diceBetCount = await betCount(todayDate, tomorrowDate, 'dicegame')
-//     const minesBetCount = await betCount(todayDate, tomorrowDate, 'minesgame')
-//     const totalBetCount = {
-//         crashBetCount,
-//         diceBetCount,
-//         minesBetCount,
-//     }
+                }
+                return userData
+            })
+        )
+        return res.status(200).json({
+            success: true,
+            data: usersDataFromProfile
+        })
+    } catch (err) {
+        // return res.json({ error: err })
+        console.log(err)
+    }
 
-//     //Player Count Per Game
-//     const crashPlayerCount = await playerCount(todayDate, tomorrowDate, 'crashgame')
-//     const dicePlayerCount = await playerCount(todayDate, tomorrowDate, 'dicegame')
-//     const minesPlayerCount = await playerCount(todayDate, tomorrowDate, 'minesgame')
-//     const totalPlayerCount = {
-//         crashPlayerCount,
-//         dicePlayerCount,
-//         minesPlayerCount,
-//     }
-
-//     return res.status(200).json({
-//         success: true,
-//         totalWagered,
-//         totalPayout,
-//         totalGGR,
-//         totalGGRPercentage,
-//         totalBetCount,
-//         totalPlayerCount
-//     })
-// }
+}
 
 module.exports = {
     createMember,
@@ -650,6 +631,7 @@ module.exports = {
     totalWonRanking,
     totalLossRanking,
     dailyReport,
-    gameReport
+    gameReport,
+    ggrReport
 
 }
