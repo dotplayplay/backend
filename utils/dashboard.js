@@ -400,9 +400,9 @@ const totalGamesLoss = async () => {
 }
 
 const totalWageredByMonth = async () => {
-    let crashGameTotalStake = 0;
-    let diceGameTotalStake = 0;
-    let minesGameTotalStake = 0;
+    let crashGameTotalStake = [];
+    let diceGameTotalStake = [];
+    let minesGameTotalStake = [];
 
     const monthsArray = [
         "January",
@@ -483,13 +483,16 @@ const totalWageredByMonth = async () => {
             totalAmount: Math.floor(obj.totalAmount)
         }
     })
+    if(totalAmountByMonth.length <= 0){
+        return 0
+    }
     return totalAmountByMonth
 }
 
 const totalWonByMonth = async () => {
-    let crashGameTotalStake = 0;
-    let diceGameTotalStake = 0;
-    let minesGameTotalStake = 0;
+    let crashGameTotalStake = [];
+    let diceGameTotalStake = [];
+    let minesGameTotalStake = [];
 
     const monthsArray = [
         "January",
@@ -575,6 +578,9 @@ const totalWonByMonth = async () => {
             totalAmount: Math.floor(obj.totalAmount)
         }
     })
+    if(totalAmountWon.length <= 0){
+        return 0
+    }
     return totalAmountWon
 }
 const userWon = async (user_id) => {
