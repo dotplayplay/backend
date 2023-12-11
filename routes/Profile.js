@@ -4,7 +4,7 @@ const requireAuth = require('../middleware/requireAuth')
 
 // auth middleware
 router.use(requireAuth)
-const {  SingleUser,  UpdateUser, UpdateProfile, handleHiddenProfile, handlePublicUsername, handleRefusefriendRequest, handleRefuseTip, handleDailyPPFbonus, ChangeProfilePicture } = require('../controller/profileControllers')
+const {  SingleUser,  UpdateUser, UpdateProfile, handleHiddenProfile, handlePublicUsername, handleRefusefriendRequest, handleRefuseTip, handleDailyPPFbonus, UpdateAvatar, ChangeProfilePicture } = require('../controller/profileControllers')
 const {handleClaimBonus} = require("../profile_mangement/week_cashback")
 const { handleClaimMonthlyBonus } = require("../profile_mangement/monthlycashback")
 
@@ -12,6 +12,7 @@ router.get('/', SingleUser)
 router.post('/update-user', UpdateUser)
 router.post('/update-profile', UpdateProfile)
 router.post('/change-profile-picture', ChangeProfilePicture)
+router.post('/update-avatar', UpdateAvatar);
 router.post('/update-hidden', handleHiddenProfile)
 router.post('/hide-public-username', handlePublicUsername)
 router.post('/refuse-friend-request', handleRefusefriendRequest)
