@@ -3,8 +3,8 @@ const router = express.Router()
 const requireAuth = require('../middleware/requireAuth')
 
 // auth middleware
-router.use(requireAuth)
-const {  SingleUser,  UpdateUser, UpdateProfile, handleHiddenProfile, handlePublicUsername, handleRefusefriendRequest, handleRefuseTip, handleDailyPPFbonus } = require('../controller/profileControllers')
+// router.use(requireAuth)
+const {  SingleUser,  UpdateUser, UpdateProfile, handleHiddenProfile, handlePublicUsername, handleRefusefriendRequest, handleRefuseTip, handleDailyPPFbonus, changeActiveSessionVisibility, getActiveSession, storeNewSession } = require('../controller/profileControllers')
 const {handleClaimBonus} = require("../profile_mangement/week_cashback")
 const { handleClaimMonthlyBonus } = require("../profile_mangement/monthlycashback")
 
@@ -18,6 +18,10 @@ router.post('/refuse-tips', handleRefuseTip)
 router.get('/ppf-daily-bonus', handleDailyPPFbonus)
 router.post("/claim-weekly-bonus", handleClaimBonus)
 router.post("/claim-monthly-bonus", handleClaimMonthlyBonus)
+router.get("/active-session", getActiveSession);
+router.post("/active-session/take-action", changeActiveSessionVisibility);
+router.post("/active-session/new-session", storeNewSession);
+
 //for testing
 
 

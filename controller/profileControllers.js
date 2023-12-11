@@ -9,6 +9,7 @@ const DiceGame = require("../model/dice_game");
 const PPDWallet = require("../model/PPD-wallet");
 const UsdtWallet = require("../model/Usdt-wallet");
 const PPLWallet = require("../model/PPL-wallet");
+const ActiveSession = require("../model/Active_sessions");
 
 const createProfile = (async(datas)=>{
   try{
@@ -174,7 +175,60 @@ const handleDailyPPFbonus =  (async(req, res)=>{
   catch(err){
     res.status(500).json({error: err})
   }
-
 })
 
-module.exports = { SingleUser, UpdateUser, UpdateProfile,handleHiddenProfile , handlePublicUsername, handleRefusefriendRequest, handleRefuseTip, handleDailyPPFbonus,  createProfile }
+
+const changeActiveSessionVisibility =  (async(req, res)=>{
+  try{
+    const {user_id} = req.id;
+    const { visible } = req.body
+
+      let response = await ActiveSession.updateOne({user_id},{
+        visible: visible
+      })
+    res.status(200).json(response);
+  }
+  catch(err){
+    res.status(500).json({error: err})
+  }
+})
+
+const getActiveSession =  (async (req, res) => {
+  try{
+    const {user_id} = req.id;
+    const response = await ActiveSession.find({user_id});
+    res.status(200).json({
+        data: response
+    });
+  }
+  catch(err){
+    res.status(500).json({error: err})
+  }
+})
+
+
+const storeNewSession =  (async(req, res)=>{
+  try{
+    const {user_id} = req.id;
+  const { OS, browser, country, Ip_Address, last_used, visible } = req.body
+  const newSession = {
+    user_id,
+    OS,
+    browser, 
+    country,
+    Ip_Address,
+    last_used,
+    visible
+  }
+
+    const response = await ActiveSession.create(newSession);
+    res.status(200).json({
+        data: response
+    });
+  }
+  catch(err){
+    res.status(500).json({error: err})
+  }
+})
+
+module.exports = { SingleUser, UpdateUser, UpdateProfile,handleHiddenProfile , handlePublicUsername, handleRefusefriendRequest, handleRefuseTip, handleDailyPPFbonus,  createProfile, getActiveSession, changeActiveSessionVisibility, storeNewSession }

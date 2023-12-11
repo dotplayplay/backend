@@ -572,71 +572,71 @@ const gameReport = async (req, res, next) => {
     })
 }
 
-const gameReport = async (req, res, next) => {
-    const { todayDate, tomorrowDate } = getTodayAndTomorrowsDate()
-    // Daily Total Wagered Across all Games
-    const crashDailyTotalWagered = await dailyTotalWagered(todayDate, tomorrowDate, 'crashgame')
-    const diceDailyTotalWagered = await dailyTotalWagered(todayDate, tomorrowDate, 'dicegame')
-    const minesDailyTotalWagered = await dailyTotalWagered(todayDate, tomorrowDate, 'minesgame')
-    const totalWagered = {
-        crashDailyTotalWagered,
-        diceDailyTotalWagered,
-        minesDailyTotalWagered
-    }
-    //Daily Total Payout Across all games
-    const crashDailyPayout = await dailyGamesWon(todayDate, tomorrowDate, 'crashgame')
-    const diceDailyPayout = await dailyGamesWon(todayDate, tomorrowDate, 'dicegame')
-    const minesDailyPayout = await dailyGamesWon(todayDate, tomorrowDate, 'minesgame')
-    const totalPayout = {
-        crashDailyPayout,
-        diceDailyPayout,
-        minesDailyPayout
-    }
-    //Daily GGR Across all games
-    const totalGGR = {
-        crashDailyGGR: crashDailyTotalWagered - crashDailyPayout,
-        diceDailyGGR: diceDailyTotalWagered - diceDailyPayout,
-        minesDailyGGR: minesDailyTotalWagered - minesDailyPayout
+// const gameReport = async (req, res, next) => {
+//     const { todayDate, tomorrowDate } = getTodayAndTomorrowsDate()
+//     // Daily Total Wagered Across all Games
+//     const crashDailyTotalWagered = await dailyTotalWagered(todayDate, tomorrowDate, 'crashgame')
+//     const diceDailyTotalWagered = await dailyTotalWagered(todayDate, tomorrowDate, 'dicegame')
+//     const minesDailyTotalWagered = await dailyTotalWagered(todayDate, tomorrowDate, 'minesgame')
+//     const totalWagered = {
+//         crashDailyTotalWagered,
+//         diceDailyTotalWagered,
+//         minesDailyTotalWagered
+//     }
+//     //Daily Total Payout Across all games
+//     const crashDailyPayout = await dailyGamesWon(todayDate, tomorrowDate, 'crashgame')
+//     const diceDailyPayout = await dailyGamesWon(todayDate, tomorrowDate, 'dicegame')
+//     const minesDailyPayout = await dailyGamesWon(todayDate, tomorrowDate, 'minesgame')
+//     const totalPayout = {
+//         crashDailyPayout,
+//         diceDailyPayout,
+//         minesDailyPayout
+//     }
+//     //Daily GGR Across all games
+//     const totalGGR = {
+//         crashDailyGGR: crashDailyTotalWagered - crashDailyPayout,
+//         diceDailyGGR: diceDailyTotalWagered - diceDailyPayout,
+//         minesDailyGGR: minesDailyTotalWagered - minesDailyPayout
 
-    }
-    //GGR Percentage
+//     }
+//     //GGR Percentage
 
-    const totalGGRPercentage = {
-        crashDailyGGRPercentage: `${(totalGGR.crashDailyGGR) / 100}%`,
-        diceDailyGGRPercentage: `${(totalGGR.diceDailyGGR) / 100}%`,
-        minesDailyGGRPercentage: `${(totalGGR.minesDailyGGR) / 100}%`
-    }
+//     const totalGGRPercentage = {
+//         crashDailyGGRPercentage: `${(totalGGR.crashDailyGGR) / 100}%`,
+//         diceDailyGGRPercentage: `${(totalGGR.diceDailyGGR) / 100}%`,
+//         minesDailyGGRPercentage: `${(totalGGR.minesDailyGGR) / 100}%`
+//     }
 
-    //Bet Count Per Game
-    const crashBetCount = await betCount(todayDate, tomorrowDate, 'crashgame')
-    const diceBetCount = await betCount(todayDate, tomorrowDate, 'dicegame')
-    const minesBetCount = await betCount(todayDate, tomorrowDate, 'minesgame')
-    const totalBetCount = {
-        crashBetCount,
-        diceBetCount,
-        minesBetCount,
-    }
+//     //Bet Count Per Game
+//     const crashBetCount = await betCount(todayDate, tomorrowDate, 'crashgame')
+//     const diceBetCount = await betCount(todayDate, tomorrowDate, 'dicegame')
+//     const minesBetCount = await betCount(todayDate, tomorrowDate, 'minesgame')
+//     const totalBetCount = {
+//         crashBetCount,
+//         diceBetCount,
+//         minesBetCount,
+//     }
 
-    //Player Count Per Game
-    const crashPlayerCount = await playerCount(todayDate, tomorrowDate, 'crashgame')
-    const dicePlayerCount = await playerCount(todayDate, tomorrowDate, 'dicegame')
-    const minesPlayerCount = await playerCount(todayDate, tomorrowDate, 'minesgame')
-    const totalPlayerCount = {
-        crashPlayerCount,
-        dicePlayerCount,
-        minesPlayerCount,
-    }
+//     //Player Count Per Game
+//     const crashPlayerCount = await playerCount(todayDate, tomorrowDate, 'crashgame')
+//     const dicePlayerCount = await playerCount(todayDate, tomorrowDate, 'dicegame')
+//     const minesPlayerCount = await playerCount(todayDate, tomorrowDate, 'minesgame')
+//     const totalPlayerCount = {
+//         crashPlayerCount,
+//         dicePlayerCount,
+//         minesPlayerCount,
+//     }
 
-    return res.status(200).json({
-        success: true,
-        totalWagered,
-        totalPayout,
-        totalGGR,
-        totalGGRPercentage,
-        totalBetCount,
-        totalPlayerCount
-    })
-}
+//     return res.status(200).json({
+//         success: true,
+//         totalWagered,
+//         totalPayout,
+//         totalGGR,
+//         totalGGRPercentage,
+//         totalBetCount,
+//         totalPlayerCount
+//     })
+// }
 
 module.exports = {
     createMember,
