@@ -25,6 +25,7 @@ const fetchActivePlayers = (async()=>{
     io.emit("dice-gamePLayers", fghhs)
 })
 
+
 // setInterval(()=>{
 //     fetchActivePlayers()
 // }, 1000)
