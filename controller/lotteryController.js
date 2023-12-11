@@ -1,7 +1,9 @@
-const { axios } = require("axios");
 const crypto = require("crypto");
 const PPLWallet = require("../model/PPL-wallet")
 const Lottery = require('../model/lottery_game');
+const { Web3 } = require('web3');
+const web3 = new Web3(new Web3.providers.HttpProvider('https://mainnet.infura.io/v3/80ac7c0645804a909267c778b9b82126'));
+const User = require('../model/User');
 const LotterySeeds = require('../model/lottery_encryped_seeds');
 const LotteryTicket = require('../model/lottery_ticktet');
 const mongoose = require("mongoose");
@@ -13,14 +15,18 @@ const buyTickets = async (req, res) => {
     const { user_id } = req.id
     const { random, numbers, jackpot, amount } = req.body;
     if (!random && (numbers.length < 5 || !jackpot)) {
+      session.endSession();
       return res.status(400).json({
         status: false,
         message: "Select valid numbers",
       });
     }
 
+    const price = amount * 0.1;
+
     const wallet = await PPLWallet.findOne({ user_id }).session(session);
-    if (wallet.balance < amount) {
+    if (wallet.balance < price) {
+      session.endSession();
       return res.status(400).json({
         status: false,
         error: "Not enough PPL"
@@ -31,15 +37,25 @@ const buyTickets = async (req, res) => {
 
     const lottery = await Lottery.findOne({ drawn: false }).sort({ '_id': -1 }).session(session);
     if (!lottery) {
+      session.endSession();
       return res.status(400).json({
         status: false,
         message: "Game not available",
       });
     }
 
+    if (Date.now() > new Date(lottery.draw_date) - 5 * 60 * 1000) {
+      // Perform action if current time is greater than draw date minus 5 minutes
+      session.endSession();
+      return res.status(400).json({
+        status: false,
+        message: "Cannot purchase ticket. Past deadline",
+      });
+    }
+
     const prevBal = parseFloat(wallet.balance);
 
-    await PPLWallet.updateOne({ _id: wallet._id }, { balance: prevBal - amount }).session(session);
+    await PPLWallet.updateOne({ _id: wallet._id }, { balance: prevBal - price }).session(session);
 
     const ticket = await LotteryTicket.create([{
       user_id,
@@ -74,7 +90,7 @@ const getLotteryHistory = async (req, res) => {
 }
 
 const getLotteryDetails = async (req, res) => {
-  const { id } = req.params;
+  const { id } = req.query;
   let lottery;
   try {
     if (!id) {
@@ -97,8 +113,14 @@ const getLotteryDetails = async (req, res) => {
 
 const getUserGameLotteryTickets = async (req, res) => {
   const { user_id } = req.id
+  const { id } = req.query;
   try {
-    const lottery = await Lottery.findOne({ drawn: false }).sort({ '_id': -1 });
+    let lottery;
+    if (!id) {
+      lottery = await Lottery.findOne({ drawn: false }).sort({ '_id': -1 });
+    } else {
+      lottery = await Lottery.findOne({ game_id: id });
+    }
     if (!lottery) {
       return res.status(400).json({
         status: false,
@@ -113,7 +135,7 @@ const getUserGameLotteryTickets = async (req, res) => {
 }
 
 const getGameSeeds = async (req, res) => {
-  const { id } = req.params;
+  const { id } = req.query;
   if (!id) {
     return res.status(400).json({
       status: false,
@@ -137,8 +159,8 @@ const getGameSeeds = async (req, res) => {
       });
     }
     let update = {};
-    if (!lottery.drawn) update = {server_seed_hash: seeds.server_seed_hash }
-    else update = {...seeds}
+    if (!lottery.drawn) update = { server_seed_hash: seeds.server_seed_hash }
+    else update = { ...seeds }
     res.status(200).json({ seeds: update });
   } catch (error) {
     res.status(500).json(error);
@@ -146,7 +168,7 @@ const getGameSeeds = async (req, res) => {
 }
 
 const getGameLotteryTickets = async (req, res) => {
-  const { id } = req.params;
+  const { id } = req.query;
   if (!id) {
     return res.status(400).json({
       status: false,
@@ -162,12 +184,12 @@ const getGameLotteryTickets = async (req, res) => {
       });
     }
     const tickets = await LotteryTicket.find({ game_id: lottery.game_id });
-    const populatedTickets = await Promise.all(tickets.map(async (ticket) => {
-      const user = await User.findOne({ _id: ticket.user_id });
+    const userPopulatedTickets = await Promise.all(tickets.map(async (ticket) => {
+      const user = await User.findOne({ user_id: ticket.user_id });
       ticket.user = user;
       return ticket;
     }));
-    res.status(200).json({ tickets: populatedTickets });
+    res.status(200).json({ tickets: userPopulatedTickets });
   } catch (error) {
     res.status(500).json(error);
   }
@@ -176,19 +198,27 @@ const getGameLotteryTickets = async (req, res) => {
 const getWinningTickets = async (req, res) => {
   const { user_id } = req.id
   try {
-    const tickets = await LotteryTicket.find({ user_id, prize: { $gt: 0 } }).populate('game_id');
-    res.status(200).json({ tickets });
+    const tickets = await LotteryTicket.find({ user_id, prize: { $gt: 0 } });
+    const gamePopulatedTickets = await Promise.all(tickets.map(async (ticket) => {
+      const game = await Lottery.findOne({ game_id: ticket.game_id });
+      ticket.game = game;
+      return ticket;
+    }))
+    res.status(200).json({ tickets: gamePopulatedTickets });
   } catch (error) {
     res.status(500).json(error);
   }
 }
 
 async function initializeLottery() {
+  // await Lottery.deleteMany({});
+  // await LotteryTicket.deleteMany({});
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
     let latestLottery = await Lottery.findOne({ drawn: false }).sort({ '_id': -1 }).session(session);
     if (!latestLottery) {
+      console.log("Creating Lottery Game ::")
       latestLottery = new Lottery({
         numbers: [],
         drawn: false
@@ -196,6 +226,25 @@ async function initializeLottery() {
       await latestLottery.save({ session });
     }
     console.log("Lottery => ", latestLottery);
+    if (latestLottery.game_id > 1) {
+      // Bonus tickets for previous game tickets
+      const lastGameId = latestLottery.game_id - 1;
+      const previousGameTickets = await LotteryTicket.find({ game_id: lastGameId }).sort({ '_id': -1 }).session(session);
+      const previousGameBonusTickets = previousGameTickets.filter(ticket => ticket.matched <= 2);
+
+      const ticketsCreation = [];
+      for (const ticket of previousGameBonusTickets) {
+        ticketsCreation.push(LotteryTicket.create([{
+          user_id: ticket.user_id,
+          game_id: latestLottery.game_id,
+          amount: ticket.amount,
+          numbers: ticket.numbers
+        }], { session }))
+      }
+
+      await Promise.all(ticketsCreation);
+    }
+
     const serverSeed = Math.random().toString(16).slice(2);
     const lotterySeeds = new LotterySeeds({
       game_id: latestLottery.game_id,
@@ -245,7 +294,7 @@ function drawLottery(clientSeed, serverSeed) {
     .digest('hex');
 
   const hash8 = hash.substring(0, 8);
-  const int32Value = parseInt(hash8, 16);
+  let int32Value = parseInt(hash8, 16);
 
   const winningBalls = [];
   for (let i = 0; i < 5; i++) {
@@ -274,42 +323,69 @@ async function runLotteryDraw() {
       throw new Error("This should never happen!")
     }
 
-    // This needs to be revised
-    const clientSeed = Math.random().toString(16).slice(2);
     const seeds = await LotterySeeds.findOne({ game_id: lottery.game_id }).session(session);
 
     if (!seeds) {
       throw new Error("This should never happen!")
     }
 
-    const { winningBalls, jackpotBall } = drawLottery(clientSeed, seeds.server_seed);
-    const drawnNumbers = [...winningBalls, jackpotBall];
+    const clientSeed = seeds.client_start_block + 10;
+    const clientSeedHash = crypto.createHash('sha256').update(clientSeed).digest('hex');
 
-    await LotterySeeds.updateOne({ game_id: lottery.game_id }, { client_seed: clientSeed, client_seed_hash: crypto.createHash('sha256').update(clientSeed).digest('hex') }).session(session);
+    const { winningBalls, jackpotBall } = drawLottery(clientSeed, seeds.server_seed);
+    const winningNumbers = [...winningBalls, jackpotBall];
+
+    await LotterySeeds.updateOne({ game_id: lottery.game_id }, { client_seed: clientSeed, client_seed_hash: clientSeedHash }).session(session);
 
     const tickets = await LotteryTicket.find({ game_id: lottery.game_id }).session(session);
 
-    await Lottery.updateOne({ game_id: lottery.game_id }, { drawn: true, numbers: drawnNumbers }).session(session);
+    await Lottery.updateOne({ game_id: lottery.game_id }, { drawn: true, numbers: winningNumbers }).session(session);
 
     await Promise.all(tickets.map(async ticket => {
-      const { prize, matched } = calculatePrize(ticket.numbers, drawnNumbers);
+      const { prize, matched } = calculatePrize(ticket.numbers, winningNumbers);
       const promises = [];
       if (prize > 0) {
         const wallet = PPLWallet.findOne({ user_id: ticket.user_id }).session(session);
         const prevBal = parseFloat(wallet.balance);
         promises.push([PPLWallet.updateOne({ user_id: ticket.user_id }, {
-          balance: prevBal + parseFloat((prize * ticket.amount) / 0.1)
+          balance: prevBal + parseFloat((prize * (ticket.amount * 0.1)) / 0.1)
         }).session(session)])
       }
       promises.push(LotteryTicket.updateOne({ _id: ticket._id }, { prize, matched }).session(session))
       return Promise.all(promises);
     }));
-    
+
     await session.commitTransaction();
     await initializeLottery();
   } catch (error) {
     await session.abortTransaction();
     console.log("Error running lotto", error)
+  }
+}
+
+async function setDeadlineBlock() {
+  console.log("Setting ETH start block")
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    const lottery = await Lottery.findOne({ drawn: false }).sort({ '_id': -1 }).session(session);
+
+    if (!lottery) {
+      throw new Error("This should never happen!")
+    }
+    const seeds = await LotterySeeds.findOne({ game_id: lottery.game_id }).session(session);
+
+    if (!seeds) {
+      throw new Error("This should never happen!")
+    }
+    // latest ETH block
+    const latestBlock = await web3.eth.getBlockNumber();
+    await LotterySeeds.updateOne({ game_id: lottery.game_id }, { client_start_block: latestBlock }).session(session);
+    console.log('Seeds updated :::> ', latestBlock);
+    await session.commitTransaction();
+  } catch (error) {
+    await session.abortTransaction();
+    console.log("Error setting ETH blocks", error)
   }
 }
 
@@ -323,5 +399,6 @@ module.exports = {
   getUserGameLotteryTickets,
   getLotteryDetails,
   getLotteryHistory,
-  getGameSeeds
+  getGameSeeds,
+  setDeadlineBlock
 };
