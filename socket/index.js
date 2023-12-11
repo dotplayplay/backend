@@ -1,14 +1,14 @@
 const { Server } = require("socket.io")
 const crypto = require('crypto');
-const axios = require("axios")
+const axios = require("axios");
 const salt = 'Qede00000000000w00wd001bw4dc6a1e86083f95500b096231436e9b25cbdd0075c4';
-const DiceGame = require("../model/dice_game")
-const DiceEncrypt = require("../model/dice_encryped_seeds")
-const PPFWallet = require("../model/PPF-wallet")
-const USDTWallet = require("../model/Usdt-wallet")
-const Chats = require("../model/public-chat")
-const {handleWagerIncrease} = require("../profile_mangement/index")
-const Bills = require("../model/bill")
+const DiceGame = require("../model/dice_game");
+const DiceEncrypt = require("../model/dice_encryped_seeds");
+const PPFWallet = require("../model/PPF-wallet");
+const USDTWallet = require("../model/Usdt-wallet");
+const Chats = require("../model/public-chat");
+const {handleWagerIncrease} = require("../profile_mangement/index");
+const Bills = require("../model/bill");
 let maxRange = 100
 
 async function createsocket(httpServer){
@@ -16,17 +16,19 @@ const io = new Server(httpServer, {
     cors: {
         origin:"https://dotplayplay.netlify.app"
         // origin: "http://localhost:5173"
-    },
+    }
 });
 
-let fghhs = await DiceGame.find()
+
 const fetchActivePlayers = (async()=>{
+    let fghhs = await DiceGame.find()
     io.emit("dice-gamePLayers", fghhs)
 })
 
+
 // setInterval(()=>{
 //     fetchActivePlayers()
-// }, 2000)
+// }, 1000)
 
 
 const handleDiceBEt = (async(data)=>{
@@ -152,7 +154,7 @@ const handleDicePoints = ((e)=>{
 })
 
 
-let newMessage = await Chats.find()
+// let newMessage = await Chats.find()
 const handleNewChatMessages = (async(data)=>{
     io.emit("new-messages", newMessage)
   await Chats.create(data)
@@ -166,7 +168,7 @@ io.on("connection", (socket)=>{
 
     socket.on("message", data=>{
         newMessage.push(data)
-        handleNewChatMessages(data)
+        // handleNewChatMessages(data)
     })
 
     socket.on("disconnect", ()=>{

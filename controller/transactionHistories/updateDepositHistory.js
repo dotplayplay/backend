@@ -28,6 +28,7 @@ const updateDepositHistory = ( async (order_id, depositRequestModel) => {
         }
 
         const transaction = await DepositHistory.create(newDeposit);
+
         console.log(transaction);
         }catch(error){
             console.log(error);

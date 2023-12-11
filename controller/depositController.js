@@ -81,7 +81,6 @@ const handleSuccessfulDeposit = (async(event)=>{
   let result = await USDTwallet.updateOne({user_id}, {
       balance:prev_bal + order_amount
     })
-
     const order_id = currentDeposit.order_id;
     await updateDepositHistory(order_id, DepositRequest);
 })
@@ -101,6 +100,7 @@ const handleFailedTransaction = (async(event)=>{
   }
   catch(err){
     console.log(err)
+    updateDepositHistory(user_id, event.merchant_order_id, describtion);
   }
 })
 
@@ -163,7 +163,6 @@ const confirmDeposit = async () => {
     let usersID = []
     let deoop = await DepositRequest.find()
     if(deoop > 0){
-
       deoop.forEach(element => {
         if(element.status === "Pending"){
           usersID.push(element.merchant_order_id)
@@ -209,7 +208,7 @@ const confirmDeposit = async () => {
 }
 
 setInterval(() => {
-  confirmDeposit()
+  // confirmDeposit()
 }, 17000);
 
 
