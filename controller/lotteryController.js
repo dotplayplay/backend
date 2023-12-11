@@ -205,10 +205,7 @@ async function initializeLottery() {
 
     await lotterySeeds.save({ session });
 
-
     await session.commitTransaction();
-
-
   } catch (err) {
     console.error(err);
     await session.abortTransaction();

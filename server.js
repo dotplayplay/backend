@@ -10,8 +10,8 @@ const User = require("./routes/Users.js");
 const Admin = require("./routes/admin.js");
 const Profile = require("./routes/Profile.js");
 const Chat = require("./routes/chat");
-require("./controller/crashEngine.js");
-require("./controller/lotteryEngine.js");
+// require("./controller/crashEngine.js");
+// require("./controller/lotteryEngine.js");
 const minegame = require("./routes/mines");
 const Wallet = require("./routes/wallet.js");
 const diceGame = require("./routes/diceGame");
@@ -57,13 +57,8 @@ app.get("/", (req, res)=>{
 })
 
 mongoose.set('strictQuery', false);
-<<<<<<< HEAD
-const dbUri = `mongodb://localhost:27017/dpp`;
-// const dbUri = `mongodb+srv://valiantjoe:jspW8bJDiu5lnvc4@highscore.muku4gg.mongodb.net/dotplayplay?retryWrites=true&w=majority`
-=======
-// mongodb+srv://ValiantCodez:dLyF3TFuDTTUcfVA@cluster0.gutge9q.mongodb.net/Main-Application?retryWrites=true&w=majority
-const dbUri = `mongodb://localhost:27017/dpp`;
->>>>>>> aa02e17a797d349ebb93752e7abefcdc9ddfc5c0
+const dbUri = `mongodb+srv://ValiantCodez:dLyF3TFuDTTUcfVA@cluster0.gutge9q.mongodb.net/Main-Application?retryWrites=true&w=majority`
+// const dbUri = `mongodb://localhost:27017/dpp`;
 mongoose.connect(dbUri, { useNewUrlParser: true,  useUnifiedTopology: true })
     .then((result)=>  console.log('Database connected'))
     .catch((err)=> console.log(err))
