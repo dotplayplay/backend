@@ -99,24 +99,24 @@ const initiateWithdrawal = async (req, res) => {
               await USDTwallet.updateOne({user_id},{
                 balance: newAmount
               });
+              
               res.status(201).json({
                 status: true,
                 message: "Crypto withdrawn successfully",
                 data: response.data,
               });
-              const describtion =  "Crypto withdrawn successfully";
-              updateWithdrawalHistory(user_id, describtion, data.amount, userBalance, newAmount, "Successful");
+              await updateWithdrawalHistory(user_id, "Successful", data.amount, userBalance, newAmount);
         } else {
           res.status(400).json({
             status: false,
             message: `${response.data.msg}`,
           });
           console.log(response.data)
+          await updateWithdrawalHistory(user_id, "Failed", data.amount);
         }
       }
   } catch (error) {
     console.error("Error processing withdrawal:", error);
-    // updateWithdrawalHistory(user_id, describtion, data.amount, userBalance, newAmount, "Failed");
     res.status(500).json({ status: false, message: "Internal server error" });
   }
 };
