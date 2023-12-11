@@ -14,6 +14,8 @@ const { CreateAffiliate, CheckValidity } = require("./affiliateControllers")
 const { handleCreatePPDunlocked } = require("../profile_mangement/ppd_unlock")
 const { handleNewNewlyRegisteredCount } = require("../profile_mangement/cashbacks")
 const { InitializeMinesGame } = require("../controller/minesControllers")
+const {twoFactorAuth} = require("../utils/twoFactorAuth");
+const { twoFactorAuthVerify } = require('../utils/twoFactorAuthVerify');
 const createToken = ((_id)=>{
    return  jwt.sign({_id}, SECRET, { expiresIn: '4d' })
 })
@@ -185,9 +187,22 @@ const previousChats = (async(req, res)=>{
     }
 })
 
+const twoFacAuth =  (async (req, res) => {
+    await twoFactorAuth(req, res);
+})
+
+const twoFacAuthVerify =  (async (req, res) => {
+    await twoFactorAuthVerify(req, res);
+})
+
+
+
+
 module.exports = { 
     CreateAccount, 
     Register, 
     previousChats,
-    SingleUserByID
+    SingleUserByID,
+    twoFacAuth,
+    twoFacAuthVerify
 }
