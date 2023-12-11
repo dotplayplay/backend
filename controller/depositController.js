@@ -7,7 +7,8 @@ const CC_APP_SECRET = "206aed2f03af1b70305fb11319f2f57b";
 const CCPAYMENT_API_URL = "https://admin.ccpayment.com";
 const { handleProfileTransactions } = require("../profile_mangement/index")
 const { handlePPDunLockUpdate } = require("../profile_mangement/ppd_unlock")
-const { handleTotalNewDepsitCount } = require("../profile_mangement/cashbacks")
+const { handleTotalNewDepsitCount } = require("../profile_mangement/cashbacks");
+const { updateDepositHistory } = require("./transactionHistories/updateDepositHistory");
 
 const RequestTransaction = (async(event)=>{
   // Get the current date and time
@@ -81,6 +82,7 @@ const handleSuccessfulDeposit = (async(event)=>{
       balance:prev_bal + order_amount
     })
     console.log(result )
+    updateDepositHistory(user_id, event.merchant_order_id, describtion, order_amount, prev_bal, result );
 })
 
 const handleFailedTransaction = (async(event)=>{
@@ -94,6 +96,7 @@ const handleFailedTransaction = (async(event)=>{
   }
   catch(err){
     console.log(err)
+    updateDepositHistory(user_id, event.merchant_order_id, describtion);
   }
 })
 

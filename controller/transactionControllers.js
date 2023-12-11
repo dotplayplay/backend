@@ -7,6 +7,7 @@ const USDT_wallet = require("../model/Usdt-wallet")
 const PPD_wallet = require("../model/PPD-wallet")
 const PPL_wallet = require("../model/PPL-wallet");
 const bill = require("../model/bill");
+const UsdtWallet = require("../model/Usdt-wallet");
 
 const handleSwap = (async (req,res)=>{
     const {user_id} = req.id
@@ -44,6 +45,23 @@ const handleSwap = (async (req,res)=>{
     let gdrrx = await Wallet.find({user_id})
     let jkdrrex = number(gdrrx[0].balance)
     handleOlderSenderBal(jkdrrex)
+
+    // const usdt = await  UsdtWallet.find({user_id})
+    // if(usdt.balance < req.body.value){
+    //     res.status(200).json({res: "insufficient fund"})
+    // }else{
+    //     const newUsdtBalance = usdt.balance - req.body.value;
+    //     await UsdtWallet.updateOne({$where: {
+    //         balance: newUsdtBalance
+    //     }})
+
+    //     const 
+    //     const pplBalance = await PPL-wallet.
+    // }
+
+    // usdt.balance
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
 
     // let query = `SELECT balance FROM ${wallet}  WHERE user_id = "${user_id}"`;
     // connection.query(query, async (error, data)=>{
@@ -96,5 +114,7 @@ const handleBills = (async(req,res)=>{
         res.status(401).json({error: "Invalid user"})
     }
 })
+
+
 
 module.exports = { handleSwap, handleBills }
