@@ -26,19 +26,19 @@ router.post('/auth/login', login)
 router.post('/auth/register', register)
 
 //PATCH
-router.patch('/pin', protect, updatePin)
-router.patch('/password', protect, updatePassword)
-router.patch('/suspend', protect, suspend)
-router.patch('/role', protect, role)
-router.patch('/avalability', protect, updateAvailability)
+router.patch('/auth/pin', protect, updatePin)
+router.patch('/auth/password', protect, updatePassword)
+router.patch('/auth/suspend', protect, suspend)
+router.patch('/auth/role', protect, role)
+router.patch('/auth/avalability', protect, updateAvailability)
 
 //DELETE
 router.delete('/remove/:id', protect, removeAdmin)
 
 //GET
-router.get('/listadmins', protect, getAllAdmin)
-router.get('/:id', protect, findAdminById)
-router.get('/username/:username', protect, findAdminByUsername)
+router.get('/listadmins/list', protect, getAllAdmin)
+router.get('/user/:id', protect, findAdminById)
+router.get('/adminuser/:username', protect, findAdminByUsername)
 
 
 
@@ -69,7 +69,7 @@ router.post('/create', createMember)
 //Chat Settings
 router.post('/chatsettings', protect, createChatSettings)
 router.patch('/chatsettings', protect, updateChatSettings)
-router.get('/chatsettings/get', protect, getChatSettings)
+router.get('/chatsettings', protect, getChatSettings)
 
 
 module.exports = router
