@@ -1,14 +1,14 @@
 const { Server } = require("socket.io")
 const crypto = require('crypto');
-const axios = require("axios")
+const axios = require("axios");
 const salt = 'Qede00000000000w00wd001bw4dc6a1e86083f95500b096231436e9b25cbdd0075c4';
-const DiceGame = require("../model/dice_game")
-const DiceEncrypt = require("../model/dice_encryped_seeds")
-const PPFWallet = require("../model/PPF-wallet")
-const USDTWallet = require("../model/Usdt-wallet")
-const Chats = require("../model/public-chat")
-const {handleWagerIncrease} = require("../profile_mangement/index")
-const Bills = require("../model/bill")
+const DiceGame = require("../model/dice_game");
+const DiceEncrypt = require("../model/dice_encryped_seeds");
+const PPFWallet = require("../model/PPF-wallet");
+const USDTWallet = require("../model/Usdt-wallet");
+const Chats = require("../model/public-chat");
+const {handleWagerIncrease} = require("../profile_mangement/index");
+const Bills = require("../model/bill");
 let maxRange = 100
 
 async function createsocket(httpServer){
