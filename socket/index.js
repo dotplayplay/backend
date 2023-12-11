@@ -19,15 +19,14 @@ const io = new Server(httpServer, {
     }
 });
 
-
 const fetchActivePlayers = (async()=>{
     let fghhs = await DiceGame.find()
     io.emit("dice-gamePLayers", fghhs)
 })
 
-setInterval(()=>{
-    fetchActivePlayers()
-}, 1000)
+// setInterval(()=>{
+//     fetchActivePlayers()
+// }, 1000)
 
 
 const handleDiceBEt = (async(data)=>{
@@ -153,7 +152,7 @@ const handleDicePoints = ((e)=>{
 })
 
 
-let newMessage = await Chats.find()
+// let newMessage = await Chats.find()
 const handleNewChatMessages = (async(data)=>{
     io.emit("new-messages", newMessage)
   await Chats.create(data)
@@ -167,7 +166,7 @@ io.on("connection", (socket)=>{
 
     socket.on("message", data=>{
         newMessage.push(data)
-        handleNewChatMessages(data)
+        // handleNewChatMessages(data)
     })
 
     socket.on("disconnect", ()=>{

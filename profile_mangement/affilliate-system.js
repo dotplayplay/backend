@@ -245,6 +245,6 @@ const handleCommissionCalculation = (async()=>{
         console.log(eror)
     }
 })
-setInterval(() => handleCommissionCalculation(), 60000);
 
+// setInterval(() => handleCommissionCalculation(), 60000);
 module.exports = { handleAffiliateRewards, handleAffiliateCommission , handleProgressPercentage}
