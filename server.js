@@ -11,7 +11,8 @@ const Admin = require("./routes/admin.js");
 const Profile = require("./routes/Profile.js");
 const Chat = require("./routes/chat");
 // require("./controller/crashEngine.js");
-// require("./controller/lotteryEngine.js");
+require("./controller/lotteryEngine.js");
+require("./controller/cronScheduler.js");
 const minegame = require("./routes/mines");
 const Wallet = require("./routes/wallet.js");
 const diceGame = require("./routes/diceGame");
@@ -65,6 +66,7 @@ const dbUri = `mongodb+srv://ValiantCodez:dLyF3TFuDTTUcfVA@cluster0.gutge9q.mong
 mongoose.connect(dbUri, { useNewUrlParser: true,  useUnifiedTopology: true })
     .then((result)=>  console.log('Database connected'))
     .catch((err)=> console.log(err))
-server.listen(process.env.PORT, ()=>{
-    console.log("Running on port "+ process.env.PORT)
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, ()=>{
+    console.log("Running on port "+ PORT)
 })
