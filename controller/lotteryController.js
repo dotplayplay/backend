@@ -211,13 +211,14 @@ const getWinningTickets = async (req, res) => {
 }
 
 async function initializeLottery() {
-  // Lottery.deleteMany({});
-  // LotteryTicket.deleteMany({});
+  // await Lottery.deleteMany({});
+  // await LotteryTicket.deleteMany({});
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
     let latestLottery = await Lottery.findOne({ drawn: false }).sort({ '_id': -1 }).session(session);
     if (!latestLottery) {
+      console.log("Creating Lottery Game ::")
       latestLottery = new Lottery({
         numbers: [],
         drawn: false
