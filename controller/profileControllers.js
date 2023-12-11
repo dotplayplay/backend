@@ -200,4 +200,4 @@ const ChangeProfilePicture = (async(req, res)=>{
     }
 })
 
-module.exports = { SingleUser, UpdateUser, UpdateProfile,handleHiddenProfile , handlePublicUsername, handleRefusefriendRequest, handleRefuseTip, handleDailyPPFbonus, createProfile, ChangeProfilePicture }
+module.exports = { SingleUser, UpdateUser, UpdateProfile,handleHiddenProfile , handlePublicUsername, handleRefusefriendRequest, handleRefuseTip, handleDailyPPFbonus, createProfile,  ChangeProfilePicture }
