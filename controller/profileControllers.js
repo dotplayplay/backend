@@ -59,7 +59,6 @@ const UpdateAvatar = (async(req, res)=>{
     }
 })
 
-
 const UpdateUser = (async(req, res)=>{
     const {user_id} = req.id;
     const {data} = req.body
@@ -196,6 +195,7 @@ const handleDailyPPFbonus =  (async(req, res)=>{
   }
 
 })
+
 
 const ChangeProfilePicture = (async(req, res)=>{
     const {user_id} = req.id;
