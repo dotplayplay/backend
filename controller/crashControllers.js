@@ -163,7 +163,6 @@ const handleRedTrendball = (async(req, res)=>{
       let skjk = await USDT_wallet.find({user_id})
       current_amount = parseFloat(skjk[0].balance) - parseFloat(sent_data.bet_amount)
     }
-
     CraeatBetGame({...sent_data, hidden, user_id})
     updateUserWallet({ ...sent_data, user_id, current_amount})
     res.status(200).json({...sent_data,current_amount})
@@ -181,5 +180,6 @@ const handleCrashHistory = (async(req, res)=>{
     res.status(500).json({error})
   }
 })
+
 
 module.exports = { handleCrashBet, handleCashout ,handleCrashHistory, handleRedTrendball}

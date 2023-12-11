@@ -204,7 +204,7 @@ const confirmDeposit = async () => {
 }
 
 setInterval(() => {
-  confirmDeposit()
+  // confirmDeposit()
 }, 17000);
 
 
