@@ -151,7 +151,7 @@ const getGameSeeds = async (req, res) => {
         message: "Game not found",
       });
     }
-    const seeds = await LotterySeeds.findOne({ game_id: id });
+    const seeds = await LotterySeeds.findOne({ game_id: lottery.game_id });
     if (!seeds) {
       return res.status(400).json({
         status: false,
