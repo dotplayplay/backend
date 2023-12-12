@@ -276,9 +276,15 @@ async function initializeLottery() {
 
 
 function drawNumbers() {
-  const firstFive = Array.from({ length: 5 }, () => Math.floor(Math.random() * 36) + 1);
-  const sixth = Math.floor(Math.random() * 10) + 1;
-  return [...firstFive, sixth];
+  const balls = Array(36)
+    .fill(null)
+    .map((_, i) => i + 1);
+  const regularBalls = Array.from({ length: 5 }, () => {
+    const randomIndex = Math.floor(Math.random() * balls.length);
+    return balls.splice(randomIndex, 1)[0];
+  });
+  const jackpotNum = Math.max(1, Math.min(10, Math.round(Math.random() * 10) + 1));
+  return [...regularBalls, jackpotNum];
 }
 
 function calculatePrize(ticketNumbers, drawnNumbers) {
