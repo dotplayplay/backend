@@ -108,7 +108,7 @@ const login = async (req, res, next) => {
                 message: "Invalid Credentials"
             });
         }
-        
+
         if (!(await user.verifyPassword(password))) {
             return res.status(401).json({
                 success: false,
@@ -122,6 +122,18 @@ const login = async (req, res, next) => {
         await Admin.findOneAndUpdate({ _id: user._id }, { lastLogin: Date.now() });
 
         sendTokenResponse(user, 200, res);
+    } catch (err) {
+        return res.json({ error: err })
+    }
+};
+// CURRENT USER
+const currentUser = async (req, res) => {
+    try {
+        const user = await Admin.findById(req.user.id);
+        res.status(200).json({
+            success: true,
+            user: user
+        });
     } catch (err) {
         return res.json({ error: err })
     }
@@ -166,7 +178,7 @@ const findAdminByUsername = async (req, res, next) => {
         });
     } catch (err) {
         // return res.json({ error: err })
-        console.log(err)    
+        console.log(err)
     }
 }
 //UPDATE PIN
@@ -198,7 +210,7 @@ const updatePin = async (req, res, next) => {
 //UPDATE PASSWORD
 const updatePassword = async (req, res, next) => {
     try {
-        const id = req.user.id
+        const { id } = req.user
         const { password } = req.body
         const user = await Admin.findById(id)
         if (!user) {
@@ -218,7 +230,8 @@ const updatePassword = async (req, res, next) => {
             data: user
         });
     } catch (err) {
-        return res.json({ error: err })
+        // return res.json({ error: err })
+        console.error(err)
     }
 }
 //UPDATE SUSPEND
@@ -445,6 +458,7 @@ const getChatSettings = async (req, res, next) => {
 module.exports = {
     register,
     login,
+    currentUser,
     findAdminById,
     findAdminByUsername,
     updatePin,

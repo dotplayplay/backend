@@ -520,6 +520,12 @@ const totalLossRanking = async (req, res, next) => {
 
 const dailyReport = async (req, res, next) => {
     const {date} = req.body
+    if(!date) {
+        return res.status(403).json({
+            success: false,
+            message: 'Please enter a date'
+        })
+    }
     const { todayDate, tomorrowDate } = getTodayAndTomorrowsDate(date)
     console.log(todayDate, tomorrowDate)
     const users = await User.find({
@@ -624,6 +630,12 @@ const dailyReport = async (req, res, next) => {
 
 const gameReport = async (req, res, next) => {
     const {date} = req.body
+    if(!date) {
+        return res.status(403).json({
+            success: false,
+            message: 'Please enter a date'
+        })
+    }
     const { todayDate, tomorrowDate } = getTodayAndTomorrowsDate(date)
     console.log(todayDate, tomorrowDate)
     // Daily Total Wagered Across all Games
@@ -692,6 +704,12 @@ const gameReport = async (req, res, next) => {
 
 const ggrReport = async (req, res, next) => {
     const {date} = req.body
+    if(!date) {
+        return res.status(403).json({
+            success: false,
+            message: 'Please enter a date'
+        })
+    }
     const { todayDate, tomorrowDate } = getTodayAndTomorrowsDate(date)
     console.log(todayDate, tomorrowDate)
     
