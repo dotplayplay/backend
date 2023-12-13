@@ -22,7 +22,7 @@ const handleWagerIncrease = (async(event)=>{
         prev_level_up < 1 &&  handelLevelups(1, event.user_id)
         next_hit = 100
         total_wagered >= 1 && total_wagered <= next_hit   && handleProgressPercentage(1, next_hit, total_wagered, event.user_id)
-        }
+ }
         if( total_wagered >= 100 ){
                 next_hit = 200
                 prev_level_up < 2 &&  handelLevelups(2, event.user_id)
