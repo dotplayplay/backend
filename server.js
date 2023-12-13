@@ -4,22 +4,21 @@ const mongoose = require('mongoose');
 const AllPLays = require("./routes/admin/PLayers/crashPlayers");
 const Transaction = require("./routes/transactions.js");
 const Stats = require("./routes/admin/statistic/statistics");
+const Statistics = require("./routes/statistic.js");
 const Affiliate = require("./routes/affiliate");
 const CrashGame = require("./routes/crashgame.js");
 const User = require("./routes/Users.js");
 const Admin = require("./routes/admin.js");
 const Profile = require("./routes/Profile.js");
 const Chat = require("./routes/chat");
-// require("./controller/crashEngine.js");
 // require("./controller/lotteryEngine.js");
 // require("./controller/cronScheduler.js");
 const minegame = require("./routes/mines");
 const Wallet = require("./routes/wallet.js");
 const diceGame = require("./routes/diceGame");
 const Deposit = require("./routes/deposit");
-const Withdraw = require("./routes/withdraw");
-const Bonus = require('./routes/bonus');
-const Lottery = require('./routes/lottery');
+const Withdraw = require("./routes/withdraw")
+const Bonus = require('./routes/bonus')
 const TransactionHistory = require("./routes/transactionHistory.js");
 
 const { createsocket } = require("./socket/index.js");
@@ -50,9 +49,9 @@ app.use("/api/deposit", Deposit);
 app.use("/api/withdraw", Withdraw);
 app.use("/api/cashback", Bonus);
 app.use("/api/stats", Stats);
+app.use("/api/statistics", Statistics);
 app.use("/api/transaction", Transaction);
 app.use("/api/transaction-history", TransactionHistory);
-app.use("/api/lottery", Lottery);
 app.use("/admin/all-players", AllPLays);
 
 //admin routes

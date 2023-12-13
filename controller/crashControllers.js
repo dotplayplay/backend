@@ -68,6 +68,7 @@ const handleCrashBet = (async(req, res)=>{
     current_amount = parseFloat(skjk[0].balance) - parseFloat(sent_data.bet_amount)
   }
 
+  
   if(sent_data.bet_token_name === "USDT"){
     let skjk = await USDT_wallet.find({user_id})
     current_amount = parseFloat(skjk[0].balance) - parseFloat(sent_data.bet_amount)
