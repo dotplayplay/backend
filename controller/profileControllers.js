@@ -205,6 +205,7 @@ const ChangeProfilePicture = (async(req, res)=>{
     }
     else{
       try{
+        //update db
        await Profile.updateOne({ user_id }, {
         profile_image: data.profile_image,
        });
