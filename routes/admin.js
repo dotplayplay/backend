@@ -1,26 +1,49 @@
 
 const express = require('express')
-const requireAuth = require('../middleware/requireAuth')
 const {
-    createMember, 
-    getAllMembers, 
-    adminDashbaord, 
-    findUserById, 
-    findUserByUsername, 
-    registeredUserstats, 
-    totalWageredAndTotalWon, 
-    totalWageredRanking, 
-    totalWonRanking, 
+    createMember,
+    getAllMembers,
+    adminDashbaord,
+    findUserById,
+    findUserByUsername,
+    registeredUserstats,
+    totalWageredAndTotalWon,
+    totalWageredRanking,
+    totalWonRanking,
     totalLossRanking,
     dailyReport,
     gameReport,
     ggrReport
 } = require('../controller/adminController')
+const { login, register, findAdminById, findAdminByUsername, updatePin, updatePassword, suspend, role, updateAvailability,removeAdmin, getAllAdmin, createChatSettings, updateChatSettings, getChatSettings } = require('../controller/adminAuthController')
+const { protect } = require('../middleware/auth')
 
 const router = express.Router()
 
+/* ADMIN AUTH */
+//POST
+router.post('/auth/login', login)
+router.post('/auth/register', register)
 
-/* READ */
+//PATCH
+router.patch('/auth/pin', protect, updatePin)
+router.patch('/auth/password', protect, updatePassword)
+router.patch('/auth/suspend', protect, suspend)
+router.patch('/auth/role', protect, role)
+router.patch('/auth/avalability', protect, updateAvailability)
+
+//DELETE
+router.delete('/remove/:id', protect, removeAdmin)
+
+//GET
+router.get('/listadmins/list', protect, getAllAdmin)
+router.get('/user/:id', protect, findAdminById)
+router.get('/adminuser/:username', protect, findAdminByUsername)
+
+
+
+
+/* READ DASHBOARD AND REPORT */
 
 /* Get Admin Dashboard */
 router.get('/dashboard', adminDashbaord)
@@ -42,6 +65,11 @@ router.get('/ggrreport', ggrReport)
 
 /* Create Member */
 router.post('/create', createMember)
+
+//Chat Settings
+router.post('/chatsettings', protect, createChatSettings)
+router.patch('/chatsettings', protect, updateChatSettings)
+router.get('/chatsettings', protect, getChatSettings)
 
 
 module.exports = router

@@ -15,6 +15,7 @@ const PPLWallet = require('../model/PPL-wallet');
 const { removeDuplicatePlayer, getGGR, getTotalPlayerBalance, totalGamesWon, totalGamesLoss, totalWageredByMonth, totalWonByMonth, userWon, userLoss, dailyTotalWagered, dailyGamesWon, betCount, playerCount, dailyLottery, withdrawalHistory, cashBack, ggrByDate } = require("../utils/dashboard");
 const { conversion } = require("../utils/conversion");
 const { getTodayAndTomorrowsDate } = require("../utils/time");
+const AffiliateCodes = require("../model/affiliate_codes");
 
 // Create Member controller
 const createMember = async (req, res, next) => {
@@ -290,7 +291,35 @@ const findUserByUsername = async (req, res, next) => {
 const registeredUserstats = async (req, res, next) => {
     // const today = new Date()
     // const lastYear = today.setFullYear(today.setFullYear() - 1)
+    const backgroundColors = [
+        "#3498db",
+        "#e74c3c",
+        "#2ecc71",
+        "#f39c12",
+        "#1abc9c",
+        "#9b59b6",
+        "#e67e22",
+        "#2c3e50",
+        "#27ae60",
+        "#c0392b",
+        "#7f8c8d",
+        "#d35400",
+    ];
 
+    const borderColors = [
+        "#2980b9",
+        "#c0392b",
+        "#27ae60",
+        "#d68910",
+        "#16a085",
+        "#8e44ad",
+        "#d35400",
+        "#1f2c39",
+        "#229954",
+        "#a93226",
+        "#626567",
+        "#ba4e00",
+    ];
     const monthsArray = [
         "January",
         "February",
@@ -333,7 +362,9 @@ const registeredUserstats = async (req, res, next) => {
         const registeredUser = data.map((user) => {
             return {
                 month: monthsArray[user._id - 1],
-                noOfRegisteredUsers: user.total
+                noOfRegisteredUsers: user.total,
+                backgroundColors: backgroundColors,
+                borderColors: borderColors
             }
         })
         return res.status(200).json({
@@ -347,7 +378,35 @@ const registeredUserstats = async (req, res, next) => {
 }
 
 const totalWageredAndTotalWon = async (req, res, next) => {
+    const backgroundColors = [
+        "#3498db",
+        "#e74c3c",
+        "#2ecc71",
+        "#f39c12",
+        "#1abc9c",
+        "#9b59b6",
+        "#e67e22",
+        "#2c3e50",
+        "#27ae60",
+        "#c0392b",
+        "#7f8c8d",
+        "#d35400",
+    ];
 
+    const borderColors = [
+        "#2980b9",
+        "#c0392b",
+        "#27ae60",
+        "#d68910",
+        "#16a085",
+        "#8e44ad",
+        "#d35400",
+        "#1f2c39",
+        "#229954",
+        "#a93226",
+        "#626567",
+        "#ba4e00",
+    ];
     try {
         const wagered = await totalWageredByMonth()
         const totalWon = await totalWonByMonth()
@@ -355,7 +414,9 @@ const totalWageredAndTotalWon = async (req, res, next) => {
         return res.status(200).json({
             success: true,
             totalWagered: wagered,
-            totalWon: totalWon
+            totalWon: totalWon,
+            backgroundColors: backgroundColors,
+            borderColors: borderColors
         })
     } catch (err) {
         // return res.status(500).json({ error: err })
@@ -458,7 +519,9 @@ const totalLossRanking = async (req, res, next) => {
 }
 
 const dailyReport = async (req, res, next) => {
-    const { todayDate, tomorrowDate } = getTodayAndTomorrowsDate()
+    const {date} = req.body
+    const { todayDate, tomorrowDate } = getTodayAndTomorrowsDate(date)
+    console.log(todayDate, tomorrowDate)
     const users = await User.find({
         created_at: {
             $gte: new Date(todayDate),
@@ -488,11 +551,39 @@ const dailyReport = async (req, res, next) => {
             })
         }
     }
+
     const totalWithdrawalAmounts = await withdrawalHistory(todayDate, tomorrowDate)
     const totalWagered = await dailyTotalWagered(todayDate, tomorrowDate)
     const totalPayout = await totalGamesWon(todayDate, tomorrowDate)
     const otherBonuses = await cashBack()
     const dailyLotterys = await dailyLottery(todayDate, tomorrowDate)
+    let totalDirectRefferal = 0;
+
+
+    const direct_refferal = await AffiliateCodes.find({
+        created_at: {
+            $gte: new Date(todayDate),
+            $lt: new Date(tomorrowDate)
+        }
+    })
+    if (direct_refferal.length > 0) {
+        let refferal = direct_refferal.map((alliffiliateCode) => {
+            return alliffiliateCode.available_usd_reward
+        })
+        totalDirectRefferal = refferal.reduce((a, b) => a + b)
+    }
+
+    //Commission Rakeback
+    const usersProfile = await Profile.find()
+    let totalCommisionRekaBack = 0
+    if (usersProfile.length > 0) {
+        let commission_reward = usersProfile.map(profile => {
+            return profile.commission_reward
+        })
+        totalCommisionRekaBack = commission_reward.reduce((a, b) => {
+            return a + b
+        })
+    }
     return res.status(200).json({
         success: true,
         date: new Date(todayDate).toLocaleString("en-GB", { day: "numeric", month: "long", year: "numeric", }),
@@ -506,13 +597,35 @@ const dailyReport = async (req, res, next) => {
         totalWagered: totalWagered.totalWagered,
         totalPayout: Number(totalPayout),
         totalGGR: Number(totalWagered.totalWagered) - Number(totalPayout),
+        deposit: {
+            totalDepositBonus: 0,
+            totalUnlock: 0
+        },
+        vipLevelUp: 0,
+        free: {
+            luckySpin: 0,
+            rollCompetitions: 0,
+            dailyContest: 0,
+            medal: 0,
+            binggo: 0,
+            rain: 0,
+            coinDrop: 0,
+            totalUnlocked: 0
+        },
+        affiliate: {
+            totalCommisionRekaBack,
+            totalDirectRefferal,
+            totalUnlocked: totalCommisionRekaBack - totalDirectRefferal
+        },
         otherBonuses,
         dailyLotterys
     })
 }
 
 const gameReport = async (req, res, next) => {
-    const { todayDate, tomorrowDate } = getTodayAndTomorrowsDate()
+    const {date} = req.body
+    const { todayDate, tomorrowDate } = getTodayAndTomorrowsDate(date)
+    console.log(todayDate, tomorrowDate)
     // Daily Total Wagered Across all Games
     const crashDailyTotalWagered = await dailyTotalWagered(todayDate, tomorrowDate, 'crashgame')
     const diceDailyTotalWagered = await dailyTotalWagered(todayDate, tomorrowDate, 'dicegame')
@@ -578,31 +691,42 @@ const gameReport = async (req, res, next) => {
 }
 
 const ggrReport = async (req, res, next) => {
-    const { todayDate, tomorrowDate } = getTodayAndTomorrowsDate()
+    const {date} = req.body
+    const { todayDate, tomorrowDate } = getTodayAndTomorrowsDate(date)
+    console.log(todayDate, tomorrowDate)
+    
     try {
         //Get all members
-        const users = await User.find();
-        if (users.length <= 0) {
+        // const users = await User.find();
+        // if (users.length <= 0) {
+        //     return res.status(404).json({
+        //         success: false,
+        //         message: 'Members not found'
+        //     })
+        // }
+        const profile = await Profile.find()
+        if (profile.length <= 0) {
             return res.status(404).json({
                 success: false,
-                message: 'Members not found'
+                message: 'Members Profile not found'
             })
         }
 
         //Get all members Full details individually
         //takes in individual user as an iterable of promises as input and returns a single Promise
         const usersDataFromProfile = await Promise.all(
-            users.map(async (user) => {
+            profile.map(async (userProfile) => {
                 //Get User Profile
-                const profile = await Profile.findOne({ user_id: user.user_id }).sort({ createdAt: -1 })
+                // const profile = await Profile.findOne({ user_id: user.user_id }).sort({ createdAt: -1 })
                 //Get Individual GGR by ID
-                let payout = await ggrByDate(todayDate, tomorrowDate, user.user_id)
+                let payout = await ggrByDate(todayDate, tomorrowDate, userProfile.user_id)
 
                 const userData = {
-                    profile,
-                    totalWagered: profile.total_wagered,
+                    user_id: userProfile.user_id,
+                    username: userProfile.username,
+                    totalWagered: userProfile.total_wagered,
                     totalPayout: payout,
-                    ggr: Number(profile.total_wagered) - Number(payout)
+                    ggr: Number(userProfile.total_wagered) - Number(payout)
 
                 }
                 return userData
