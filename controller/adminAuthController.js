@@ -108,6 +108,7 @@ const login = async (req, res, next) => {
                 message: "Invalid Credentials"
             });
         }
+        
         if (!(await user.verifyPassword(password))) {
             return res.status(401).json({
                 success: false,
@@ -164,8 +165,8 @@ const findAdminByUsername = async (req, res, next) => {
             activity: userActivityLog || null
         });
     } catch (err) {
-        return res.json({ error: err })
-        // console.log(err)    
+        // return res.json({ error: err })
+        console.log(err)    
     }
 }
 //UPDATE PIN

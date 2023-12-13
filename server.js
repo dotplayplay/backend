@@ -4,6 +4,7 @@ const mongoose = require('mongoose')
 const AllPLays = require("./routes/admin/PLayers/crashPlayers");
 const Transaction = require("./routes/transactions.js");
 const Stats = require("./routes/admin/statistic/statistics");
+const Statistics = require("./routes/statistic.js");
 const Affiliate = require("./routes/affiliate");
 const CrashGame = require("./routes/crashgame.js");
 const User = require("./routes/Users.js");
@@ -48,6 +49,7 @@ app.use("/api/deposit", Deposit);
 app.use("/api/withdraw", Withdraw);
 app.use("/api/cashback", Bonus);
 app.use("/api/stats", Stats);
+app.use("/api/statistics", Statistics);
 app.use("/api/transaction", Transaction);
 app.use("/api/transaction-history", TransactionHistory);
 app.use("/admin/all-players", AllPLays);
@@ -61,9 +63,9 @@ app.get("/", (req, res)=>{
 
 mongoose.set('strictQuery', false);
 // mongodb://localhost:27017/dpp
-// const dbUri = `mongodb+srv://ValiantCodez:dLyF3TFuDTTUcfVA@cluster0.gutge9q.mongodb.net/Main-Application?retryWrites=true&w=majority`
+const dbUri = `mongodb+srv://ValiantCodez:dLyF3TFuDTTUcfVA@cluster0.gutge9q.mongodb.net/Main-Application?retryWrites=true&w=majority`
 
-const dbUri = `mongodb://localhost:27017/dpp`;
+// const dbUri = `mongodb://localhost:27017/dpp`;
 mongoose.connect(dbUri, { useNewUrlParser: true,  useUnifiedTopology: true })
     .then((result)=>  console.log('Database connected'))
     .catch((err)=> console.log(err))
