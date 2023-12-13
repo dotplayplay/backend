@@ -4,8 +4,8 @@ const { handleWagerIncrease, handleProfileTransactions } = require("../profile_m
 const crash_game = require("../model/crashgame")
 const USDT_wallet = require("../model/Usdt-wallet")
 const PPFWallet = require("../model/PPF-wallet")
-const Bills = require("../model/bill");
-const crashgame = require('../model/crashgame');
+const Bills = require("../model/bill")
+const CrashHistory = require("../model/crash-game-history")
 
 const updateUserWallet = (async(data)=>{
   if(data.bet_token_name === "PPF"){
@@ -72,19 +72,20 @@ const handleCrashBet = (async(req, res)=>{
     let skjk = await USDT_wallet.find({user_id})
     current_amount = parseFloat(skjk[0].balance) - parseFloat(sent_data.bet_amount)
   }
-  let bil = {
-    user_id: user_id,
-    transaction_type: "Crash normal",
-    token_img:data.bet_token_img,
-    token_name:data.bet_token_name,
-    balance: current_amount,
-    trx_amount:data.bet_amount ,
-    datetime: data.time,
-    status: false,
-    bill_id: data.game_id
- }
 
- handleSaveBills(bil)
+//   let bil = {
+//     user_id: user_id,
+//     transaction_type: "Crash normal",
+//     token_img:data.bet_token_img,
+//     token_name:data.bet_token_name,
+//     balance: current_amount,
+//     trx_amount:data.bet_amount ,
+//     datetime: data.time,
+//     status: false,
+//     bill_id: data.game_id
+//  }
+
+//  handleSaveBills(bil)
 
     CraeatBetGame({...sent_data, hidden, user_id, game_type})
     updateUserWallet({ ...sent_data, user_id, current_amount})
@@ -119,19 +120,17 @@ const handleCashout = (async(req, res)=>{
       current_amount = parseFloat(skjk[0].balance) + parseFloat(sent_data.cashout_at)
     }
 
-    let bil = {
-      user_id: user_id,
-      transaction_type: "Crash normal",
-      token_img:data.bet_token_img,
-      token_name:data.bet_token_name,
-      balance: current_amount,
-      trx_amount:data.cashout_at ,
-      datetime: currentTime,
-      status: true,
-      bill_id: data.game_id
-   }
-
-   console.log(bil)
+  //   let bil = {
+  //     user_id: user_id,
+  //     transaction_type: "Crash normal",
+  //     token_img:data.bet_token_img,
+  //     token_name:data.bet_token_name,
+  //     balance: current_amount,
+  //     trx_amount:data.cashout_at ,
+  //     datetime: currentTime,
+  //     status: true,
+  //     bill_id: data.game_id
+  //  }
   
   //  handleSaveBills(bil)
   
@@ -163,7 +162,6 @@ const handleRedTrendball = (async(req, res)=>{
       let skjk = await USDT_wallet.find({user_id})
       current_amount = parseFloat(skjk[0].balance) - parseFloat(sent_data.bet_amount)
     }
-
     CraeatBetGame({...sent_data, hidden, user_id})
     updateUserWallet({ ...sent_data, user_id, current_amount})
     res.status(200).json({...sent_data,current_amount})
@@ -173,14 +171,14 @@ const handleRedTrendball = (async(req, res)=>{
   }
 })
 
-const handleCrashHistory = ( async (req, res) => {
-    const {user_id} = req.id;
-    try {
-      let crashGameHistory = await crashgame.find({user_id});
-        res.status(200).json(crashGameHistory);
-    } catch (err) {
-      res.status(501).json({ message: err.message });
-    }
+const handleCrashHistory = (async(req, res)=>{
+  try{
+    const data = await CrashHistory.find()
+    res.status(200).json(data)
+  }catch(error){
+    res.status(500).json({error})
+  }
 })
 
-module.exports = { handleCrashBet, handleCashout , handleRedTrendball, handleCrashHistory}
+
+module.exports = { handleCrashBet, handleCashout ,handleCrashHistory, handleRedTrendball}

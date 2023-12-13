@@ -11,6 +11,7 @@ const UsdtWallet = require("../model/Usdt-wallet");
 const { usdtIcon, pplIcon, ppdIcon } = require("../lib/coinIcons");
 const { updateSwapHistory } = require("./transactionHistories/updateSwapHistory");
 
+
 const handleSwap = (async (req,res)=>{
     console.log(req.body.amount, typeof req.body.amount);
     const {user_id} = req.id;

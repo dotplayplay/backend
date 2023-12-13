@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const schema = mongoose.Schema
 
-const Userschema = new schema({
+const DepositBonusSchema = new schema({
     user_id: {
         type: String,
         required: true,
@@ -20,4 +20,4 @@ const Userschema = new schema({
     }
 }, { timestamp : true})
 
-module.exports = mongoose.model('ppd_unlock', Userschema)
+module.exports = mongoose.model('ppd_unlock', DepositBonusSchema)
