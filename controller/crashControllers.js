@@ -4,7 +4,8 @@ const { handleWagerIncrease, handleProfileTransactions } = require("../profile_m
 const crash_game = require("../model/crashgame")
 const USDT_wallet = require("../model/Usdt-wallet")
 const PPFWallet = require("../model/PPF-wallet")
-const Bills = require("../model/bill")
+const Bills = require("../model/bill");
+const crashgame = require('../model/crashgame');
 
 const updateUserWallet = (async(data)=>{
   if(data.bet_token_name === "PPF"){
@@ -172,4 +173,14 @@ const handleRedTrendball = (async(req, res)=>{
   }
 })
 
-module.exports = { handleCrashBet, handleCashout , handleRedTrendball}
+const handleCrashHistory = ( async (req, res) => {
+    const {user_id} = req.id;
+    try {
+      let crashGameHistory = await crashgame.find({user_id});
+        res.status(200).json(crashGameHistory);
+    } catch (err) {
+      res.status(501).json({ message: err.message });
+    }
+})
+
+module.exports = { handleCrashBet, handleCashout , handleRedTrendball, handleCrashHistory}

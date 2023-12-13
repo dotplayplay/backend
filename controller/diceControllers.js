@@ -157,8 +157,8 @@ const handleHashGeneration = (()=>{
 const getDiceGameHistory = (async (req, res)=>{
     const {user_id} = req.id
     try {
-      let disoa = await DiceGame.find({user_id})
-        res.status(200).json(disoa)
+      let diceGameHistory = await DiceGame.find({user_id});
+        res.status(200).json(diceGameHistory);
     } catch (err) {
       res.status(501).json({ message: err.message });
     }
