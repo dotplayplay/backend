@@ -22,8 +22,9 @@
     "mongoose": "^8.0.0",
     "node-cron": "^3.0.3",
     "nodemon": "^3.0.1",
+    "qrcode": "^1.5.3",
     "socket.io": "^4.7.2",
-    "web3": "^4.3.0"
+    "speakeasy": "^2.0.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"

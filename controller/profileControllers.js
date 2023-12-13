@@ -40,6 +40,24 @@ const UpdateProfile = (async(req, res)=>{
   }
 })
 
+const UpdateAvatar = (async(req, res)=>{
+    const {user_id} = req.id;
+    const {data} = req.body
+    if (!user_id) {
+      res.status(500).json({ error: "No user found" });
+    }
+    else{
+      try{
+       await Profile.updateOne({ user_id }, {
+        profile_image: data.profile_image,
+       });
+       res.status(200).json({message: "Updated succesfully"})
+      }
+      catch(error){        
+        res.status(404).json({ message: error });
+      }
+    }
+})
 
 const UpdateUser = (async(req, res)=>{
     const {user_id} = req.id;
@@ -60,6 +78,7 @@ const UpdateUser = (async(req, res)=>{
       }
     }
 })
+
 
 
 const SingleUser = (async(req, res)=>{
@@ -177,4 +196,28 @@ const handleDailyPPFbonus =  (async(req, res)=>{
 
 })
 
-module.exports = { SingleUser, UpdateUser, UpdateProfile,handleHiddenProfile , handlePublicUsername, handleRefusefriendRequest, handleRefuseTip, handleDailyPPFbonus, createProfile }
+
+const ChangeProfilePicture = (async(req, res)=>{
+    const {user_id} = req.id;
+    const {data} = req.body
+    if (!user_id) {
+      res.status(500).json({ error: "No user found" });
+    }
+    else{
+      try{
+        //update db
+       await Profile.updateOne({ user_id }, {
+        profile_image: data.profile_image,
+       });
+       res.status(200).json({
+        message: "Successful",
+        imageLink: data.profile_image
+    })
+      }
+      catch(error){        
+        res.status(404).json({ message: error });
+      }
+    }
+})
+
+module.exports = { SingleUser, UpdateUser, UpdateProfile,handleHiddenProfile , handlePublicUsername, handleRefusefriendRequest, handleRefuseTip, handleDailyPPFbonus, createProfile, UpdateAvatar,  ChangeProfilePicture }

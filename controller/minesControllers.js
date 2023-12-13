@@ -82,11 +82,12 @@ const handleHasLost = (async(req, res)=>{
 
 })
 
+
 const handleMinesHistory = (async(req, res)=>{
   try{
-    const { user_id} = req.id
-    let sdff = await minesgameInit.find({user_id, active: false})
-    res.status(200).json(sdff)
+    const { user_id} = req.id;
+    let mineGameHistory = await minesgameInit.find({user_id, active: false});
+    res.status(200).json(mineGameHistory);
   }
   catch(error){
     res.status(500).json({error})
@@ -242,6 +243,8 @@ const handleHashGeneration = (()=>{
       let encrypt = { hash, clientSeed, serverSeed }
       return encrypt
   })
+
+
     let data = {
         user_id: user_id,
         nonce :0,
