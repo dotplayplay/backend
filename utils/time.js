@@ -1,5 +1,5 @@
-const getTodayAndTomorrowsDate = () => {
-    const date = new Date()
+const getTodayAndTomorrowsDate = (dateData) => {
+    const date = new Date(dateData)
     // Extract the year, month, and day from today's date
     let todayYear = date.getFullYear();
     let todayMonth = date.getMonth() + 1; // Adding 1 because months are zero-indexed
@@ -18,7 +18,7 @@ const getTodayAndTomorrowsDate = () => {
 
     const tomorrowDate = tomorrowYear + ", " + tomorrowMonth + ", " + tomorrowDay;
 
-    return {todayDate, tomorrowDate}
+    return { todayDate, tomorrowDate }
 }
 
 module.exports = {

@@ -6,6 +6,7 @@ const WithdrawalHistorySchema = new mongoose.Schema(
         type: String,
         required: true
     },
+
     status: {
         type: String,
         require: true
@@ -20,7 +21,6 @@ const WithdrawalHistorySchema = new mongoose.Schema(
     available_balance: {
       type: Number,
     },
-
   },
   { timestamps: true }
 );
