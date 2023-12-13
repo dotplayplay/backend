@@ -214,6 +214,7 @@ const changeActiveSessionVisibility =  (async(req, res)=>{
 const getActiveSession =  (async (req, res) => {
   try{
     const {user_id} = req.id;
+    //get sessions
     const response = await ActiveSession.find({user_id});
     res.status(200).json({
         data: response
