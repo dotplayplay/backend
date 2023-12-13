@@ -128,10 +128,9 @@ const createMember = async (req, res, next) => {
         }
 
     } catch (err) {
-        return res.status(401).json({ error: err })
+        return res.status(500).json({ error: err })
     }
 }
-
 //Get Members List
 const getAllMembers = async (req, res, next) => {
     try {
@@ -191,8 +190,7 @@ const getAllMembers = async (req, res, next) => {
             data: membersDataFromProfile
         })
     } catch (err) {
-        // return res.json({ error: err })
-        console.log(err)
+        return res.status(500).json({ error: err })
     }
 
 }
@@ -253,10 +251,10 @@ const adminDashbaord = async (req, res, next) => {
             }
         })
     } catch (err) {
-        return res.json({ error: err })
+        return res.status(500).json({ error: err })
     }
 }
-
+//FIND USER BY ID
 const findUserById = async (req, res, next) => {
     try {
         const { user_id } = req.params
@@ -268,10 +266,10 @@ const findUserById = async (req, res, next) => {
         })
 
     } catch (err) {
-        return res.json({ error: err })
+        return res.status(500).json({ error: err })
     }
 }
-
+//GET BY USERNAME
 const findUserByUsername = async (req, res, next) => {
     try {
         const { username } = req.params
@@ -283,10 +281,9 @@ const findUserByUsername = async (req, res, next) => {
         })
 
     } catch (err) {
-        return res.json({ error: err })
+        return res.status(500).json({ error: err })
     }
 }
-
 //Get User STATS 
 const registeredUserstats = async (req, res, next) => {
     // const today = new Date()
@@ -353,7 +350,6 @@ const registeredUserstats = async (req, res, next) => {
                 }
             }
         ])
-        console.log(data)
         //Sort month in accending order
         await data.sort((a, b) => {
             return a._id - b._id
@@ -372,8 +368,7 @@ const registeredUserstats = async (req, res, next) => {
             registeredUser: registeredUser
         })
     } catch (err) {
-        //    return res.status(500).json({ error: err})
-        console.log(err)
+        return res.status(500).json({ error: err })
     }
 }
 
@@ -419,8 +414,7 @@ const totalWageredAndTotalWon = async (req, res, next) => {
             borderColors: borderColors
         })
     } catch (err) {
-        // return res.status(500).json({ error: err })
-        console.log(err)
+        return res.status(500).json({ error: err })
     }
 }
 
@@ -434,7 +428,7 @@ const totalWageredRanking = async (req, res, next) => {
         })
         return res.status(200).json(totalWageredRanking)
     } catch (err) {
-        return res.json({ error: err })
+        return res.status(500).json({ error: err })
     }
 
 }
@@ -474,8 +468,7 @@ const totalWonRanking = async (req, res, next) => {
             wonRanking: membersWonData
         })
     } catch (err) {
-        // return res.json({ error: err })
-        console.log(err)
+        return res.status(500).json({ error: err })
     }
 }
 const totalLossRanking = async (req, res, next) => {
@@ -513,197 +506,214 @@ const totalLossRanking = async (req, res, next) => {
             lossRanking: membersLossData
         })
     } catch (err) {
-        // return res.json({ error: err })
-        console.log(err)
+        return res.status(500).json({ error: err })
     }
 }
 
 const dailyReport = async (req, res, next) => {
-    const {date} = req.body
-    const { todayDate, tomorrowDate } = getTodayAndTomorrowsDate(date)
-    console.log(todayDate, tomorrowDate)
-    const users = await User.find({
-        created_at: {
-            $gte: new Date(todayDate),
-            $lt: new Date(tomorrowDate)
-        }
-    })
-    const deposit = await DepositRequest.find({
-        status: 'success',
-        created_at: {
-            $gte: new Date(todayDate),
-            $lt: new Date(tomorrowDate)
-        }
-    })
-    let depositAmount = 0;
-    if (deposit.length > 0) {
-        depositAmount = deposit.reduce((a, b) => {
-            return a.amount + b.amount
+    const { date } = req.body
+    if (!date) {
+        return res.status(403).json({
+            success: false,
+            message: 'Please enter a date'
         })
     }
-
-    let reDepositAmount = 0;
-    for (let i = 0; i < deposit; i++) {
-        let users = await DepositRequest.find({ user_id: deposit[i].user_id, created_at: { $lt: new Date(todayDate) } })
-        if (users.length > 0) {
-            reDepositAmount = users.reduce((a, b) => {
+    try {
+        const { todayDate, tomorrowDate } = getTodayAndTomorrowsDate(date)
+        console.log(todayDate, tomorrowDate)
+        const users = await User.find({
+            created_at: {
+                $gte: new Date(todayDate),
+                $lt: new Date(tomorrowDate)
+            }
+        })
+        const deposit = await DepositRequest.find({
+            status: 'success',
+            created_at: {
+                $gte: new Date(todayDate),
+                $lt: new Date(tomorrowDate)
+            }
+        })
+        let depositAmount = 0;
+        if (deposit.length > 0) {
+            depositAmount = deposit.reduce((a, b) => {
                 return a.amount + b.amount
             })
         }
-    }
 
-    const totalWithdrawalAmounts = await withdrawalHistory(todayDate, tomorrowDate)
-    const totalWagered = await dailyTotalWagered(todayDate, tomorrowDate)
-    const totalPayout = await totalGamesWon(todayDate, tomorrowDate)
-    const otherBonuses = await cashBack()
-    const dailyLotterys = await dailyLottery(todayDate, tomorrowDate)
-    let totalDirectRefferal = 0;
-
-
-    const direct_refferal = await AffiliateCodes.find({
-        created_at: {
-            $gte: new Date(todayDate),
-            $lt: new Date(tomorrowDate)
+        let reDepositAmount = 0;
+        for (let i = 0; i < deposit; i++) {
+            let users = await DepositRequest.find({ user_id: deposit[i].user_id, created_at: { $lt: new Date(todayDate) } })
+            if (users.length > 0) {
+                reDepositAmount = users.reduce((a, b) => {
+                    return a.amount + b.amount
+                })
+            }
         }
-    })
-    if (direct_refferal.length > 0) {
-        let refferal = direct_refferal.map((alliffiliateCode) => {
-            return alliffiliateCode.available_usd_reward
-        })
-        totalDirectRefferal = refferal.reduce((a, b) => a + b)
-    }
 
-    //Commission Rakeback
-    const usersProfile = await Profile.find()
-    let totalCommisionRekaBack = 0
-    if (usersProfile.length > 0) {
-        let commission_reward = usersProfile.map(profile => {
-            return profile.commission_reward
+        const totalWithdrawalAmounts = await withdrawalHistory(todayDate, tomorrowDate)
+        const totalWagered = await dailyTotalWagered(todayDate, tomorrowDate)
+        const totalPayout = await totalGamesWon(todayDate, tomorrowDate)
+        const otherBonuses = await cashBack()
+        const dailyLotterys = await dailyLottery(todayDate, tomorrowDate)
+        let totalDirectRefferal = 0;
+
+
+        const direct_refferal = await AffiliateCodes.find({
+            created_at: {
+                $gte: new Date(todayDate),
+                $lt: new Date(tomorrowDate)
+            }
         })
-        totalCommisionRekaBack = commission_reward.reduce((a, b) => {
-            return a + b
+        if (direct_refferal.length > 0) {
+            let refferal = direct_refferal.map((alliffiliateCode) => {
+                return alliffiliateCode.available_usd_reward
+            })
+            totalDirectRefferal = refferal.reduce((a, b) => a + b)
+        }
+
+        //Commission Rakeback
+        const usersProfile = await Profile.find()
+        let totalCommisionRekaBack = 0
+        if (usersProfile.length > 0) {
+            let commission_reward = usersProfile.map(profile => {
+                return profile.commission_reward
+            })
+            totalCommisionRekaBack = commission_reward.reduce((a, b) => {
+                return a + b
+            })
+        }
+        return res.status(200).json({
+            success: true,
+            date: new Date(todayDate).toLocaleString("en-GB", { day: "numeric", month: "long", year: "numeric", }),
+            dauCount: totalWagered.totalDailyUserActive,
+            userCount: users.length,
+            depositCount: deposit.length,
+            depositAmount: depositAmount,
+            reDepositAmount: reDepositAmount,
+            totalDeposit: depositAmount + reDepositAmount,
+            totalWithdrawalAmounts,
+            totalWagered: totalWagered.totalWagered,
+            totalPayout: Number(totalPayout),
+            totalGGR: Number(totalWagered.totalWagered) - Number(totalPayout),
+            deposit: {
+                totalDepositBonus: 0,
+                totalUnlock: 0
+            },
+            vipLevelUp: 0,
+            free: {
+                luckySpin: 0,
+                rollCompetitions: 0,
+                dailyContest: 0,
+                medal: 0,
+                binggo: 0,
+                rain: 0,
+                coinDrop: 0,
+                totalUnlocked: 0
+            },
+            affiliate: {
+                totalCommisionRekaBack,
+                totalDirectRefferal,
+                totalUnlocked: totalCommisionRekaBack - totalDirectRefferal
+            },
+            otherBonuses,
+            dailyLotterys
         })
+    } catch (err) {
+        return res.status(500).json({ error: err });
     }
-    return res.status(200).json({
-        success: true,
-        date: new Date(todayDate).toLocaleString("en-GB", { day: "numeric", month: "long", year: "numeric", }),
-        dauCount: totalWagered.totalDailyUserActive,
-        userCount: users.length,
-        depositCount: deposit.length,
-        depositAmount: depositAmount,
-        reDepositAmount: reDepositAmount,
-        totalDeposit: depositAmount + reDepositAmount,
-        totalWithdrawalAmounts,
-        totalWagered: totalWagered.totalWagered,
-        totalPayout: Number(totalPayout),
-        totalGGR: Number(totalWagered.totalWagered) - Number(totalPayout),
-        deposit: {
-            totalDepositBonus: 0,
-            totalUnlock: 0
-        },
-        vipLevelUp: 0,
-        free: {
-            luckySpin: 0,
-            rollCompetitions: 0,
-            dailyContest: 0,
-            medal: 0,
-            binggo: 0,
-            rain: 0,
-            coinDrop: 0,
-            totalUnlocked: 0
-        },
-        affiliate: {
-            totalCommisionRekaBack,
-            totalDirectRefferal,
-            totalUnlocked: totalCommisionRekaBack - totalDirectRefferal
-        },
-        otherBonuses,
-        dailyLotterys
-    })
 }
 
 const gameReport = async (req, res, next) => {
-    const {date} = req.body
-    const { todayDate, tomorrowDate } = getTodayAndTomorrowsDate(date)
-    console.log(todayDate, tomorrowDate)
-    // Daily Total Wagered Across all Games
-    const crashDailyTotalWagered = await dailyTotalWagered(todayDate, tomorrowDate, 'crashgame')
-    const diceDailyTotalWagered = await dailyTotalWagered(todayDate, tomorrowDate, 'dicegame')
-    const minesDailyTotalWagered = await dailyTotalWagered(todayDate, tomorrowDate, 'minesgame')
-    const totalWagered = {
-        crashDailyTotalWagered,
-        diceDailyTotalWagered,
-        minesDailyTotalWagered
+    const { date } = req.body
+    if (!date) {
+        return res.status(403).json({
+            success: false,
+            message: 'Please enter a date'
+        })
     }
-    //Daily Total Payout Across all games
-    const crashDailyPayout = await dailyGamesWon(todayDate, tomorrowDate, 'crashgame')
-    const diceDailyPayout = await dailyGamesWon(todayDate, tomorrowDate, 'dicegame')
-    const minesDailyPayout = await dailyGamesWon(todayDate, tomorrowDate, 'minesgame')
-    const totalPayout = {
-        crashDailyPayout,
-        diceDailyPayout,
-        minesDailyPayout
-    }
-    //Daily GGR Across all games
-    const totalGGR = {
-        crashDailyGGR: crashDailyTotalWagered - crashDailyPayout,
-        diceDailyGGR: diceDailyTotalWagered - diceDailyPayout,
-        minesDailyGGR: minesDailyTotalWagered - minesDailyPayout
+    try {
+        const { todayDate, tomorrowDate } = getTodayAndTomorrowsDate(date)
+        console.log(todayDate, tomorrowDate)
+        // Daily Total Wagered Across all Games
+        const crashDailyTotalWagered = await dailyTotalWagered(todayDate, tomorrowDate, 'crashgame')
+        const diceDailyTotalWagered = await dailyTotalWagered(todayDate, tomorrowDate, 'dicegame')
+        const minesDailyTotalWagered = await dailyTotalWagered(todayDate, tomorrowDate, 'minesgame')
+        const totalWagered = {
+            crashDailyTotalWagered,
+            diceDailyTotalWagered,
+            minesDailyTotalWagered
+        }
+        //Daily Total Payout Across all games
+        const crashDailyPayout = await dailyGamesWon(todayDate, tomorrowDate, 'crashgame')
+        const diceDailyPayout = await dailyGamesWon(todayDate, tomorrowDate, 'dicegame')
+        const minesDailyPayout = await dailyGamesWon(todayDate, tomorrowDate, 'minesgame')
+        const totalPayout = {
+            crashDailyPayout,
+            diceDailyPayout,
+            minesDailyPayout
+        }
+        //Daily GGR Across all games
+        const totalGGR = {
+            crashDailyGGR: crashDailyTotalWagered - crashDailyPayout,
+            diceDailyGGR: diceDailyTotalWagered - diceDailyPayout,
+            minesDailyGGR: minesDailyTotalWagered - minesDailyPayout
 
-    }
-    //GGR Percentage
+        }
+        //GGR Percentage
 
-    const totalGGRPercentage = {
-        crashDailyGGRPercentage: `${(totalGGR.crashDailyGGR) / 100}%`,
-        diceDailyGGRPercentage: `${(totalGGR.diceDailyGGR) / 100}%`,
-        minesDailyGGRPercentage: `${(totalGGR.minesDailyGGR) / 100}%`
-    }
+        const totalGGRPercentage = {
+            crashDailyGGRPercentage: `${(totalGGR.crashDailyGGR) / 100}%`,
+            diceDailyGGRPercentage: `${(totalGGR.diceDailyGGR) / 100}%`,
+            minesDailyGGRPercentage: `${(totalGGR.minesDailyGGR) / 100}%`
+        }
 
-    //Bet Count Per Game
-    const crashBetCount = await betCount(todayDate, tomorrowDate, 'crashgame')
-    const diceBetCount = await betCount(todayDate, tomorrowDate, 'dicegame')
-    const minesBetCount = await betCount(todayDate, tomorrowDate, 'minesgame')
-    const totalBetCount = {
-        crashBetCount,
-        diceBetCount,
-        minesBetCount,
-    }
+        //Bet Count Per Game
+        const crashBetCount = await betCount(todayDate, tomorrowDate, 'crashgame')
+        const diceBetCount = await betCount(todayDate, tomorrowDate, 'dicegame')
+        const minesBetCount = await betCount(todayDate, tomorrowDate, 'minesgame')
+        const totalBetCount = {
+            crashBetCount,
+            diceBetCount,
+            minesBetCount,
+        }
 
-    //Player Count Per Game
-    const crashPlayerCount = await playerCount(todayDate, tomorrowDate, 'crashgame')
-    const dicePlayerCount = await playerCount(todayDate, tomorrowDate, 'dicegame')
-    const minesPlayerCount = await playerCount(todayDate, tomorrowDate, 'minesgame')
-    const totalPlayerCount = {
-        crashPlayerCount,
-        dicePlayerCount,
-        minesPlayerCount,
-    }
+        //Player Count Per Game
+        const crashPlayerCount = await playerCount(todayDate, tomorrowDate, 'crashgame')
+        const dicePlayerCount = await playerCount(todayDate, tomorrowDate, 'dicegame')
+        const minesPlayerCount = await playerCount(todayDate, tomorrowDate, 'minesgame')
+        const totalPlayerCount = {
+            crashPlayerCount,
+            dicePlayerCount,
+            minesPlayerCount,
+        }
 
-    return res.status(200).json({
-        success: true,
-        totalWagered,
-        totalPayout,
-        totalGGR,
-        totalGGRPercentage,
-        totalBetCount,
-        totalPlayerCount
-    })
+        return res.status(200).json({
+            success: true,
+            totalWagered,
+            totalPayout,
+            totalGGR,
+            totalGGRPercentage,
+            totalBetCount,
+            totalPlayerCount
+        })
+    } catch (err) {
+        return res.status(500).json({ error: err });
+    }
 }
 
 const ggrReport = async (req, res, next) => {
-    const {date} = req.body
+    const { date } = req.body
+    if (!date) {
+        return res.status(403).json({
+            success: false,
+            message: 'Please enter a date'
+        })
+    }
     const { todayDate, tomorrowDate } = getTodayAndTomorrowsDate(date)
     console.log(todayDate, tomorrowDate)
-    
+
     try {
-        //Get all members
-        // const users = await User.find();
-        // if (users.length <= 0) {
-        //     return res.status(404).json({
-        //         success: false,
-        //         message: 'Members not found'
-        //     })
-        // }
         const profile = await Profile.find()
         if (profile.length <= 0) {
             return res.status(404).json({
@@ -737,8 +747,7 @@ const ggrReport = async (req, res, next) => {
             data: usersDataFromProfile
         })
     } catch (err) {
-        // return res.json({ error: err })
-        console.log(err)
+        return res.status(500).json({error: err});
     }
 
 }
