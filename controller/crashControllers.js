@@ -180,5 +180,14 @@ const handleCrashHistory = (async(req, res)=>{
   }
 })
 
+const handleMybets = (async(req, res)=>{
+  try{
+    const {user_id} = req.id
+    const data = await crash_game.find({user_id, game_status: false})
+    res.status(200).json(data)
+  }catch(error){
+    res.status(500).json({error})
+  }
+})
 
-module.exports = { handleCrashBet, handleCashout ,handleCrashHistory, handleRedTrendball}
+module.exports = { handleCrashBet, handleCashout ,handleCrashHistory, handleRedTrendball, handleMybets}
