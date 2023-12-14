@@ -56,7 +56,9 @@ const handleFirstDeposit = ((user_id, amount, num)=>{
     else if(num === 3){
       bonus = amount * (360 / 100)
     }
-    // handlePPDunLockUpdate(user_id, bonus)
+
+    //Update Deposit Bonus DataBase
+    handlePPDunLockUpdate(user_id, bonus)
     // let sql = `INSERT INTO first_deposit SET ?`;
     // connection.query(sql, data, (err, result)=>{
     //     if(err){
@@ -71,7 +73,9 @@ const handleSuccessfulDeposit = (async(event)=>{
     let eyyn = await DepositRequest.find({merchant_order_id:event.merchant_order_id })
     let user_id = eyyn[0].user_id
     let order_amount = parseFloat(eyyn[0].amount)
-      // handleFirstDeposit(user_id, order_amount, data.length)
+    //Get total Number of successful deposti by this user
+    const no_of_deposit_successful_before = await DepositRequest.find({user_id: user_id, status: 'success'})
+      handleFirstDeposit(user_id, order_amount, no_of_deposit_successful_before.length)
       const currentDeposit = await DepositRequest.updateOne({user_id, merchant_order_id: event.merchant_order_id }, {
         status:event.status,
         contract: event.contract
@@ -81,7 +85,6 @@ const handleSuccessfulDeposit = (async(event)=>{
   let result = await USDTwallet.updateOne({user_id}, {
       balance:prev_bal + order_amount
     })
-
     const order_id = currentDeposit.order_id;
     await updateDepositHistory(order_id, DepositRequest);
 })
@@ -101,6 +104,7 @@ const handleFailedTransaction = (async(event)=>{
   }
   catch(err){
     console.log(err)
+    updateDepositHistory(user_id, event.merchant_order_id, describtion);
   }
 })
 

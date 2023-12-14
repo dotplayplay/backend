@@ -106,6 +106,7 @@ const initiateWithdrawal = async (req, res) => {
                 data: response.data,
               });
               await updateWithdrawalHistory(user_id, "Successful", data.amount, userBalance, newAmount);
+
         } else {
           res.status(400).json({
             status: false,
@@ -117,6 +118,7 @@ const initiateWithdrawal = async (req, res) => {
       }
   } catch (error) {
     console.error("Error processing withdrawal:", error);
+    // updateWithdrawalHistory(user_id, describtion, data.amount, userBalance, newAmount, "Failed");
     res.status(500).json({ status: false, message: "Internal server error" });
   }
 };
