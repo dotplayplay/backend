@@ -420,47 +420,39 @@ const totalWageredByMonth = async () => {
     ];
     //Get Number of Crash Game Won Amount
     const crashGame = await CrashGame.find()
-    // const crashGame = [{bet_amount: 300, time:'2023-12-06T13:34:56.000+00:00'},{bet_amount: 300, time:'2023-12-06T13:34:56.000+00:00'}]
     if (crashGame.length > 0) {
-        crashGameTotalStake = crashGame.map((game) => {
-                if (game.token !== 'PPF') {
-                    return {
-                        bet_amount: game.bet_amount,
-                        month: new Date(game.time).getMonth() + 1
-                    }
-                }
+        crashGameTotalStake = crashGame.filter(game => game.token !== 'PPF').map(game => {
+            return {
+                bet_amount: game.bet_amount,
+                month: new Date(game.time).getMonth() + 1
+            }
         })
     }
 
     //Get Number of Dice Game Won Amount
     const diceGame = await DiceGame.find()
     if (diceGame.length > 0) {
-        diceGameTotalStake = diceGame.map((game) => {
-                if (game.token !== 'PPF') {
-                    return {
-                        bet_amount: game.bet_amount,
-                        month: new Date(game.time).getMonth() + 1
-                    }
-                }
+        diceGameTotalStake = diceGame.filter(game => game.token !== 'PPF').map(game => {
+            return {
+                bet_amount: game.bet_amount,
+                month: new Date(game.time).getMonth() + 1
+            }
         })
     }
 
     //Get Number of Mines Game Won Amount
     const minesGame = await MinesGame.find()
     if (minesGame.length > 0) {
-        minesGameTotalStake = minesGame.map((game) => {
-                if (game.bet_token_name !== 'PPF') {
-                    return {
-                        bet_amount: game.bet_amount,
-                        month: new Date(game.time).getMonth() + 1
-                    }
+        minesGameTotalStake = minesGame.filter(game => game.bet_token_name !== 'PPF').map(game => {
+            return {
+                bet_amount: game.bet_amount,
+                month: new Date(game.time).getMonth() + 1
             }
         })
     }
 
     const allWagered = crashGameTotalStake.concat(diceGameTotalStake).concat(minesGameTotalStake)
     let totalAmountByMonth = [];
-    
     for (let i = 0; i < allWagered.length; i++) {
         let month = allWagered[i].month;
         let betAmount = allWagered[i].bet_amount;
@@ -475,8 +467,6 @@ const totalWageredByMonth = async () => {
         }
     }
 
-    // console.log(totalAmountByMonth);
-    // const sum = crashGameTotalStake + diceGameTotalStake + minesGameTotalStake
     totalAmountByMonth = totalAmountByMonth.map((obj) => {
         return {
             month: monthsArray[obj.month - 1],
@@ -511,14 +501,10 @@ const totalWonByMonth = async () => {
     //Get Number of Crash Game Won Amount
     const crashGame = await CrashGame.find({ has_won: true })
     if (crashGame.length > 0) {
-        crashGameTotalStake = crashGame.map((game) => {
-            if (game != null || game != undefined) {
-                if (game.token !== 'PPF') {
-                    return {
-                        profit: game.profit,
-                        month: new Date(game.time).getMonth() + 1
-                    }
-                }
+        crashGameTotalStake = crashGame.filter(game => game.token !== 'PPF').map(game => {
+            return {
+                bet_amount: game.bet_amount,
+                month: new Date(game.time).getMonth() + 1
             }
         })
     }
@@ -526,14 +512,10 @@ const totalWonByMonth = async () => {
     //Get Number of Dice Game Won Amount
     const diceGame = await DiceGame.find({ has_won: true })
     if (diceGame.length > 0) {
-        diceGameTotalStake = diceGame.map((game) => {
-            if (game != null || game != undefined) {
-                if (game.token !== 'PPF') {
-                    return {
-                        profit: game.profit,
-                        month: new Date(game.time).getMonth() + 1
-                    }
-                }
+        diceGameTotalStake = diceGame.filter(game => game.token !== 'PPF').map(game => {
+            return {
+                bet_amount: game.bet_amount,
+                month: new Date(game.time).getMonth() + 1
             }
         })
     }
@@ -541,18 +523,13 @@ const totalWonByMonth = async () => {
     //Get Number of Mines Game Won Amount
     const minesGame = await MinesGame.find({ has_won: true })
     if (minesGame.length > 0) {
-        minesGameTotalStake = minesGame.map((game) => {
-            if (game != null || game != undefined) {
-                if (game.bet_token_name !== 'PPF') {
-                    return {
-                        profit: game.profit,
-                        month: new Date(game.time).getMonth() + 1
-                    }
-                }
+        minesGameTotalStake = minesGame.filter(game => game.bet_token_name !== 'PPF').map(game => {
+            return {
+                bet_amount: game.bet_amount,
+                month: new Date(game.time).getMonth() + 1
             }
         })
     }
-
     const allWagered = crashGameTotalStake.concat(diceGameTotalStake).concat(minesGameTotalStake)
     let totalAmountWon = [];
 
@@ -570,8 +547,6 @@ const totalWonByMonth = async () => {
         }
     }
 
-    // console.log(totalAmountWon);
-    // const sum = crashGameTotalStake + diceGameTotalStake + minesGameTotalStake
     totalAmountWon = totalAmountWon.map((obj) => {
         return {
             month: monthsArray[obj.month - 1],
