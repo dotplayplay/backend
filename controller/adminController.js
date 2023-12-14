@@ -414,7 +414,8 @@ const totalWageredAndTotalWon = async (req, res, next) => {
             borderColors: borderColors
         })
     } catch (err) {
-        return res.status(500).json({ error: err })
+        // return res.status(500).json({ error: err })
+        console.log(err)
     }
 }
 
