@@ -20,6 +20,7 @@ const Deposit = require("./routes/deposit");
 const Withdraw = require("./routes/withdraw")
 const Bonus = require('./routes/bonus')
 const TransactionHistory = require("./routes/transactionHistory.js");
+const homePageUpdates = require("./routes/homePageUpdates");
 
 const { createsocket } = require("./socket/index.js");
 const { createServer } = require("node:http");
@@ -53,6 +54,7 @@ app.use("/api/statistics", Statistics);
 app.use("/api/transaction", Transaction);
 app.use("/api/transaction-history", TransactionHistory);
 app.use("/admin/all-players", AllPLays);
+app.use("/api/home-page-updates", homePageUpdates);
 
 //admin routes
 app.use('/admin', Admin);
