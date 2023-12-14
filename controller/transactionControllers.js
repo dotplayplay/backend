@@ -16,7 +16,7 @@ const handleSwap = (async (req,res)=>{
     console.log(req.body.amount, typeof req.body.amount);
     const {user_id} = req.id;
     // const user_id = "6543bb0691475af55146493b";
-    const data = req.body;
+    const {data} = req.body;
     const swappingDetails = data;
 
 
