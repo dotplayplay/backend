@@ -403,7 +403,7 @@ const totalWonRanking = async (req, res, next) => {
         })
         return res.status(200).json({
             success: true,
-            wonRanking: membersWonData.filter(user => user.profile.total_wagered !== 0)
+            wonRanking: membersWonData.filter(user => user.profile.total_wagered !== 0 && user.totalWon !== 0)
         })
     } catch (err) {
         return res.status(500).json({ error: err })
@@ -441,7 +441,7 @@ const totalLossRanking = async (req, res, next) => {
         })
         return res.status(200).json({
             success: true,
-            lossRanking: membersLossData.filter(user => user.profile.total_wagered !== 0)
+            lossRanking: membersLossData.filter(user => user.profile.total_wagered !== 0 && user.totalLoss !== 0)
         })
     } catch (err) {
         return res.status(500).json({ error: err })
