@@ -364,7 +364,7 @@ const totalWageredRanking = async (req, res, next) => {
         const totalWageredRanking = users.sort((a, b) => {
             return b.total_wagered - a.total_wagered
         })
-        return res.status(200).json(totalWageredRanking)
+        return res.status(200).json(totalWageredRanking.filter(user => user.total_wagered !== 0))
     } catch (err) {
         return res.status(500).json({ error: err })
     }
@@ -403,7 +403,7 @@ const totalWonRanking = async (req, res, next) => {
         })
         return res.status(200).json({
             success: true,
-            wonRanking: membersWonData
+            wonRanking: membersWonData.filter(user => user.profile.total_wagered !== 0)
         })
     } catch (err) {
         return res.status(500).json({ error: err })
@@ -441,7 +441,7 @@ const totalLossRanking = async (req, res, next) => {
         })
         return res.status(200).json({
             success: true,
-            lossRanking: membersLossData
+            lossRanking: membersLossData.filter(user => user.profile.total_wagered !== 0)
         })
     } catch (err) {
         return res.status(500).json({ error: err })
