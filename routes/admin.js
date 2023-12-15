@@ -15,7 +15,7 @@ const {
     gameReport,
     ggrReport
 } = require('../controller/adminController')
-const { login, register, findAdminById, findAdminByUsername, updatePin, updatePassword, suspend, role, updateAvailability,removeAdmin, getAllAdmin, createChatSettings, updateChatSettings, getChatSettings } = require('../controller/adminAuthController')
+const { login, register, currentUser, findAdminById, findAdminByUsername, updatePin, updatePassword, suspend, role, updateAvailability,removeAdmin, getAllAdmin, createChatSettings, updateChatSettings, getChatSettings } = require('../controller/adminAuthController')
 const { protect } = require('../middleware/auth')
 
 const router = express.Router()
@@ -36,6 +36,7 @@ router.patch('/auth/avalability', protect, updateAvailability)
 router.delete('/remove/:id', protect, removeAdmin)
 
 //GET
+router.get('/user/current', protect, currentUser)
 router.get('/listadmins/list', protect, getAllAdmin)
 router.get('/user/:id', protect, findAdminById)
 router.get('/adminuser/:username', protect, findAdminByUsername)
