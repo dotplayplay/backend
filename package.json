@@ -11,8 +11,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "axios": "^1.6.0",
-    "bull": "^4.11.5",
+    "axios": "^1.6.2",
+    "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "date-fns": "^2.30.0",
     "dotenv": "^16.3.1",
@@ -23,8 +23,9 @@
     "node-cron": "^3.0.3",
     "node-schedule": "^2.1.1",
     "nodemon": "^3.0.1",
+    "qrcode": "^1.5.3",
     "socket.io": "^4.7.2",
-    "web3": "^4.3.0"
+    "speakeasy": "^2.0.0"
   },
   "devDependencies": {
     "@types/bull": "^4.10.0",

@@ -1,14 +1,14 @@
 const { Server } = require("socket.io")
 const crypto = require('crypto');
-const axios = require("axios")
+const axios = require("axios");
 const salt = 'Qede00000000000w00wd001bw4dc6a1e86083f95500b096231436e9b25cbdd0075c4';
-const DiceGame = require("../model/dice_game")
-const DiceEncrypt = require("../model/dice_encryped_seeds")
-const PPFWallet = require("../model/PPF-wallet")
-const USDTWallet = require("../model/Usdt-wallet")
-const Chats = require("../model/public-chat")
-const {handleWagerIncrease} = require("../profile_mangement/index")
-const Bills = require("../model/bill")
+const DiceGame = require("../model/dice_game");
+const DiceEncrypt = require("../model/dice_encryped_seeds");
+const PPFWallet = require("../model/PPF-wallet");
+const USDTWallet = require("../model/Usdt-wallet");
+const Chats = require("../model/public-chat");
+const {handleWagerIncrease} = require("../profile_mangement/index");
+const Bills = require("../model/bill");
 let maxRange = 100
 
 async function createsocket(httpServer){
@@ -19,10 +19,16 @@ const io = new Server(httpServer, {
     }
 });
 
-
-const fetchActivePlayers = (async()=>{
-    let fghhs = await DiceGame.find()
-    io.emit("dice-gamePLayers", fghhs)
+// let fghhs = await DiceGame.find()
+let activeplayers = []
+const fetchActivePlayers = (async(e)=>{
+    if(activeplayers.length > 21){
+        activeplayers.shift()
+        activeplayers.push(e)
+    }else{
+        activeplayers.push(e)
+    }
+    io.emit("dice-gamePLayers", activeplayers)
 })
 
 // setInterval(()=>{
@@ -32,6 +38,7 @@ const fetchActivePlayers = (async()=>{
 
 const handleDiceBEt = (async(data)=>{
     let events = data[0]
+    fetchActivePlayers(events)
     try{
         if(events.token !== "PPF"){
             handleWagerIncrease(events)
@@ -54,6 +61,7 @@ const handleDiceBEt = (async(data)=>{
        status: events.has_won,
        bill_id: events.bet_id
     }
+   
     await Bills.create(bil)
 })
 
