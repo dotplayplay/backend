@@ -14,7 +14,7 @@ const UsdtWallet = require('../model/Usdt-wallet');
 const PPLWallet = require('../model/PPL-wallet');
 const { removeDuplicatePlayer, getGGR, getTotalPlayerBalance, totalGamesWon, totalGamesLoss, totalWageredByMonth, totalWonByMonth, userWon, userLoss, dailyTotalWagered, dailyGamesWon, betCount, playerCount, dailyLottery, withdrawalHistory, cashBack, wonByDate } = require("../utils/dashboard");
 const { conversion } = require("../utils/conversion");
-const { getTodayAndTomorrowsDate } = require("../utils/time");
+const { getTodayAndTomorrowsDate, today } = require("../utils/time");
 const AffiliateCodes = require("../model/affiliate_codes");
 
 // Create Member controller
@@ -451,14 +451,20 @@ const totalLossRanking = async (req, res, next) => {
 
 const dailyReport = async (req, res, next) => {
     const { date } = req.body
+    let todayDate = ''
+    let tomorrowDate = ''
     if (!date) {
-        return res.status(403).json({
-            success: false,
-            message: 'Please enter a date'
-        })
+        const todaysD = today()
+        todayDate = todaysD.todayDate
+        tomorrowDate = todaysD.tomorrowDate
+    } else {
+        const dateD = getTodayAndTomorrowsDate(date)
+        todayDate = dateD.todayDate
+        tomorrowDate = dateD.tomorrowDate
     }
+
+
     try {
-        const { todayDate, tomorrowDate } = getTodayAndTomorrowsDate(date)
         console.log(todayDate, tomorrowDate)
         const users = await User.find({
             created_at: {
@@ -565,14 +571,18 @@ const dailyReport = async (req, res, next) => {
 
 const gameReport = async (req, res, next) => {
     const { date } = req.body
+    let todayDate = ''
+    let tomorrowDate = ''
     if (!date) {
-        return res.status(403).json({
-            success: false,
-            message: 'Please enter a date'
-        })
+        const todaysD = today()
+        todayDate = todaysD.todayDate
+        tomorrowDate = todaysD.tomorrowDate
+    } else {
+        const dateD = getTodayAndTomorrowsDate(date)
+        todayDate = dateD.todayDate
+        tomorrowDate = dateD.tomorrowDate
     }
     try {
-        const { todayDate, tomorrowDate } = getTodayAndTomorrowsDate(date)
         console.log(todayDate, tomorrowDate)
         // Daily Total Wagered Across all Games
         const crashDailyTotalWagered = await dailyTotalWagered(todayDate, tomorrowDate, 'crashgame')
@@ -643,13 +653,17 @@ const gameReport = async (req, res, next) => {
 
 const ggrReport = async (req, res, next) => {
     const { date } = req.body
+    let todayDate = ''
+    let tomorrowDate = ''
     if (!date) {
-        return res.status(403).json({
-            success: false,
-            message: 'Please enter a date'
-        })
+        const todaysD = today()
+        todayDate = todaysD.todayDate
+        tomorrowDate = todaysD.tomorrowDate
+    } else {
+        const dateD = getTodayAndTomorrowsDate(date)
+        todayDate = dateD.todayDate
+        tomorrowDate = dateD.tomorrowDate
     }
-    const { todayDate, tomorrowDate } = getTodayAndTomorrowsDate(date)
     console.log(todayDate, tomorrowDate)
 
     try {
