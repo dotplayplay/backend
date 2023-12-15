@@ -14,8 +14,8 @@ let maxRange = 100
 async function createsocket(httpServer){
 const io = new Server(httpServer, {
     cors: {
-        origin:"https://dotplayplay.netlify.app"
-        // origin: "http://localhost:5173"
+        // origin:"https://dotplayplay.netlify.app"
+        origin: "http://localhost:5173"
     }
 });
 
@@ -162,6 +162,7 @@ const handleNewChatMessages = (async(data)=>{
 
 
 io.on("connection", (socket)=>{
+    console.log(socket)
     socket.on("dice-bet", data=>{
         handleDicePoints(data)
     })
