@@ -42,6 +42,7 @@ const CraeatBetGame = (async(data)=>{
   }
 
   await crash_game.create(bet)
+
 } catch (err) {
   console.error(err);
 }

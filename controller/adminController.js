@@ -12,7 +12,7 @@ const DepositRequest = require('../model/deposit_request');
 const PPDWallet = require('../model/PPD-wallet');
 const UsdtWallet = require('../model/Usdt-wallet');
 const PPLWallet = require('../model/PPL-wallet');
-const { removeDuplicatePlayer, getGGR, getTotalPlayerBalance, totalGamesWon, totalGamesLoss, totalWageredByMonth, totalWonByMonth, userWon, userLoss, dailyTotalWagered, dailyGamesWon, betCount, playerCount, dailyLottery, withdrawalHistory, cashBack, ggrByDate } = require("../utils/dashboard");
+const { removeDuplicatePlayer, getGGR, getTotalPlayerBalance, totalGamesWon, totalGamesLoss, totalWageredByMonth, totalWonByMonth, userWon, userLoss, dailyTotalWagered, dailyGamesWon, betCount, playerCount, dailyLottery, withdrawalHistory, cashBack, wonByDate } = require("../utils/dashboard");
 const { conversion } = require("../utils/conversion");
 const { getTodayAndTomorrowsDate } = require("../utils/time");
 const AffiliateCodes = require("../model/affiliate_codes");
@@ -730,7 +730,7 @@ const ggrReport = async (req, res, next) => {
                 //Get User Profile
                 // const profile = await Profile.findOne({ user_id: user.user_id }).sort({ createdAt: -1 })
                 //Get Individual GGR by ID
-                let payout = await ggrByDate(todayDate, tomorrowDate, userProfile.user_id)
+                let payout = await wonByDate(todayDate, tomorrowDate, userProfile.user_id)
 
                 const userData = {
                     user_id: userProfile.user_id,
