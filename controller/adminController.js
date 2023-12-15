@@ -14,7 +14,7 @@ const UsdtWallet = require('../model/Usdt-wallet');
 const PPLWallet = require('../model/PPL-wallet');
 const { removeDuplicatePlayer, getGGR, getTotalPlayerBalance, totalGamesWon, totalGamesLoss, totalWageredByMonth, totalWonByMonth, userWon, userLoss, dailyTotalWagered, dailyGamesWon, betCount, playerCount, dailyLottery, withdrawalHistory, cashBack, wonByDate } = require("../utils/dashboard");
 const { conversion } = require("../utils/conversion");
-const { getTodayAndTomorrowsDate } = require("../utils/time");
+const { getTodayAndTomorrowsDate, today } = require("../utils/time");
 const AffiliateCodes = require("../model/affiliate_codes");
 
 // Create Member controller
@@ -243,15 +243,16 @@ const adminDashbaord = async (req, res, next) => {
             success: true,
             data: {
                 totalDepositedPlayers,
-                grossGamingRevenue,
-                totalPlayerBalance: totalPlayerBalance,
+                grossGamingRevenue: totalWageredFromAllUsers.toFixed(2) - totalWon,
+                totalPlayerBalance: (totalPlayerBalance),
                 totalWagered: totalWageredFromAllUsers.toFixed(2),
                 totalWon: totalWon,
                 totalLoss: totalLoss
             }
         })
     } catch (err) {
-        return res.status(500).json({ error: err })
+        // return res.status(500).json({ error: err })
+        console.log(err)
     }
 }
 //FIND USER BY ID
@@ -288,35 +289,6 @@ const findUserByUsername = async (req, res, next) => {
 const registeredUserstats = async (req, res, next) => {
     // const today = new Date()
     // const lastYear = today.setFullYear(today.setFullYear() - 1)
-    const backgroundColors = [
-        "#3498db",
-        "#e74c3c",
-        "#2ecc71",
-        "#f39c12",
-        "#1abc9c",
-        "#9b59b6",
-        "#e67e22",
-        "#2c3e50",
-        "#27ae60",
-        "#c0392b",
-        "#7f8c8d",
-        "#d35400",
-    ];
-
-    const borderColors = [
-        "#2980b9",
-        "#c0392b",
-        "#27ae60",
-        "#d68910",
-        "#16a085",
-        "#8e44ad",
-        "#d35400",
-        "#1f2c39",
-        "#229954",
-        "#a93226",
-        "#626567",
-        "#ba4e00",
-    ];
     const monthsArray = [
         "January",
         "February",
@@ -358,9 +330,7 @@ const registeredUserstats = async (req, res, next) => {
         const registeredUser = data.map((user) => {
             return {
                 month: monthsArray[user._id - 1],
-                noOfRegisteredUsers: user.total,
-                backgroundColors: backgroundColors,
-                borderColors: borderColors
+                noOfRegisteredUsers: user.total
             }
         })
         return res.status(200).json({
@@ -373,35 +343,6 @@ const registeredUserstats = async (req, res, next) => {
 }
 
 const totalWageredAndTotalWon = async (req, res, next) => {
-    const backgroundColors = [
-        "#3498db",
-        "#e74c3c",
-        "#2ecc71",
-        "#f39c12",
-        "#1abc9c",
-        "#9b59b6",
-        "#e67e22",
-        "#2c3e50",
-        "#27ae60",
-        "#c0392b",
-        "#7f8c8d",
-        "#d35400",
-    ];
-
-    const borderColors = [
-        "#2980b9",
-        "#c0392b",
-        "#27ae60",
-        "#d68910",
-        "#16a085",
-        "#8e44ad",
-        "#d35400",
-        "#1f2c39",
-        "#229954",
-        "#a93226",
-        "#626567",
-        "#ba4e00",
-    ];
     try {
         const wagered = await totalWageredByMonth()
         const totalWon = await totalWonByMonth()
@@ -410,12 +351,9 @@ const totalWageredAndTotalWon = async (req, res, next) => {
             success: true,
             totalWagered: wagered,
             totalWon: totalWon,
-            backgroundColors: backgroundColors,
-            borderColors: borderColors
         })
     } catch (err) {
-        // return res.status(500).json({ error: err })
-        console.log(err)
+        return res.status(500).json({ error: err })
     }
 }
 
@@ -427,7 +365,7 @@ const totalWageredRanking = async (req, res, next) => {
         const totalWageredRanking = users.sort((a, b) => {
             return b.total_wagered - a.total_wagered
         })
-        return res.status(200).json(totalWageredRanking)
+        return res.status(200).json(totalWageredRanking.filter(user => user.total_wagered !== 0))
     } catch (err) {
         return res.status(500).json({ error: err })
     }
@@ -466,7 +404,7 @@ const totalWonRanking = async (req, res, next) => {
         })
         return res.status(200).json({
             success: true,
-            wonRanking: membersWonData
+            wonRanking: membersWonData.filter(user => user.profile.total_wagered !== 0 && user.totalWon !== 0)
         })
     } catch (err) {
         return res.status(500).json({ error: err })
@@ -504,7 +442,7 @@ const totalLossRanking = async (req, res, next) => {
         })
         return res.status(200).json({
             success: true,
-            lossRanking: membersLossData
+            lossRanking: membersLossData.filter(user => user.profile.total_wagered !== 0 && user.totalLoss !== 0)
         })
     } catch (err) {
         return res.status(500).json({ error: err })
@@ -513,14 +451,20 @@ const totalLossRanking = async (req, res, next) => {
 
 const dailyReport = async (req, res, next) => {
     const { date } = req.body
+    let todayDate = ''
+    let tomorrowDate = ''
     if (!date) {
-        return res.status(403).json({
-            success: false,
-            message: 'Please enter a date'
-        })
+        const todaysD = today()
+        todayDate = todaysD.todayDate
+        tomorrowDate = todaysD.tomorrowDate
+    } else {
+        const dateD = getTodayAndTomorrowsDate(date)
+        todayDate = dateD.todayDate
+        tomorrowDate = dateD.tomorrowDate
     }
+
+
     try {
-        const { todayDate, tomorrowDate } = getTodayAndTomorrowsDate(date)
         console.log(todayDate, tomorrowDate)
         const users = await User.find({
             created_at: {
@@ -627,14 +571,18 @@ const dailyReport = async (req, res, next) => {
 
 const gameReport = async (req, res, next) => {
     const { date } = req.body
+    let todayDate = ''
+    let tomorrowDate = ''
     if (!date) {
-        return res.status(403).json({
-            success: false,
-            message: 'Please enter a date'
-        })
+        const todaysD = today()
+        todayDate = todaysD.todayDate
+        tomorrowDate = todaysD.tomorrowDate
+    } else {
+        const dateD = getTodayAndTomorrowsDate(date)
+        todayDate = dateD.todayDate
+        tomorrowDate = dateD.tomorrowDate
     }
     try {
-        const { todayDate, tomorrowDate } = getTodayAndTomorrowsDate(date)
         console.log(todayDate, tomorrowDate)
         // Daily Total Wagered Across all Games
         const crashDailyTotalWagered = await dailyTotalWagered(todayDate, tomorrowDate, 'crashgame')
@@ -705,13 +653,17 @@ const gameReport = async (req, res, next) => {
 
 const ggrReport = async (req, res, next) => {
     const { date } = req.body
+    let todayDate = ''
+    let tomorrowDate = ''
     if (!date) {
-        return res.status(403).json({
-            success: false,
-            message: 'Please enter a date'
-        })
+        const todaysD = today()
+        todayDate = todaysD.todayDate
+        tomorrowDate = todaysD.tomorrowDate
+    } else {
+        const dateD = getTodayAndTomorrowsDate(date)
+        todayDate = dateD.todayDate
+        tomorrowDate = dateD.tomorrowDate
     }
-    const { todayDate, tomorrowDate } = getTodayAndTomorrowsDate(date)
     console.log(todayDate, tomorrowDate)
 
     try {
@@ -748,7 +700,7 @@ const ggrReport = async (req, res, next) => {
             data: usersDataFromProfile
         })
     } catch (err) {
-        return res.status(500).json({error: err});
+        return res.status(500).json({ error: err });
     }
 
 }
