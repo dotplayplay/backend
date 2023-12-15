@@ -243,15 +243,16 @@ const adminDashbaord = async (req, res, next) => {
             success: true,
             data: {
                 totalDepositedPlayers,
-                grossGamingRevenue,
-                totalPlayerBalance: totalPlayerBalance,
-                totalWagered: totalWageredFromAllUsers.toFixed(2),
-                totalWon: totalWon,
-                totalLoss: totalLoss
+                grossGamingRevenue: (totalWageredFromAllUsers.toFixed(2) - totalWon),
+                totalPlayerBalance: Number(totalPlayerBalance),
+                totalWagered: Number(totalWageredFromAllUsers.toFixed(2)),
+                totalWon: Number(totalWon),
+                totalLoss: Number(totalLoss)
             }
         })
     } catch (err) {
-        return res.status(500).json({ error: err })
+        // return res.status(500).json({ error: err })
+        console.log(err)
     }
 }
 //FIND USER BY ID
@@ -685,7 +686,7 @@ const ggrReport = async (req, res, next) => {
             data: usersDataFromProfile
         })
     } catch (err) {
-        return res.status(500).json({error: err});
+        return res.status(500).json({ error: err });
     }
 
 }
