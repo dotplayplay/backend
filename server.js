@@ -70,6 +70,7 @@ const dbUri = `mongodb+srv://highscoreteh:eNiIQbm4ZMSor8VL@cluster0.xmpkpjc.mong
 mongoose.connect(dbUri, { useNewUrlParser: true,  useUnifiedTopology: true })
     .then((result)=>  console.log('Database connected'))
     .catch((err)=> console.log(err))
-server.listen(process.env.PORT, ()=>{
-    console.log("Running on port "+ process.env.PORT)
+const PORT = process.env.PORT || 8000;
+server.listen(PORT, ()=>{
+    console.log("Running on port "+ PORT)
 })
