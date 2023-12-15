@@ -243,11 +243,11 @@ const adminDashbaord = async (req, res, next) => {
             success: true,
             data: {
                 totalDepositedPlayers,
-                grossGamingRevenue: (totalWageredFromAllUsers.toFixed(2) - totalWon),
-                totalPlayerBalance: Number(totalPlayerBalance),
-                totalWagered: Number(totalWageredFromAllUsers.toFixed(2)),
-                totalWon: Number(totalWon),
-                totalLoss: Number(totalLoss)
+                grossGamingRevenue: totalWageredFromAllUsers.toFixed(2) - totalWon,
+                totalPlayerBalance: (totalPlayerBalance),
+                totalWagered: totalWageredFromAllUsers.toFixed(2),
+                totalWon: totalWon,
+                totalLoss: totalLoss
             }
         })
     } catch (err) {
