@@ -110,7 +110,6 @@ const handleUpdatewallet = (async(data)=>{
 })
 
 const handleMybet = ((e, user)=>{
-    console.log(user)
     if(user.is_roll_under){
         if(parseFloat(e.cashout) < parseFloat(user.chance)){
             let prev_bal = parseFloat(user.prev_bal)

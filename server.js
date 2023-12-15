@@ -60,7 +60,6 @@ app.get("/", (req, res)=>{
   res.send("Welcome to Dotplayplay backend server");
 })
 
-
 mongoose.set('strictQuery', false);
 const dbUri = `mongodb+srv://highscoreteh:eNiIQbm4ZMSor8VL@cluster0.xmpkpjc.mongodb.net/main_page?retryWrites=true&w=majority`
 
