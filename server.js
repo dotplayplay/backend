@@ -18,9 +18,8 @@ const Wallet = require("./routes/wallet.js");
 const diceGame = require("./routes/diceGame");
 const Deposit = require("./routes/deposit");
 const Withdraw = require("./routes/withdraw")
-const Bonus = require('./routes/bonus')
+const Bonus = require('./routes/bonus');
 const TransactionHistory = require("./routes/transactionHistory.js");
-
 const { createsocket } = require("./socket/index.js");
 const { createServer } = require("node:http");
 require("dotenv").config();
@@ -60,6 +59,7 @@ app.use('/admin', Admin);
 app.get("/", (req, res)=>{
   res.send("Welcome to Dotplayplay backend server");
 })
+
 
 mongoose.set('strictQuery', false);
 const dbUri = `mongodb+srv://highscoreteh:eNiIQbm4ZMSor8VL@cluster0.xmpkpjc.mongodb.net/main_page?retryWrites=true&w=majority`

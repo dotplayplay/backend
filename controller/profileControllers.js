@@ -96,7 +96,6 @@ const SingleUser = (async(req, res)=>{
         const ppd = await PPDWallet.find({user_id})
         let wallet = [usdt[0], ppf[0], ppl[0], ppd[0]]
         res.status(200).json({users, wallet})
-      
     }
   } catch (err) {
     res.status(501).json({ message: err.message });

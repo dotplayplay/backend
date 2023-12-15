@@ -19,12 +19,17 @@ const io = new Server(httpServer, {
     }
 });
 
-
-const fetchActivePlayers = (async()=>{
-    let fghhs = await DiceGame.find()
-    io.emit("dice-gamePLayers", fghhs)
+// let fghhs = await DiceGame.find()
+let activeplayers = []
+const fetchActivePlayers = (async(e)=>{
+    if(activeplayers.length > 21){
+        activeplayers.shift()
+        activeplayers.push(e)
+    }else{
+        activeplayers.push(e)
+    }
+    io.emit("dice-gamePLayers", activeplayers)
 })
-
 
 // setInterval(()=>{
 //     fetchActivePlayers()
@@ -33,6 +38,7 @@ const fetchActivePlayers = (async()=>{
 
 const handleDiceBEt = (async(data)=>{
     let events = data[0]
+    fetchActivePlayers(events)
     try{
         if(events.token !== "PPF"){
             handleWagerIncrease(events)
@@ -55,6 +61,7 @@ const handleDiceBEt = (async(data)=>{
        status: events.has_won,
        bill_id: events.bet_id
     }
+   
     await Bills.create(bil)
 })
 
@@ -103,6 +110,7 @@ const handleUpdatewallet = (async(data)=>{
 })
 
 const handleMybet = ((e, user)=>{
+    console.log(user)
     if(user.is_roll_under){
         if(parseFloat(e.cashout) < parseFloat(user.chance)){
             let prev_bal = parseFloat(user.prev_bal)
