@@ -19,20 +19,26 @@ const io = new Server(httpServer, {
     }
 });
 
-
-const fetchActivePlayers = (async()=>{
-    let fghhs = await DiceGame.find()
-    io.emit("dice-gamePLayers", fghhs)
+// let fghhs = await DiceGame.find()
+let activeplayers = []
+const fetchActivePlayers = (async(e)=>{
+    if(activeplayers.length > 21){
+        activeplayers.shift()
+        activeplayers.push(e)
+    }else{
+        activeplayers.push(e)
+    }
+    io.emit("dice-gamePLayers", activeplayers)
 })
-
 
 // setInterval(()=>{
 //     fetchActivePlayers()
 // }, 1000)
 
-
+ 
 const handleDiceBEt = (async(data)=>{
     let events = data[0]
+    fetchActivePlayers(events)
     try{
         if(events.token !== "PPF"){
             handleWagerIncrease(events)
@@ -55,6 +61,7 @@ const handleDiceBEt = (async(data)=>{
        status: events.has_won,
        bill_id: events.bet_id
     }
+   
     await Bills.create(bil)
 })
 
@@ -154,7 +161,7 @@ const handleDicePoints = ((e)=>{
 })
 
 
-// let newMessage = await Chats.find()
+let newMessage = await Chats.find()
 const handleNewChatMessages = (async(data)=>{
     io.emit("new-messages", newMessage)
   await Chats.create(data)
@@ -168,12 +175,12 @@ io.on("connection", (socket)=>{
 
     socket.on("message", data=>{
         newMessage.push(data)
-        // handleNewChatMessages(data)
+        handleNewChatMessages(data)
     })
 
-    socket.on("disconnect", ()=>{
-        console.log("disconnected")
-    })
+    // socket.on("disconnect", ()=>{
+    //     console.log("disconnected")
+    // })
 })
     
 }

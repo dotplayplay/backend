@@ -8,7 +8,7 @@ async function scheduleTask(tasks) {
         const existingSchedule = await Schedule.findOne({ identifier });
         if (!existingSchedule) {
             console.log("Creating Scheduled task :::> ", identifier);
-            schedules.push(Schedule.create({ identifier, expression, module, task }));
+            schedules.push(Schedule.create([{ identifier, expression, module, task }]));
         } else {
             console.log("Task already exist. Skipping:::>");
         }

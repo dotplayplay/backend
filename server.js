@@ -18,9 +18,8 @@ const Wallet = require("./routes/wallet.js");
 const diceGame = require("./routes/diceGame");
 const Deposit = require("./routes/deposit");
 const Withdraw = require("./routes/withdraw")
-const Bonus = require('./routes/bonus')
+const Bonus = require('./routes/bonus');
 const TransactionHistory = require("./routes/transactionHistory.js");
-
 const { createsocket } = require("./socket/index.js");
 const { createServer } = require("node:http");
 require("dotenv").config();

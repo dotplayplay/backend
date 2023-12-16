@@ -57,7 +57,7 @@ const buyTickets = async (req, res) => {
 
     await PPLWallet.updateOne({ _id: wallet._id }, { balance: prevBal - price }).session(session);
 
-    const ticket = await LotteryTicket.create([{
+    const [ticket] = await LotteryTicket.create([{
       user_id,
       game_id: lottery.game_id,
       amount,
@@ -151,7 +151,7 @@ const getGameSeeds = async (req, res) => {
         message: "Game not found",
       });
     }
-    const seeds = await LotterySeeds.findOne({ game_id: id });
+    const seeds = await LotterySeeds.findOne({ game_id: lottery.game_id });
     if (!seeds) {
       return res.status(400).json({
         status: false,
@@ -209,50 +209,61 @@ const getWinningTickets = async (req, res) => {
     res.status(500).json(error);
   }
 }
-
+function generateRandomString(length) {
+  let result = '';
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  for (let i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * characters.length));
+  }
+  return result;
+}
 async function initializeLottery() {
   // await Lottery.deleteMany({});
   // await LotteryTicket.deleteMany({});
+  // await LotterySeeds.deleteMany({});
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
     let latestLottery = await Lottery.findOne({ drawn: false }).sort({ '_id': -1 }).session(session);
     if (!latestLottery) {
-      console.log("Creating Lottery Game ::")
-      latestLottery = new Lottery({
+      console.log("Creating Lottery Game ::");
+      ([latestLottery] = await Lottery.create([{
         numbers: [],
         drawn: false
-      });
-      await latestLottery.save({ session });
+      }], { session }));
     }
-    console.log("Lottery => ", latestLottery);
+    // console.log("Lottery => ", latestLottery);
     if (latestLottery.game_id > 1) {
       // Bonus tickets for previous game tickets
       const lastGameId = latestLottery.game_id - 1;
-      const previousGameTickets = await LotteryTicket.find({ game_id: lastGameId }).sort({ '_id': -1 }).session(session);
-      const previousGameBonusTickets = previousGameTickets.filter(ticket => ticket.matched <= 2);
 
-      const ticketsCreation = [];
-      for (const ticket of previousGameBonusTickets) {
-        ticketsCreation.push(LotteryTicket.create([{
-          user_id: ticket.user_id,
-          game_id: latestLottery.game_id,
-          amount: ticket.amount,
-          numbers: ticket.numbers
-        }], { session }))
+      const lastGame = await Lottery.findOne({ game_id: lastGameId }).session(session);
+      if (!!lastGame) {
+        const previousGameTickets = await LotteryTicket.find({ game_id: lastGameId }).sort({ '_id': -1 }).session(session);
+        const previousGameBonusTickets = previousGameTickets.filter(ticket => ticket.matched <= 2);
+
+        const ticketsCreation = [];
+        for (const ticket of previousGameBonusTickets) {
+          ticketsCreation.push(LotteryTicket.create([{
+            user_id: ticket.user_id,
+            game_id: latestLottery.game_id,
+            amount: ticket.amount,
+            numbers: ticket.numbers
+          }], { session }))
+        }
+
+        await Promise.all(ticketsCreation);
       }
-
-      await Promise.all(ticketsCreation);
     }
 
-    const serverSeed = Math.random().toString(16).slice(2);
-    const lotterySeeds = new LotterySeeds({
+    const serverSeed = generateRandomString(64);
+    const [seeds] = await LotterySeeds.create([{
       game_id: latestLottery.game_id,
       server_seed: serverSeed,
       server_seed_hash: crypto.createHash('sha256').update(serverSeed).digest('hex')
-    });
+    }], { session });
 
-    await lotterySeeds.save({ session });
+    // console.log("Game seeds :::> ", seeds);
 
     await session.commitTransaction();
   } catch (err) {
@@ -289,26 +300,21 @@ function calculatePrize(ticketNumbers, drawnNumbers) {
 
 
 function drawLottery(clientSeed, serverSeed) {
-  const hash = crypto.createHmac('sha256', clientSeed)
-    .update(serverSeed)
-    .digest('hex');
-
-  const hash8 = hash.substring(0, 8);
-  let int32Value = parseInt(hash8, 16);
-
-  const winningBalls = [];
-  for (let i = 0; i < 5; i++) {
-    const scaledValue = Math.floor(int32Value / 0x100000000) * 6;
-    const winningPosition = scaledValue % 36 + 1;
-    winningBalls.push(winningPosition);
-    int32Value = int32Value * 35 + 1;
+  const hash = crypto.createHmac('sha256', serverSeed).update(clientSeed).digest('hex');
+  function getRandomByHash(_hash) {
+    return _hash.match(/.{2}/g)
+      .map(it => parseInt(it, 16))
+      .reduce((res, it, i) => res + it / (256 ** (i + 1)), 0);
   }
-  const jackpotPosition = 4 - int32Value % 5;
-  const jackpotBall = jackpotPosition % 10 + 1;
-  return {
-    winningBalls,
-    jackpotBall,
-  };
+  const remainingBalls = Array(36).fill(null).map((v, i) => i + 1);
+  const regularBalls = [];
+  for (let i = 0; i < 5; i++) {
+    const random = getRandomByHash(hash.substr(i * 8, 8));
+    const ballIndex = Math.floor(random * remainingBalls.length);
+    regularBalls.push(remainingBalls.splice(ballIndex, 1)[0]);
+  }
+  const jackpotBall = Math.floor(getRandomByHash(hash.substr(5 * 8, 8)) * 10) + 1;
+  return { regularBalls, jackpotBall };
 }
 
 
@@ -329,13 +335,13 @@ async function runLotteryDraw() {
       throw new Error("This should never happen!")
     }
 
-    const clientSeed = seeds.client_start_block + 10;
-    const clientSeedHash = crypto.createHash('sha256').update(clientSeed).digest('hex');
+    const clientSeedBlock = seeds.client_start_block + 10;
+    const clientSeedHash = (await web3.eth.getBlock(clientSeedBlock)).hash || crypto.createHash('sha256').update(clientSeedBlock).digest('hex');
 
-    const { winningBalls, jackpotBall } = drawLottery(clientSeed, seeds.server_seed);
-    const winningNumbers = [...winningBalls, jackpotBall];
+    const { regularBalls, jackpotBall } = drawLottery(clientSeedHash, seeds.server_seed);
+    const winningNumbers = [...regularBalls, jackpotBall];
 
-    await LotterySeeds.updateOne({ game_id: lottery.game_id }, { client_seed: clientSeed, client_seed_hash: clientSeedHash }).session(session);
+    await LotterySeeds.updateOne({ game_id: lottery.game_id }, { client_seed: clientSeedBlock, client_seed_hash: clientSeedHash }).session(session);
 
     const tickets = await LotteryTicket.find({ game_id: lottery.game_id }).session(session);
 

@@ -86,8 +86,7 @@ const register = async (req, res, next) => {
         sendTokenResponse(user, 200, res);
 
     } catch (err) {
-        // return res.json({ error: err })
-        console.log(err)
+        return res.status(500).json({error: err});
     }
 };
 
@@ -108,7 +107,7 @@ const login = async (req, res, next) => {
                 message: "Invalid Credentials"
             });
         }
-        
+
         if (!(await user.verifyPassword(password))) {
             return res.status(401).json({
                 success: false,
@@ -123,7 +122,19 @@ const login = async (req, res, next) => {
 
         sendTokenResponse(user, 200, res);
     } catch (err) {
-        return res.json({ error: err })
+        return res.status(500).json({error: err});
+    }
+};
+// CURRENT USER
+const currentUser = async (req, res) => {
+    try {
+        const user = await Admin.findById(req.user.id);
+        res.status(200).json({
+            success: true,
+            user: user
+        });
+    } catch (err) {
+        return res.status(500).json({error: err});
     }
 };
 //FIND BY ID
@@ -144,8 +155,7 @@ const findAdminById = async (req, res, next) => {
             activity: userActivityLog || null
         });
     } catch (err) {
-        return res.json({ error: err })
-        // console.log(err)    
+        return res.status(500).json({error: err});   
     }
 }
 //FIND BY USERNAME
@@ -165,8 +175,7 @@ const findAdminByUsername = async (req, res, next) => {
             activity: userActivityLog || null
         });
     } catch (err) {
-        // return res.json({ error: err })
-        console.log(err)    
+        return res.status(500).json({error: err});
     }
 }
 //UPDATE PIN
@@ -192,13 +201,13 @@ const updatePin = async (req, res, next) => {
             data: user
         });
     } catch (err) {
-        return res.json({ error: err })
+        return res.status(500).json({error: err});
     }
 }
 //UPDATE PASSWORD
 const updatePassword = async (req, res, next) => {
     try {
-        const id = req.user.id
+        const { id } = req.user
         const { password } = req.body
         const user = await Admin.findById(id)
         if (!user) {
@@ -218,7 +227,7 @@ const updatePassword = async (req, res, next) => {
             data: user
         });
     } catch (err) {
-        return res.json({ error: err })
+        return res.status(500).json({error: err});
     }
 }
 //UPDATE SUSPEND
@@ -249,7 +258,7 @@ const suspend = async (req, res, next) => {
             data: user
         });
     } catch (err) {
-        return res.json({ error: err })
+        return res.status(500).json({error: err});
     }
 }
 //UPDATE ROLE
@@ -280,7 +289,7 @@ const role = async (req, res, next) => {
             data: user
         });
     } catch (err) {
-        return res.json({ error: err })
+        return res.status(500).json({error: err});
     }
 }
 //UPDATE AVAILABILITY
@@ -310,7 +319,7 @@ const updateAvailability = async (req, res, next) => {
             data: user
         });
     } catch (err) {
-        return res.json({ error: err })
+        return res.status(500).json({error: err});
     }
 }
 //REMOVE ADMIN
@@ -340,7 +349,7 @@ const removeAdmin = async (req, res, next) => {
             data: user
         });
     } catch (err) {
-        return res.json({ error: err })
+        return res.status(500).json({error: err});
     }
 }
 //Fetch all admin
@@ -361,7 +370,7 @@ const getAllAdmin = async (req, res, next) => {
             data: users
         });
     } catch (err) {
-        return res.json({ error: err });
+        return res.status(500).json({ error: err });
     }
 }
 //Create chat Settings
@@ -375,7 +384,7 @@ const createChatSettings = async (req, res, next) => {
             message: "Chat Settings Created Success"
         })
     } catch (err) {
-        return res.json({ error: err });
+        return res.status(500).json({ error: err });
     }
 
 }
@@ -419,8 +428,7 @@ const updateChatSettings = async (req, res, next) => {
             data: result
         })
     } catch (err) {
-        // return res.json({error: err});
-        console.log(err)
+        return res.status(500).json({ error: err });
     }
 }
 //Get chat Settings
@@ -438,13 +446,14 @@ const getChatSettings = async (req, res, next) => {
             chatsettings: chatsettings
         })
     } catch (err) {
-        return res.json({ error: err });
+        return res.status(500).json({ error: err });
     }
 
 }
 module.exports = {
     register,
     login,
+    currentUser,
     findAdminById,
     findAdminByUsername,
     updatePin,

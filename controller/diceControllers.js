@@ -22,7 +22,6 @@ function generateRandomNumber(serverSeed, clientSeed, hash) {
   return row;
 }
 
-
 const updateUserWallet = (async(data)=>{
   await Wallet.updateOne({ user_id:data.user_id }, {balance: data.current_amount });
   if(data.bet_token_name === "PPF"){
@@ -67,7 +66,6 @@ const handleDiceBet = (async(user_id, data, result)=>{
     console.log(error)
   }
     })
-
       let hidden;
       if(data.bet_token_name !== "PPF"){
         handleWagerIncrease(user_id, data.bet_amount, data.bet_token_img)
@@ -123,10 +121,9 @@ const HandlePlayDice = ((req, res)=>{
   res.status(200).json(generateRandomNumber(data.server_seed,data.client_seed, data.hash_seed,data.nonce ))
 })
 
-
-
 const seedSettings = (async ( req, res )=>{
-  
+  const { user_id} = req.id
+  let {data} = req.body
 const handleHashGeneration = (()=>{
   const serverSeed = crypto.randomBytes(32).toString('hex');
   const clientSeed = data;
@@ -134,7 +131,6 @@ const handleHashGeneration = (()=>{
   const hash = crypto.createHash('sha256').update(combinedSeed).digest('hex');
   return hash
 })
-
   try{
     let client_seed = data
     let server_seed = handleHashGeneration()
@@ -144,15 +140,13 @@ const handleHashGeneration = (()=>{
       client_seed:client_seed,
       updated_at:new Date()
     })
+    console.log(client_seed)
     res.status(200).json("Updated sucessfully")
   }
   catch(err){
     res.status(501).json({ message: err });
   }
 })
-
-
-
 
 const getDiceGameHistory = (async (req, res)=>{
     const {user_id} = req.id
@@ -167,7 +161,6 @@ const getDiceGameHistory = (async (req, res)=>{
 
 // ============================== Initialize dice game ===============================
 const InitializeDiceGame = (async(user_id)=>{
-
   const characters ='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   function generateString(length) {
       let result = '';
