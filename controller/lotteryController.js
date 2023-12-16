@@ -1,7 +1,8 @@
 const crypto = require("crypto");
-const { utcDate } = require("../utils/date");
+const moment = require("moment");
 const { handleWagerIncrease } = require("../profile_mangement/index");
-const PPLWallet = require("../model/PPL-wallet")
+const PPLWallet = require("../model/PPL-wallet");
+const USDTWallet = require("../model/Usdt-wallet");
 const Lottery = require('../model/lottery_game');
 const { Web3 } = require('web3');
 const web3 = new Web3(new Web3.providers.HttpProvider('https://mainnet.infura.io/v3/80ac7c0645804a909267c778b9b82126'));
@@ -9,6 +10,7 @@ const Profile = require('../model/Profile');
 const LotterySeeds = require('../model/lottery_encryped_seeds');
 const LotteryTicket = require('../model/lottery_ticktet');
 const mongoose = require("mongoose");
+const { generateRandomString } = require("../utils/generators");
 
 const buyTickets = async (req, res) => {
   const session = await mongoose.startSession();
@@ -48,12 +50,12 @@ const buyTickets = async (req, res) => {
       });
     }
     // Check if game has started
-    if (utcDate() < new Date(lottery.start_date)) {
+    if (moment.utc().isBefore(moment(lottery.start_date))) {
       await session.endSession();
       return res.status(403).json({ error: true, message: "Game has'nt started yet!" });
     }
     // Check if current time is past deadline
-    if (utcDate() > new Date(lottery.draw_date) - 5 * 60 * 1000) {
+    if (moment.utc().isAfter(moment(lottery.draw_date).subtract(5, "minutes"))) {
       await session.endSession();
       return res.status(403).json({
         error: true,
@@ -63,7 +65,7 @@ const buyTickets = async (req, res) => {
 
     const prevBal = parseFloat(wallet.balance);
     await PPLWallet.updateOne({ _id: wallet._id }, { balance: prevBal - price }).session(session);
-    // handleWagerIncrease({user_id, bet_amount: price, token: 'PPL'});
+    await handleWagerIncrease({user_id, bet_amount: price, token: 'PPL'});
     const [ticket] = await LotteryTicket.create([{
       user_id,
       game_id: lottery.game_id,
@@ -243,14 +245,6 @@ const getWinningTickets = async (req, res) => {
     res.status(500).json(error);
   }
 }
-function generateRandomString(length) {
-  let result = '';
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  for (let i = 0; i < length; i++) {
-    result += characters.charAt(Math.floor(Math.random() * characters.length));
-  }
-  return result;
-}
 async function initializeLottery() {
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -297,9 +291,21 @@ async function initializeLottery() {
       }], { session });
 
       await session.commitTransaction();
+    } else if (moment(latestLottery.draw_date).add(5, 'mins').isBefore(moment.utc())) {
+      console.log("Fixing unconcluded game")
+      try {
+        const seeds = await LotterySeeds.findOne({ game_id: latestLottery.game_id });
+        if (!seeds.client_start_block) {
+          await LotterySeeds.updateOne({ game_id: latestLottery.game_id }, {
+            client_start_block: await web3.eth.getBlockNumber()
+          })
+        }
+        await runLotteryDraw();
+      } catch (error) {
+        console.log("Failed to conclude game:> ", error.message);
+      }
     }
     // console.log("Game seeds :::> ", seeds);
-
   } catch (err) {
     console.error(err);
     await session.abortTransaction();
@@ -362,6 +368,7 @@ async function runLotteryDraw() {
   console.log("Running Lotto Draw")
   const session = await mongoose.startSession();
   session.startTransaction();
+  let errors;
   try {
     const lottery = await Lottery.findOne({ drawn: false }).sort({ '_id': -1 }).session(session);
 
@@ -374,15 +381,15 @@ async function runLotteryDraw() {
     if (!seeds) {
       throw new Error("This should never happen!")
     }
-    console.log("Seeds => ", seeds);
+    // console.log("Seeds => ", seeds);
     if (!seeds.client_start_block) {
       throw new Error("NO Start Block, This should never happen!");
     }
 
-    const clientSeedBlock = seeds.client_start_block + BigInt(1);
-    const clientSeedHash = (await web3.eth.getBlock(clientSeedBlock)).hash || crypto.createHash('sha256').update(clientSeedBlock).digest('hex');
+    const clientSeedBlock = seeds.client_start_block + BigInt(10);
+    const clientSeedHash = (await web3.eth.getBlock(clientSeedBlock))?.hash || crypto.createHash('sha256').update(clientSeedBlock).digest('hex');
 
-    console.log("clientSeedHash => ", clientSeedHash, clientSeedBlock);
+    // console.log("clientSeedHash => ", clientSeedHash, clientSeedBlock);
 
     const { regularBalls, jackpotBall } = drawLottery(clientSeedHash, seeds.server_seed);
     const winningNumbers = [...regularBalls, jackpotBall];
@@ -412,8 +419,10 @@ async function runLotteryDraw() {
   } catch (error) {
     await session.abortTransaction();
     console.log("Error running lotto", error)
+    errors = error;
   } finally {
     await session.endSession();
+    if (errors) throw errors; // Throws the so task runner retries it
   }
 }
 
@@ -421,6 +430,7 @@ async function setDeadlineBlock() {
   console.log("Setting ETH start block")
   const session = await mongoose.startSession();
   session.startTransaction();
+  let errors;
   try {
     const lottery = await Lottery.findOne({ drawn: false }).sort({ '_id': -1 }).session(session);
 
@@ -440,11 +450,13 @@ async function setDeadlineBlock() {
     await LotterySeeds.updateOne({ game_id: lottery.game_id }, { client_start_block: latestBlock }).session(session);
     console.log('Seeds updated :::> ', latestBlock);
     await session.commitTransaction();
-    await session.endSession();
   } catch (error) {
     await session.abortTransaction();
-    await session.endSession();
+    errors = error;
     console.log("Error setting ETH blocks", error)
+  } finally {
+    await session.endSession();
+    if (errors) throw errors;
   }
 }
 
@@ -454,6 +466,27 @@ const resetGame = async (req, res) => {
     await LotteryTicket.deleteMany({});
     await LotterySeeds.deleteMany({});
     return res.status(200).json("Done!")
+  } catch(e) {
+    return res.status(500).json(e.message)
+  }
+}
+
+//TODO: remove code
+const topUp = async (req, res) => {
+  const {user_id } = req.body;
+  try {
+    if (!user_id ) {
+      return res.status(400).json({
+        error: true,
+        message: "No user ID"
+      });
+    }
+
+    await Promise.all([
+      PPLWallet.updateOne({user_id }, {balance: 10_000 }),
+      USDTWallet.updateOne({user_id }, {balance: 10_000 }),
+    ])
+    res.status(200).json("You are now rich!");
   } catch(e) {
     return res.status(500).json(e.message)
   }
@@ -471,5 +504,6 @@ module.exports = {
   getLotteryHistory,
   getGameSeeds,
   setDeadlineBlock,
-  resetGame
+  resetGame,
+  topUp
 };

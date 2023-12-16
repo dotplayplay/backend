@@ -12,7 +12,7 @@ const handleWagerIncrease = (async (event) => {
         let data = await CashBackDB.find({ user_id: event.user_id })
         let prev_wager = parseFloat(data[0].total_wagered)
         let prev_level_up = parseInt((data[0].vip_level))
-        let new_wager = event.bet_amount
+        let new_wager = event.bet_amount // TODO: convert to USD based on event.token rate
         let total_wagered = prev_wager + new_wager
         let next_hit = 1
 
@@ -145,7 +145,8 @@ const handleWagerIncrease = (async (event) => {
                 next_hit = 59000
                 handleWeeklyCashback(event.user_id, new_wager)
                 handleMonthlyCashback(event.user_id, new_wager)
-                prev_level_up < 22 && handleRechargeCashback(event.user_id, new_wager)
+                handleRechargeCashback(event.user_id, new_wager)
+                // prev_level_up < 22 && handleRechargeCashback(event.user_id, new_wager)
                 prev_level_up < 22 && handleAffiliateRewards(22, event.user_id)
                 prev_level_up < 22 && handelLevelups(22, event.user_id)
                 total_wagered >= 49000 && total_wagered <= next_hit && handleProgressPercentage(49000, next_hit, total_wagered, event.user_id)

@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const { utcDate } = require("../utils/date");
+const moment = require("moment");
 const schema = mongoose.Schema
 const CounterSchema = new schema({
     _id: { type: String, required: true },
@@ -29,27 +29,21 @@ const LotterySchema = new schema({
     draw_date: {
         type: Date,
         default: function () {
-            const now = utcDate();
+            const now = moment.utc();
             // now.setUTCMinutes(now.getUTCMinutes() + 2);
-            // return now;
-            let tomorrow = new Date(now);
-            tomorrow.setUTCHours(15);
-            tomorrow.setUTCMinutes(0);
-            tomorrow.setUTCSeconds(0);
-            tomorrow.setUTCMilliseconds(0);
-            
-            if (now.getUTCHours() >= 15) {
-                tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
+            // return now.add(2, "minute");
+            const date = moment.utc().set({hour:15, minute:0, second:0, millisecond:0});
+
+            if (now.get('hour') > 15 ) {
+                return date.add(1, 'day').toDate();
             }
-            return tomorrow;
+            return date.toDate();
         }
     },
     start_date: {
         type: Date,
         default: function () {
-            const now = utcDate();
-            now.setUTCMinutes(now.getUTCMinutes() + 5);
-            return now;
+            return moment.utc().add(5, 'minutes').toDate();
         }
     }
 }, { timestamp: true })

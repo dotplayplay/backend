@@ -11,17 +11,23 @@ const User = require("./routes/Users.js");
 const Admin = require("./routes/admin.js");
 const Profile = require("./routes/Profile.js");
 const Chat = require("./routes/chat");
-// require("./controller/lotteryEngine.js");
-// require("./controller/cronScheduler.js");
+require("./controller/lotteryEngine.js");
+require("./controller/cronScheduler.js");
 const minegame = require("./routes/mines");
 const Wallet = require("./routes/wallet.js");
 const diceGame = require("./routes/diceGame");
 const Deposit = require("./routes/deposit");
 const Withdraw = require("./routes/withdraw")
 const Bonus = require('./routes/bonus');
+const Lottery = require('./routes/lottery');
 const TransactionHistory = require("./routes/transactionHistory.js");
 const { createsocket } = require("./socket/index.js");
 const { createServer } = require("node:http");
+//Test
+
+const {testCashback} = require("./profile_mangement/week_cashback")
+const {testResetCashback} = require("./profile_mangement/rechargebonus")
+
 require("dotenv").config();
 // ============ Initilize the app ========================
 
@@ -50,8 +56,15 @@ app.use("/api/cashback", Bonus);
 app.use("/api/stats", Stats);
 app.use("/api/statistics", Statistics);
 app.use("/api/transaction", Transaction);
+app.use("/api/lottery", Lottery);
 app.use("/api/transaction-history", TransactionHistory);
 app.use("/admin/all-players", AllPLays);
+
+//TODO: REMOVE
+app.post("/api/test-cashback", testCashback);
+//TODO: REMOVE
+app.post("/api/deactivate-recharge", testResetCashback)
+
 
 //admin routes
 app.use('/admin', Admin);

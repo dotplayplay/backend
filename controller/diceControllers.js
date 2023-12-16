@@ -22,10 +22,10 @@ function generateRandomNumber(serverSeed, clientSeed, hash) {
   return row;
 }
 
-const updateUserWallet = (async(data)=>{
-  await Wallet.updateOne({ user_id:data.user_id }, {balance: data.current_amount });
-  if(data.bet_token_name === "PPF"){
-    await PPFWallet.updateOne({ user_id:data.user_id }, {balance: data.current_amount });
+const updateUserWallet = (async (data) => {
+  await Wallet.updateOne({ user_id: data.user_id }, { balance: data.current_amount });
+  if (data.bet_token_name === "PPF") {
+    await PPFWallet.updateOne({ user_id: data.user_id }, { balance: data.current_amount });
   }
   else if (data.bet_token_name === "USDT") {
     await USDTWallet.updateOne({ user_id: data.user_id }, { balance: data.current_amount });
@@ -54,55 +54,55 @@ const handleDiceBet = (async (user_id, data, result) => {
       chance: rt.chance,
       game_nonce: rt.nonce ? rt.nonce : "-"
     }
-    
-  try{
-    await DiceGame.create(bet)
-    await DiceEncription.updateOne({user_id},{
-      nonce:rt.nonce
-    })``
+
+    try {
+      await DiceGame.create(bet)
+      await DiceEncription.updateOne({ user_id }, {
+        nonce: rt.nonce
+      })``
+    }
+
+    catch (error) {
+      console.log(error)
+    }
+  })
+  let hidden;
+  if (data.bet_token_name !== "PPF") {
+    await handleWagerIncrease({ user_id, bet_amount: data.bet_amount, token: data.bet_token_img })
   }
-   
-  catch(error){
-    console.log(error)
-  }
-    })
-      let hidden;
-      if(data.bet_token_name !== "PPF"){
-        handleWagerIncrease(user_id, data.bet_amount, data.bet_token_img)
+  if (parseFloat(data.chance) > parseFloat(result.point)) {
+    try {
+      let sjbhsj = await Wallet.find({ user_id })
+      if (sjbhsj[0].hidden_from_public) {
+        hidden = true
+      } else {
+        hidden = false
       }
-          if(parseFloat(data.chance) > parseFloat(result.point)){
-            try {
-              let sjbhsj = await Wallet.find({user_id})
-              if(sjbhsj[0].hidden_from_public){
-                  hidden = true
-                }else{
-                  hidden = false
-              }
-              let previous_bal = parseFloat(sjbhsj[0].balance)
-              let wining_amount = parseFloat(data.wining_amount)
-              let current_amount = (previous_bal + wining_amount).toFixed(4)
-              updateUserWallet({current_amount, ...data, user_id})
-              CraeatBetGame({...data, user_id, payoutIO:wining_amount,hidden,  has_won : true, io: parseFloat(result.point),result, current_amount})
-            } catch (err) {
-              console.log({ message: err.message });
-            }
-          }else{
-          try {
-            let response =  await Wallet.find({user_id})
-              if(response[0].hidden_from_public){
-                hidden = true
-              }else{
-                hidden = false
-              }
-            let previous_bal = parseFloat(response[0].balance)
-            let bet_amount = parseFloat(data.bet_amount)
-            let current_amount = (previous_bal - bet_amount).toFixed(4)
-            CraeatBetGame({...data, user_id,payoutIO:0,hidden, has_won : false, io: parseFloat(result.point), current_amount})
-            updateUserWallet({current_amount, ...data, user_id})
-          } catch (err) {
-            console.log({ message: err.message });
-          }
-        }
+      let previous_bal = parseFloat(sjbhsj[0].balance)
+      let wining_amount = parseFloat(data.wining_amount)
+      let current_amount = (previous_bal + wining_amount).toFixed(4)
+      updateUserWallet({ current_amount, ...data, user_id })
+      await CraeatBetGame({ ...data, user_id, payoutIO: wining_amount, hidden, has_won: true, io: parseFloat(result.point), result, current_amount })
+    } catch (err) {
+      console.log({ message: err.message });
+    }
+  } else {
+    try {
+      let response = await Wallet.find({ user_id })
+      if (response[0].hidden_from_public) {
+        hidden = true
+      } else {
+        hidden = false
+      }
+      let previous_bal = parseFloat(response[0].balance)
+      let bet_amount = parseFloat(data.bet_amount)
+      let current_amount = (previous_bal - bet_amount).toFixed(4)
+      CraeatBetGame({ ...data, user_id, payoutIO: 0, hidden, has_won: false, io: parseFloat(result.point), current_amount })
+      updateUserWallet({ current_amount, ...data, user_id })
+    } catch (err) {
+      console.log({ message: err.message });
+    }
+  }
 })
 
 const HandlePlayDice = ((req, res) => {
@@ -121,17 +121,17 @@ const HandlePlayDice = ((req, res) => {
   res.status(200).json(generateRandomNumber(data.server_seed, data.client_seed, data.hash_seed, data.nonce))
 })
 
-const seedSettings = (async ( req, res )=>{
-  const { user_id} = req.id
-  let {data} = req.body
-const handleHashGeneration = (()=>{
-  const serverSeed = crypto.randomBytes(32).toString('hex');
-  const clientSeed = data;
-  const combinedSeed = serverSeed + salt + clientSeed;
-  const hash = crypto.createHash('sha256').update(combinedSeed).digest('hex');
-  return hash
-})
-  try{
+const seedSettings = (async (req, res) => {
+  const { user_id } = req.id
+  let { data } = req.body
+  const handleHashGeneration = (() => {
+    const serverSeed = crypto.randomBytes(32).toString('hex');
+    const clientSeed = data;
+    const combinedSeed = serverSeed + salt + clientSeed;
+    const hash = crypto.createHash('sha256').update(combinedSeed).digest('hex');
+    return hash
+  })
+  try {
     let client_seed = data
     let server_seed = handleHashGeneration()
     nonce = 0
@@ -148,20 +148,20 @@ const handleHashGeneration = (()=>{
   }
 })
 
-const getDiceGameHistory = (async (req, res)=>{
-    const {user_id} = req.id
-    try {
-      let diceGameHistory = await DiceGame.find({user_id});
-        res.status(200).json(diceGameHistory);
-    } catch (err) {
-      res.status(501).json({ message: err.message });
-    }
+const getDiceGameHistory = (async (req, res) => {
+  const { user_id } = req.id
+  try {
+    let diceGameHistory = await DiceGame.find({ user_id });
+    res.status(200).json(diceGameHistory);
+  } catch (err) {
+    res.status(501).json({ message: err.message });
+  }
 })
 
 
 // ============================== Initialize dice game ===============================
-const InitializeDiceGame = (async(user_id)=>{
-  const characters ='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+const InitializeDiceGame = (async (user_id) => {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   function generateString(length) {
     let result = '';
     const charactersLength = characters.length;
@@ -181,12 +181,13 @@ const InitializeDiceGame = (async(user_id)=>{
     let encrypt = { hash, clientSeed, serverSeed }
     return encrypt
   })
+  const {serverSeed: server_seed, hash: hash_seed, clientSeed: client_seed } = handleHashGeneration();
   let data = {
     user_id: user_id,
     nonce: 0,
-    server_seed: handleHashGeneration().serverSeed,
-    hash_seed: handleHashGeneration().hash,
-    client_seed: handleHashGeneration().clientSeed,
+    server_seed,
+    hash_seed,
+    client_seed,
     is_open: false,
     updated_at: currentTime
   }
