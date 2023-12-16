@@ -35,7 +35,7 @@ const fetchActivePlayers = (async(e)=>{
 //     fetchActivePlayers()
 // }, 1000)
 
-
+ 
 const handleDiceBEt = (async(data)=>{
     let events = data[0]
     fetchActivePlayers(events)
@@ -161,7 +161,7 @@ const handleDicePoints = ((e)=>{
 })
 
 
-// let newMessage = await Chats.find()
+let newMessage = await Chats.find()
 const handleNewChatMessages = (async(data)=>{
     io.emit("new-messages", newMessage)
   await Chats.create(data)
@@ -175,7 +175,7 @@ io.on("connection", (socket)=>{
 
     socket.on("message", data=>{
         newMessage.push(data)
-        // handleNewChatMessages(data)
+        handleNewChatMessages(data)
     })
 
     socket.on("disconnect", ()=>{
