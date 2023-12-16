@@ -392,7 +392,7 @@ const totalWageredByMonth = async () => {
         }
     })
     if (totalAmountByMonth.length <= 0) {
-        return 0
+        return []
     }
     return totalAmountByMonth
 }
@@ -421,7 +421,7 @@ const totalWonByMonth = async () => {
     if (crashGame.length > 0) {
         crashGameTotalStake = crashGame.filter(game => game.token !== 'PPF').map(game => {
             return {
-                bet_amount: game.bet_amount,
+                profit: game.profit,
                 month: new Date(game.time).getMonth() + 1
             }
         })
@@ -432,7 +432,7 @@ const totalWonByMonth = async () => {
     if (diceGame.length > 0) {
         diceGameTotalStake = diceGame.filter(game => game.token !== 'PPF').map(game => {
             return {
-                bet_amount: game.bet_amount,
+                profit: game.profit,
                 month: new Date(game.time).getMonth() + 1
             }
         })
@@ -443,7 +443,7 @@ const totalWonByMonth = async () => {
     if (minesGame.length > 0) {
         minesGameTotalStake = minesGame.filter(game => game.bet_token_name !== 'PPF').map(game => {
             return {
-                bet_amount: game.bet_amount,
+                profit: game.profit,
                 month: new Date(game.time).getMonth() + 1
             }
         })
@@ -471,8 +471,9 @@ const totalWonByMonth = async () => {
             totalAmount: Math.floor(obj.totalAmount)
         }
     })
+
     if (totalAmountWon.length <= 0) {
-        return 0
+        return []
     }
     return totalAmountWon
 }
