@@ -174,13 +174,13 @@ const getAllMembers = async (req, res, next) => {
 
 
                 //Sum in USD
-                // const totalBalance = (usdt_balance.balance + ppd_balance.balance + conversion(ppl_balance.balance))
+                const totalBalance = (usdt_balance.balance + ppd_balance.balance + conversion(ppl_balance.balance))
 
                 return {
                     ...user._doc,
                     profile,
                     userFirstAndLastDeposit,
-                    // totalBalance,
+                    totalBalance,
                     ggr: ggr
                 }
             })
@@ -636,9 +636,14 @@ const gameReport = async (req, res, next) => {
             dicePlayerCount,
             minesPlayerCount,
         }
-
+        const games = {
+            crash: "Crash Game",
+            dice: "Dice Game",
+            mines: "Mines Game"
+        }
         return res.status(200).json({
             success: true,
+            games,
             totalWagered,
             totalPayout,
             totalGGR,
@@ -697,10 +702,10 @@ const ggrReport = async (req, res, next) => {
         )
         return res.status(200).json({
             success: true,
-            data: usersDataFromProfile
+            data: usersDataFromProfile.filter(user => user.totalWagered !== 0),
         })
     } catch (err) {
-        return res.status(500).json({ error: err });
+        return res.status(500).json({ error: err })
     }
 
 }
