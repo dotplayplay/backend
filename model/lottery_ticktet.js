@@ -39,6 +39,10 @@ const LotteryTicketSchema = new schema({
     prize: {
         type: Number,
         default: 0
+    },
+    bonus: {
+        type: Boolean,
+        default: false
     }
 }, { timestamp : true})
 LotteryTicketSchema.pre('save', async function(next) {

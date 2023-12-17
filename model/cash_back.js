@@ -14,6 +14,18 @@ const Userschema = new schema({
         type: Number,
         required: true,
     },
+    last_week_bonus: {
+        type: Number,
+        default: 0,
+    },
+    claimed_week_bonus: {
+        type: Number,
+        default: 0,
+    },
+    recharge_bonus: {
+        type: Number,
+        default: 0,
+    },
     recharge_balance: {
         type: Number,
         required: true,
@@ -34,6 +46,14 @@ const Userschema = new schema({
         type: Number,
         required: true,
     },
+    claimed_month_bonus: {
+        type: Number,
+        default: 0,
+    },
+    last_month_bonus: {
+        type: Number,
+        default: 0,
+    },
     total_bonus_claimed: {
         type: Number,
         required: true,
@@ -41,6 +61,16 @@ const Userschema = new schema({
     recharge_settings: {
         type: String,
         required: true,
+    },
+    recharge_claimed_at: {
+        type: Date,
+    },
+    recharge_activated: {
+        type: Boolean,
+        default: false,
+    },
+    recharge_end: {
+        type: Date,
     },
     next_level_point: {
         type: Number,

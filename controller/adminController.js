@@ -14,9 +14,10 @@ const UsdtWallet = require('../model/Usdt-wallet');
 const PPLWallet = require('../model/PPL-wallet');
 const { removeDuplicatePlayer, getGGR, getTotalPlayerBalance, totalGamesWon, totalGamesLoss, totalWageredByMonth, totalWonByMonth, userWon, userLoss, dailyTotalWagered, dailyGamesWon, betCount, playerCount, dailyLottery, withdrawalHistory, cashBack, wonByDate } = require("../utils/dashboard");
 const { conversion } = require("../utils/conversion");
+const { generateRandomString } = require("../utils/generators");
 const { getTodayAndTomorrowsDate, today } = require("../utils/time");
 const AffiliateCodes = require("../model/affiliate_codes");
-
+const FlashDrop = require('../model/flashdrop');
 // Create Member controller
 const createMember = async (req, res, next) => {
     const { username, password, confirmPassword, email, phoneNumber, affilliateModel, user_id } = req.body;
@@ -174,13 +175,13 @@ const getAllMembers = async (req, res, next) => {
 
 
                 //Sum in USD
-                // const totalBalance = (usdt_balance.balance + ppd_balance.balance + conversion(ppl_balance.balance))
+                const totalBalance = (usdt_balance.balance + ppd_balance.balance + conversion(ppl_balance.balance))
 
                 return {
                     ...user._doc,
                     profile,
                     userFirstAndLastDeposit,
-                    // totalBalance,
+                    totalBalance,
                     ggr: ggr
                 }
             })
@@ -404,7 +405,7 @@ const totalWonRanking = async (req, res, next) => {
         })
         return res.status(200).json({
             success: true,
-            wonRanking: membersWonData.filter(user => user.profile.total_wagered !== 0 && user.totalWon !== 0)
+            wonRanking: membersWonData.filter(user => user.totalWon > 0)
         })
     } catch (err) {
         return res.status(500).json({ error: err })
@@ -442,7 +443,7 @@ const totalLossRanking = async (req, res, next) => {
         })
         return res.status(200).json({
             success: true,
-            lossRanking: membersLossData.filter(user => user.profile.total_wagered !== 0 && user.totalLoss !== 0)
+            lossRanking: membersLossData.filter(user => user.totalLoss > 0)
         })
     } catch (err) {
         return res.status(500).json({ error: err })
@@ -636,9 +637,14 @@ const gameReport = async (req, res, next) => {
             dicePlayerCount,
             minesPlayerCount,
         }
-
+        const games = {
+            crash: "Crash Game",
+            dice: "Dice Game",
+            mines: "Mines Game"
+        }
         return res.status(200).json({
             success: true,
+            games,
             totalWagered,
             totalPayout,
             totalGGR,
@@ -697,12 +703,37 @@ const ggrReport = async (req, res, next) => {
         )
         return res.status(200).json({
             success: true,
-            data: usersDataFromProfile
+            data: usersDataFromProfile.filter(user => user.totalWagered !== 0),
+        })
+    } catch (err) {
+        return res.status(500).json({ error: err })
+    }
+
+}
+
+
+//Create FlashDrops
+const createFlashDrop = async (req, res) => {
+    try {
+        const {token, wager_requirement, level_requirement, threshold_limit, amount } = req.body
+        const [result] = await FlashDrop.create([{
+            shit_code: generateRandomString(32),
+            token: !!token ? token : "PPL",
+            wager_requirement,
+            level_requirement,
+            threshold_limit,
+            amount
+        }])
+        //Log Activity
+        await createActivityLog(req.user.id, "Flash Drop Created", req)
+        return res.status(200).json({
+            success: true,
+            data: result
         })
     } catch (err) {
         return res.status(500).json({ error: err });
     }
-
+    
 }
 
 module.exports = {
@@ -718,6 +749,6 @@ module.exports = {
     totalLossRanking,
     dailyReport,
     gameReport,
-    ggrReport
-
+    ggrReport,
+    createFlashDrop
 }
