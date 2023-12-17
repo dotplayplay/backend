@@ -79,10 +79,13 @@ const handleRedeemFlashDrop = (async (req, res) => {
     }], { session })
 
     await session.commitTransaction();
+    await session.endSession();
     res.status(200).json({ token: flashdrop.token, amount: flashdrop.amount });
+    
   }
   catch (error) {
     await session.abortTransaction();
+    await session.endSession();
     res.status(500).json({ error })
   }
 })
