@@ -149,7 +149,8 @@ const handleRedTrendball = (async(req, res)=>{
   let sent_data = data
 
   if(sent_data.bet_token_name !== "PPF"){
-    handleWagerIncrease(user_id, sent_data.bet_amount)
+    //TODO: check if bet_token_img exist
+    handleWagerIncrease({user_id, bet_amount: sent_data.bet_amount, token: sent_data.bet_token_img })
   }
 
   try {
