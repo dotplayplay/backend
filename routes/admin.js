@@ -13,7 +13,8 @@ const {
     totalLossRanking,
     dailyReport,
     gameReport,
-    ggrReport
+    ggrReport,
+    createFlashDrop
 } = require('../controller/adminController')
 const { login, register, currentUser, findAdminById, findAdminByUsername, updatePin, updatePassword, suspend, role, updateAvailability,removeAdmin, getAllAdmin, createChatSettings, updateChatSettings, getChatSettings } = require('../controller/adminAuthController')
 const { protect } = require('../middleware/auth')
@@ -71,6 +72,10 @@ router.post('/create', createMember)
 router.post('/chatsettings', protect, createChatSettings)
 router.patch('/chatsettings', protect, updateChatSettings)
 router.get('/chatsettings', protect, getChatSettings)
+
+
+//Create Flash Drop
+router.post('/flashdrop', protect, createFlashDrop)
 
 
 module.exports = router
