@@ -6,7 +6,7 @@ const rollCompetition = new mongoose.Schema({
         required: true
     },
     rolled_figure: {
-        type: Number,
+        type: String,
         required: true
     },
     createdAt: {
