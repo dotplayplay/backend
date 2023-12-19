@@ -417,6 +417,7 @@ const totalWonRanking = async (req, res, next) => {
         return res.status(500).json({ error: err })
     }
 }
+
 const totalLossRanking = async (req, res, next) => {
     try {
         //Get all members
@@ -455,6 +456,7 @@ const totalLossRanking = async (req, res, next) => {
         return res.status(500).json({ error: err })
     }
 }
+
 const dailyReportByDate = async(req, res, next)=> {
     const { date } = req.body
     let todayDate = ''
@@ -574,9 +576,8 @@ const dailyReportByDate = async(req, res, next)=> {
         return res.status(500).json({ error: err });
     }
 }
+
 const dailyReport = async (req, res, next) => {
-
-
     try {
         const userDate = await User.distinct('created_at')
         const DepositDate = await DepositRequest.distinct('created_at')
@@ -594,13 +595,6 @@ const dailyReport = async (req, res, next) => {
         const { date } = req.body
         let todayDate = ''
         let tomorrowDate = ''
-        // if (!date) {
-        //     const todaysD = today()
-        //     todayDate = todaysD.todayDate
-        //     tomorrowDate = todaysD.tomorrowDate
-        // } else {
-        //     
-        // }
         const resultData = []
         for(let i =0; i< uniqueDate.length; i++){
             const dateD = getTodayAndTomorrowsDate(uniqueDate[i])
@@ -710,7 +704,7 @@ const dailyReport = async (req, res, next) => {
     }
     return res.status(200).json({
         success: true,
-        data: resultData
+        data: resultData.sort((a,b) => new Date(b.date) - new Date(a.date))
     })
     } catch (err) {
         return res.status(500).json({ error: err });
