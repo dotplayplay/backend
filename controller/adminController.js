@@ -12,6 +12,12 @@ const DepositRequest = require('../model/deposit_request');
 const PPDWallet = require('../model/PPD-wallet');
 const UsdtWallet = require('../model/Usdt-wallet');
 const PPLWallet = require('../model/PPL-wallet');
+const CrashGame = require('../model/crashgame');
+const DiceGame = require('../model/dice_game');
+const MinesGame = require('../model/minesgameInit');
+const LotteryTicket = require('../model/lottery_ticktet');
+const WithdrawalHistory = require('../model/transactionHistoryModels/WithdrawalHistory');
+const CashBack = require('../model/cash_back');
 const { removeDuplicatePlayer, getGGR, getTotalPlayerBalance, totalGamesWon, totalGamesLoss, totalWageredByMonth, totalWonByMonth, userWon, userLoss, dailyTotalWagered, dailyGamesWon, betCount, playerCount, dailyLottery, withdrawalHistory, cashBack, wonByDate } = require("../utils/dashboard");
 const { conversion } = require("../utils/conversion");
 const { generateRandomString } = require("../utils/generators");
@@ -204,7 +210,7 @@ const adminDashbaord = async (req, res, next) => {
         //Filter successfull transaction from all transactions
         if (totalDeposit.length > 0) {
             totalDeposit.forEach(successfullDeposit => {
-                if (successfullDeposit.status === 'success') {
+                if (successfullDeposit.status === 'Successful') {
                     totalSuccessfullDeposit.push(successfullDeposit)
                 }
             })
@@ -449,8 +455,7 @@ const totalLossRanking = async (req, res, next) => {
         return res.status(500).json({ error: err })
     }
 }
-
-const dailyReport = async (req, res, next) => {
+const dailyReportByDate = async(req, res, next)=> {
     const { date } = req.body
     let todayDate = ''
     let tomorrowDate = ''
@@ -474,7 +479,7 @@ const dailyReport = async (req, res, next) => {
             }
         })
         const deposit = await DepositRequest.find({
-            status: 'success',
+            status: 'Successfull',
             created_at: {
                 $gte: new Date(todayDate),
                 $lt: new Date(tomorrowDate)
@@ -565,6 +570,148 @@ const dailyReport = async (req, res, next) => {
             otherBonuses,
             dailyLotterys
         })
+    } catch (err) {
+        return res.status(500).json({ error: err });
+    }
+}
+const dailyReport = async (req, res, next) => {
+
+
+    try {
+        const userDate = await User.distinct('created_at')
+        const DepositDate = await DepositRequest.distinct('created_at')
+        const WithdrawalHistoryDate = await WithdrawalHistory.distinct('createdAt')
+        const LotteryDate = await LotteryTicket.distinct('createdAt')
+        const CashBackDate = await CashBack.distinct('createdAt')
+        const crashDate = await CrashGame.distinct('time')
+        const diceDate = await DiceGame.distinct('time')
+        const minesDate = await MinesGame.distinct('time')
+
+        const distinctDates = [...userDate, ...DepositDate, ...WithdrawalHistoryDate, ...LotteryDate, ...CashBackDate, ...crashDate, ...diceDate, ...minesDate];
+        const uniqueDate = [...new Set(distinctDates.map(date => date.toISOString().split('T')[0]))]
+        console.log(uniqueDate);
+
+        const { date } = req.body
+        let todayDate = ''
+        let tomorrowDate = ''
+        // if (!date) {
+        //     const todaysD = today()
+        //     todayDate = todaysD.todayDate
+        //     tomorrowDate = todaysD.tomorrowDate
+        // } else {
+        //     
+        // }
+        const resultData = []
+        for(let i =0; i< uniqueDate.length; i++){
+            const dateD = getTodayAndTomorrowsDate(uniqueDate[i])
+            todayDate = dateD.todayDate
+            tomorrowDate = dateD.tomorrowDate
+
+
+        console.log(todayDate, tomorrowDate)
+        const users = await User.find({
+            created_at: {
+                $gte: new Date(todayDate),
+                $lt: new Date(tomorrowDate)
+            }
+        })
+        const deposit = await DepositRequest.find({
+            status: 'Successfull',
+            created_at: {
+                $gte: new Date(todayDate),
+                $lt: new Date(tomorrowDate)
+            }
+        })
+        let depositAmount = 0;
+        if (deposit.length > 0) {
+            depositAmount = deposit.reduce((a, b) => {
+                return a.amount + b.amount
+            })
+        }
+
+        let reDepositAmount = 0;
+        for (let i = 0; i < deposit; i++) {
+            let users = await DepositRequest.find({ user_id: deposit[i].user_id, created_at: { $lt: new Date(todayDate) } })
+            if (users.length > 0) {
+                reDepositAmount = users.reduce((a, b) => {
+                    return a.amount + b.amount
+                })
+            }
+        }
+
+        const totalWithdrawalAmounts = await withdrawalHistory(todayDate, tomorrowDate)
+        const totalWagered = await dailyTotalWagered(todayDate, tomorrowDate)
+        const totalPayout = await totalGamesWon(todayDate, tomorrowDate)
+        const otherBonuses = await cashBack()
+        const dailyLotterys = await dailyLottery(todayDate, tomorrowDate)
+        let totalDirectRefferal = 0;
+
+
+        const direct_refferal = await AffiliateCodes.find({
+            created_at: {
+                $gte: new Date(todayDate),
+                $lt: new Date(tomorrowDate)
+            }
+        })
+        if (direct_refferal.length > 0) {
+            let refferal = direct_refferal.map((alliffiliateCode) => {
+                return alliffiliateCode.available_usd_reward
+            })
+            totalDirectRefferal = refferal.reduce((a, b) => a + b)
+        }
+
+        //Commission Rakeback
+        const usersProfile = await Profile.find()
+        let totalCommisionRekaBack = 0
+        if (usersProfile.length > 0) {
+            let commission_reward = usersProfile.map(profile => {
+                return profile.commission_reward
+            })
+            totalCommisionRekaBack = commission_reward.reduce((a, b) => {
+                return a + b
+            })
+        }
+        const dateReport = {
+            date: new Date(todayDate).toLocaleString("en-GB", { day: "numeric", month: "long", year: "numeric", }),
+            dauCount: totalWagered.totalDailyUserActive,
+            userCount: users.length,
+            depositCount: deposit.length,
+            depositAmount: depositAmount,
+            reDepositAmount: reDepositAmount,
+            totalDeposit: depositAmount + reDepositAmount,
+            totalWithdrawalAmounts,
+            totalWagered: totalWagered.totalWagered,
+            totalPayout: Number(totalPayout),
+            totalGGR: Number(totalWagered.totalWagered) - Number(totalPayout),
+            deposit: {
+                totalDepositBonus: 0,
+                totalUnlock: 0
+            },
+            vipLevelUp: 0,
+            free: {
+                luckySpin: 0,
+                rollCompetitions: 0,
+                dailyContest: 0,
+                medal: 0,
+                binggo: 0,
+                rain: 0,
+                coinDrop: 0,
+                totalUnlocked: 0
+            },
+            affiliate: {
+                totalCommisionRekaBack,
+                totalDirectRefferal,
+                totalUnlocked: totalCommisionRekaBack - totalDirectRefferal
+            },
+            otherBonuses,
+            dailyLotterys
+        }
+        resultData.push(dateReport)
+    }
+    return res.status(200).json({
+        success: true,
+        data: resultData
+    })
     } catch (err) {
         return res.status(500).json({ error: err });
     }
@@ -715,7 +862,7 @@ const ggrReport = async (req, res, next) => {
 //Create FlashDrops
 const createFlashDrop = async (req, res) => {
     try {
-        const {token, wager_requirement, level_requirement, threshold_limit, amount } = req.body
+        const { token, wager_requirement, level_requirement, threshold_limit, amount } = req.body
         const [result] = await FlashDrop.create([{
             shit_code: generateRandomString(32),
             token: !!token ? token : "PPL",
@@ -733,7 +880,7 @@ const createFlashDrop = async (req, res) => {
     } catch (err) {
         return res.status(500).json({ error: err });
     }
-    
+
 }
 
 module.exports = {
@@ -750,5 +897,6 @@ module.exports = {
     dailyReport,
     gameReport,
     ggrReport,
-    createFlashDrop
+    createFlashDrop,
+    dailyReportByDate
 }

@@ -14,7 +14,8 @@ const {
     dailyReport,
     gameReport,
     ggrReport,
-    createFlashDrop
+    createFlashDrop,
+    dailyReportByDate
 } = require('../controller/adminController')
 const { login, register, currentUser, findAdminById, findAdminByUsername, updatePin, updatePassword, suspend, role, updateAvailability,removeAdmin, getAllAdmin, createChatSettings, updateChatSettings, getChatSettings } = require('../controller/adminAuthController')
 const { protect } = require('../middleware/auth')
@@ -58,6 +59,7 @@ router.get('/members', getAllMembers)
 router.get('/member/:user_id', findUserById)
 router.get('/member/username/:username', findUserByUsername)
 router.get('/report', dailyReport)
+router.get('/dayreport', dailyReportByDate)
 router.get('/gamereport', gameReport)
 router.get('/ggrreport', ggrReport)
 

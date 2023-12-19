@@ -816,7 +816,7 @@ const withdrawalHistory = async (today, tomorrow) => {
         createdAt: {
             $gte: new Date(today),
             $lt: new Date(tomorrow)
-        }, status: 'success'
+        }, status: 'Successful'
     })
 
     if (historys.length > 0) {
