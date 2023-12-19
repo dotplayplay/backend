@@ -26,19 +26,19 @@ const AffiliateCodes = require("../model/affiliate_codes");
 const FlashDrop = require('../model/flashdrop');
 // Create Member controller
 const createMember = async (req, res, next) => {
-    const { username, password, confirmPassword, email, phoneNumber, affilliateModel, user_id } = req.body;
-    let vipLevel = 0;
+    const { username, password, confirmPassword, email, phoneNumber, user_id, vipLevel, invited_code } = req.body;
+    // let vipLevel = 0;
     let google_auth = false;
     let provider = "password";
     let emailVerified = false;
     const created_at = currentTime
     const lastLoginAt = currentTime
     const last_login_ip = req.socket.remoteAddress
-    let invited_code = ""
+    // let invited_code = ""
 
     //Checking that all field are submitted
     // if (!username || !password || !confirmPassword || !email || !phoneNumber || !affilliateModel || !user_id) 
-    if ([username, password, confirmPassword, email, phoneNumber, user_id].includes('')) {
+    if ([username, password, confirmPassword, email, phoneNumber, user_id, invited_code].includes('')) {
         return res.status(400).json({
             success: false,
             message: 'Kindly provide all field are required.'
