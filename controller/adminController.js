@@ -26,85 +26,92 @@ const AffiliateCodes = require("../model/affiliate_codes");
 const FlashDrop = require('../model/flashdrop');
 // Create Member controller
 const createMember = async (req, res, next) => {
-    const { username, password, confirmPassword, email, phoneNumber, user_id, vipLevel, invited_code } = req.body;
-    // let vipLevel = 0;
-    let google_auth = false;
-    let provider = "password";
-    let emailVerified = false;
-    const created_at = currentTime
-    const lastLoginAt = currentTime
-    const last_login_ip = req.socket.remoteAddress
-    // let invited_code = ""
+    try {
+        const { access } = req.user
+        if (!(access.create_member === 'Full Access')) {
+            return res.status(400).json({
+                success: false,
+                message: "You're not authorized to perform this operation"
+            });
+        }
+        const { username, password, confirmPassword, email, phoneNumber, user_id, vipLevel, invited_code } = req.body;
+        // let vipLevel = 0;
+        let google_auth = false;
+        let provider = "password";
+        let emailVerified = false;
+        const created_at = currentTime
+        const lastLoginAt = currentTime
+        const last_login_ip = req.socket.remoteAddress
+        // let invited_code = ""
 
-    //Checking that all field are submitted
-    // if (!username || !password || !confirmPassword || !email || !phoneNumber || !affilliateModel || !user_id) 
-    if ([username, password, confirmPassword, email, phoneNumber, user_id, invited_code].includes('')) {
-        return res.status(400).json({
-            success: false,
-            message: 'Kindly provide all field are required.'
-        })
-    }
-    //Check if Email already Exist
-    let check_email = await User.find({ email: email }).explain('executionStats');
-    // console.log(await User.find({ email: email }).explain('executionStats'))
-    if (check_email.length > 0) {
-        return res.status(400).json({
-            success: false,
-            message: 'User with this email already exist.'
-        })
-    }
-    //Confirm if password do match
-    if (password !== confirmPassword) {
-        return res.status(400).json({
-            success: false,
-            message: 'Password do not match.'
-        })
-    }
-    let profileDetails = {
-        born: "-",
-        firstname: '-',
-        lastname: '-',
-        user_id: user_id,
-        email: email,
-        hide_profile: false,
-        hidden_from_public: false,
-        refuse_friends_request: false,
-        refuse_tips: false,
-        username: username,
-        profile_image: "https://img2.nanogames.io/avatar/head1.png",
-        vip_level: vipLevel,
-        kyc_is_activated: false,
-        phone: phoneNumber,
-        next_level_point: 1,
-        total_wagered: 0,
-        invited_code: invited_code ? invited_code : "-",
-        google_auth_is_activated: false,
-        is_suspend: false,
-        vip_progress: 0,
-        fa_is_activated: false,
-        earn_me: 0,
-        commission_reward: 0,
-        usd_reward: 100,
-        joined_at: currentTime,
-        account_type: "normal",
-        total_chat_messages: 0,
-        weekly_wagered: 0,
-        monthly_wagered: 0
-    }
-
-    if (invited_code) {
-        let validateCode = await CheckValidity(invited_code, user_id)
-        if (validateCode) {
-            invited_code = validateCode
+        //Checking that all field are submitted
+        // if (!username || !password || !confirmPassword || !email || !phoneNumber || !affilliateModel || !user_id) 
+        if ([username, password, confirmPassword, email, phoneNumber, user_id, invited_code].includes('')) {
+            return res.status(400).json({
+                success: false,
+                message: 'Kindly provide all field are required.'
+            })
+        }
+        //Check if Email already Exist
+        let check_email = await User.find({ email: email }).explain('executionStats');
+        // console.log(await User.find({ email: email }).explain('executionStats'))
+        if (check_email.length > 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'User with this email already exist.'
+            })
+        }
+        //Confirm if password do match
+        if (password !== confirmPassword) {
+            return res.status(400).json({
+                success: false,
+                message: 'Password do not match.'
+            })
+        }
+        let profileDetails = {
+            born: "-",
+            firstname: '-',
+            lastname: '-',
+            user_id: user_id,
+            email: email,
+            hide_profile: false,
+            hidden_from_public: false,
+            refuse_friends_request: false,
+            refuse_tips: false,
+            username: username,
+            profile_image: "https://img2.nanogames.io/avatar/head1.png",
+            vip_level: vipLevel,
+            kyc_is_activated: false,
+            phone: phoneNumber,
+            next_level_point: 1,
+            total_wagered: 0,
+            invited_code: invited_code ? invited_code : "-",
+            google_auth_is_activated: false,
+            is_suspend: false,
+            vip_progress: 0,
+            fa_is_activated: false,
+            earn_me: 0,
+            commission_reward: 0,
+            usd_reward: 100,
+            joined_at: currentTime,
+            account_type: "normal",
+            total_chat_messages: 0,
+            weekly_wagered: 0,
+            monthly_wagered: 0
         }
 
-    }
+        if (invited_code) {
+            let validateCode = await CheckValidity(invited_code, user_id)
+            if (validateCode) {
+                invited_code = validateCode
+            }
 
-    const user = {
-        email, user_id, created_at, lastLoginAt, password, provider, emailVerified, google_auth, last_login_ip
-    }
-    //Add user to the DB
-    try {
+        }
+
+        const user = {
+            email, user_id, created_at, lastLoginAt, password, provider, emailVerified, google_auth, last_login_ip
+        }
+        //Add user to the DB
         // check if user is already registered
         let existingUser = await User.findOne({ user_id });
         if (!existingUser) {
@@ -141,6 +148,13 @@ const createMember = async (req, res, next) => {
 //Get Members List
 const getAllMembers = async (req, res, next) => {
     try {
+        const { access } = req.user
+        if (!(access.member_list === 'Full Access')) {
+            return res.status(400).json({
+                success: false,
+                message: "You're not authorized to perform this operation"
+            });
+        }
         //Get all members
         const members = await User.find();
         if (members.length <= 0) {
@@ -265,6 +279,13 @@ const adminDashbaord = async (req, res, next) => {
 //FIND USER BY ID
 const findUserById = async (req, res, next) => {
     try {
+        const { access } = req.user
+        if (!(access.member_profile === 'Full Access' || access.member_profile === "View Only")) {
+            return res.status(400).json({
+                success: false,
+                message: "You're not authorized to perform this operation"
+            });
+        }
         const { user_id } = req.params
         const user = await User.findOne({ user_id }).select('-password')
         const profile = await Profile.findOne({ user_id })
@@ -280,6 +301,13 @@ const findUserById = async (req, res, next) => {
 //GET BY USERNAME
 const findUserByUsername = async (req, res, next) => {
     try {
+        const { access } = req.user
+        if (!(access.member_profile === 'Full Access' || access.member_profile === "View Only")) {
+            return res.status(400).json({
+                success: false,
+                message: "You're not authorized to perform this operation"
+            });
+        }
         const { username } = req.params
         const profile = await Profile.findOne({ username })
         const user = await User.findOne({ user_id: profile.user_id }).select('-password')
@@ -457,22 +485,29 @@ const totalLossRanking = async (req, res, next) => {
     }
 }
 
-const dailyReportByDate = async(req, res, next)=> {
-    const { date } = req.body
-    let todayDate = ''
-    let tomorrowDate = ''
-    if (!date) {
-        const todaysD = today()
-        todayDate = todaysD.todayDate
-        tomorrowDate = todaysD.tomorrowDate
-    } else {
-        const dateD = getTodayAndTomorrowsDate(date)
-        todayDate = dateD.todayDate
-        tomorrowDate = dateD.tomorrowDate
-    }
-
-
+const dailyReportByDate = async (req, res, next) => {
     try {
+        const { access } = req.user
+        if (!(access.member_profile === 'Full Access' || access.member_profile === "View Only")) {
+            return res.status(400).json({
+                success: false,
+                message: "You're not authorized to perform this operation"
+            });
+        }
+        const { date } = req.body
+        let todayDate = ''
+        let tomorrowDate = ''
+        if (!date) {
+            const todaysD = today()
+            todayDate = todaysD.todayDate
+            tomorrowDate = todaysD.tomorrowDate
+        } else {
+            const dateD = getTodayAndTomorrowsDate(date)
+            todayDate = dateD.todayDate
+            tomorrowDate = dateD.tomorrowDate
+        }
+
+
         console.log(todayDate, tomorrowDate)
         const users = await User.find({
             created_at: {
@@ -579,6 +614,13 @@ const dailyReportByDate = async(req, res, next)=> {
 
 const dailyReport = async (req, res, next) => {
     try {
+        const { access } = req.user
+        if (!(access.member_profile === 'Full Access' || access.member_profile === "View Only")) {
+            return res.status(400).json({
+                success: false,
+                message: "You're not authorized to perform this operation"
+            });
+        }
         const userDate = await User.distinct('created_at')
         const DepositDate = await DepositRequest.distinct('created_at')
         const WithdrawalHistoryDate = await WithdrawalHistory.distinct('createdAt')
@@ -596,135 +638,142 @@ const dailyReport = async (req, res, next) => {
         let todayDate = ''
         let tomorrowDate = ''
         const resultData = []
-        for(let i =0; i< uniqueDate.length; i++){
+        for (let i = 0; i < uniqueDate.length; i++) {
             const dateD = getTodayAndTomorrowsDate(uniqueDate[i])
             todayDate = dateD.todayDate
             tomorrowDate = dateD.tomorrowDate
 
 
-        console.log(todayDate, tomorrowDate)
-        const users = await User.find({
-            created_at: {
-                $gte: new Date(todayDate),
-                $lt: new Date(tomorrowDate)
-            }
-        })
-        const deposit = await DepositRequest.find({
-            status: 'Successfull',
-            created_at: {
-                $gte: new Date(todayDate),
-                $lt: new Date(tomorrowDate)
-            }
-        })
-        let depositAmount = 0;
-        if (deposit.length > 0) {
-            depositAmount = deposit.reduce((a, b) => {
-                return a.amount + b.amount
+            console.log(todayDate, tomorrowDate)
+            const users = await User.find({
+                created_at: {
+                    $gte: new Date(todayDate),
+                    $lt: new Date(tomorrowDate)
+                }
             })
-        }
-
-        let reDepositAmount = 0;
-        for (let i = 0; i < deposit; i++) {
-            let users = await DepositRequest.find({ user_id: deposit[i].user_id, created_at: { $lt: new Date(todayDate) } })
-            if (users.length > 0) {
-                reDepositAmount = users.reduce((a, b) => {
+            const deposit = await DepositRequest.find({
+                status: 'Successfull',
+                created_at: {
+                    $gte: new Date(todayDate),
+                    $lt: new Date(tomorrowDate)
+                }
+            })
+            let depositAmount = 0;
+            if (deposit.length > 0) {
+                depositAmount = deposit.reduce((a, b) => {
                     return a.amount + b.amount
                 })
             }
-        }
 
-        const totalWithdrawalAmounts = await withdrawalHistory(todayDate, tomorrowDate)
-        const totalWagered = await dailyTotalWagered(todayDate, tomorrowDate)
-        const totalPayout = await totalGamesWon(todayDate, tomorrowDate)
-        const otherBonuses = await cashBack()
-        const dailyLotterys = await dailyLottery(todayDate, tomorrowDate)
-        let totalDirectRefferal = 0;
-
-
-        const direct_refferal = await AffiliateCodes.find({
-            created_at: {
-                $gte: new Date(todayDate),
-                $lt: new Date(tomorrowDate)
+            let reDepositAmount = 0;
+            for (let i = 0; i < deposit; i++) {
+                let users = await DepositRequest.find({ user_id: deposit[i].user_id, created_at: { $lt: new Date(todayDate) } })
+                if (users.length > 0) {
+                    reDepositAmount = users.reduce((a, b) => {
+                        return a.amount + b.amount
+                    })
+                }
             }
-        })
-        if (direct_refferal.length > 0) {
-            let refferal = direct_refferal.map((alliffiliateCode) => {
-                return alliffiliateCode.available_usd_reward
-            })
-            totalDirectRefferal = refferal.reduce((a, b) => a + b)
-        }
 
-        //Commission Rakeback
-        const usersProfile = await Profile.find()
-        let totalCommisionRekaBack = 0
-        if (usersProfile.length > 0) {
-            let commission_reward = usersProfile.map(profile => {
-                return profile.commission_reward
+            const totalWithdrawalAmounts = await withdrawalHistory(todayDate, tomorrowDate)
+            const totalWagered = await dailyTotalWagered(todayDate, tomorrowDate)
+            const totalPayout = await totalGamesWon(todayDate, tomorrowDate)
+            const otherBonuses = await cashBack()
+            const dailyLotterys = await dailyLottery(todayDate, tomorrowDate)
+            let totalDirectRefferal = 0;
+
+
+            const direct_refferal = await AffiliateCodes.find({
+                created_at: {
+                    $gte: new Date(todayDate),
+                    $lt: new Date(tomorrowDate)
+                }
             })
-            totalCommisionRekaBack = commission_reward.reduce((a, b) => {
-                return a + b
-            })
+            if (direct_refferal.length > 0) {
+                let refferal = direct_refferal.map((alliffiliateCode) => {
+                    return alliffiliateCode.available_usd_reward
+                })
+                totalDirectRefferal = refferal.reduce((a, b) => a + b)
+            }
+
+            //Commission Rakeback
+            const usersProfile = await Profile.find()
+            let totalCommisionRekaBack = 0
+            if (usersProfile.length > 0) {
+                let commission_reward = usersProfile.map(profile => {
+                    return profile.commission_reward
+                })
+                totalCommisionRekaBack = commission_reward.reduce((a, b) => {
+                    return a + b
+                })
+            }
+            const dateReport = {
+                date: new Date(todayDate).toLocaleString("en-GB", { day: "numeric", month: "long", year: "numeric", }),
+                dauCount: totalWagered.totalDailyUserActive,
+                userCount: users.length,
+                depositCount: deposit.length,
+                depositAmount: depositAmount,
+                reDepositAmount: reDepositAmount,
+                totalDeposit: depositAmount + reDepositAmount,
+                totalWithdrawalAmounts,
+                totalWagered: totalWagered.totalWagered,
+                totalPayout: Number(totalPayout),
+                totalGGR: Number(totalWagered.totalWagered) - Number(totalPayout),
+                deposit: {
+                    totalDepositBonus: 0,
+                    totalUnlock: 0
+                },
+                vipLevelUp: 0,
+                free: {
+                    luckySpin: 0,
+                    rollCompetitions: 0,
+                    dailyContest: 0,
+                    medal: 0,
+                    binggo: 0,
+                    rain: 0,
+                    coinDrop: 0,
+                    totalUnlocked: 0
+                },
+                affiliate: {
+                    totalCommisionRekaBack,
+                    totalDirectRefferal,
+                    totalUnlocked: totalCommisionRekaBack - totalDirectRefferal
+                },
+                otherBonuses,
+                dailyLotterys
+            }
+            resultData.push(dateReport)
         }
-        const dateReport = {
-            date: new Date(todayDate).toLocaleString("en-GB", { day: "numeric", month: "long", year: "numeric", }),
-            dauCount: totalWagered.totalDailyUserActive,
-            userCount: users.length,
-            depositCount: deposit.length,
-            depositAmount: depositAmount,
-            reDepositAmount: reDepositAmount,
-            totalDeposit: depositAmount + reDepositAmount,
-            totalWithdrawalAmounts,
-            totalWagered: totalWagered.totalWagered,
-            totalPayout: Number(totalPayout),
-            totalGGR: Number(totalWagered.totalWagered) - Number(totalPayout),
-            deposit: {
-                totalDepositBonus: 0,
-                totalUnlock: 0
-            },
-            vipLevelUp: 0,
-            free: {
-                luckySpin: 0,
-                rollCompetitions: 0,
-                dailyContest: 0,
-                medal: 0,
-                binggo: 0,
-                rain: 0,
-                coinDrop: 0,
-                totalUnlocked: 0
-            },
-            affiliate: {
-                totalCommisionRekaBack,
-                totalDirectRefferal,
-                totalUnlocked: totalCommisionRekaBack - totalDirectRefferal
-            },
-            otherBonuses,
-            dailyLotterys
-        }
-        resultData.push(dateReport)
-    }
-    return res.status(200).json({
-        success: true,
-        data: resultData.sort((a,b) => new Date(b.date) - new Date(a.date))
-    })
+        return res.status(200).json({
+            success: true,
+            data: resultData.sort((a, b) => new Date(b.date) - new Date(a.date))
+        })
     } catch (err) {
         return res.status(500).json({ error: err });
     }
 }
 
 const gameReport = async (req, res, next) => {
-    const { date } = req.body
-    let todayDate = ''
-    let tomorrowDate = ''
-    if (!date) {
-        const todaysD = today()
-        todayDate = todaysD.todayDate
-        tomorrowDate = todaysD.tomorrowDate
-    } else {
-        const dateD = getTodayAndTomorrowsDate(date)
-        todayDate = dateD.todayDate
-        tomorrowDate = dateD.tomorrowDate
-    }
     try {
+        const { access } = req.user
+        if (!(access.member_profile === 'Full Access' || access.member_profile === "View Only")) {
+            return res.status(400).json({
+                success: false,
+                message: "You're not authorized to perform this operation"
+            });
+        }
+        const { date } = req.body
+        let todayDate = ''
+        let tomorrowDate = ''
+        if (!date) {
+            const todaysD = today()
+            todayDate = todaysD.todayDate
+            tomorrowDate = todaysD.tomorrowDate
+        } else {
+            const dateD = getTodayAndTomorrowsDate(date)
+            todayDate = dateD.todayDate
+            tomorrowDate = dateD.tomorrowDate
+        }
         console.log(todayDate, tomorrowDate)
         // Daily Total Wagered Across all Games
         const crashDailyTotalWagered = await dailyTotalWagered(todayDate, tomorrowDate, 'crashgame')
@@ -799,21 +848,28 @@ const gameReport = async (req, res, next) => {
 }
 
 const ggrReport = async (req, res, next) => {
-    const { date } = req.body
-    let todayDate = ''
-    let tomorrowDate = ''
-    if (!date) {
-        const todaysD = today()
-        todayDate = todaysD.todayDate
-        tomorrowDate = todaysD.tomorrowDate
-    } else {
-        const dateD = getTodayAndTomorrowsDate(date)
-        todayDate = dateD.todayDate
-        tomorrowDate = dateD.tomorrowDate
-    }
-    console.log(todayDate, tomorrowDate)
-
     try {
+        const { access } = req.user
+        if (!(access.member_profile === 'Full Access' || access.member_profile === "View Only")) {
+            return res.status(400).json({
+                success: false,
+                message: "You're not authorized to perform this operation"
+            });
+        }
+        const { date } = req.body
+        let todayDate = ''
+        let tomorrowDate = ''
+        if (!date) {
+            const todaysD = today()
+            todayDate = todaysD.todayDate
+            tomorrowDate = todaysD.tomorrowDate
+        } else {
+            const dateD = getTodayAndTomorrowsDate(date)
+            todayDate = dateD.todayDate
+            tomorrowDate = dateD.tomorrowDate
+        }
+        console.log(todayDate, tomorrowDate)
+
         const profile = await Profile.find()
         if (profile.length <= 0) {
             return res.status(404).json({

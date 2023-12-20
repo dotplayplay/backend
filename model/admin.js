@@ -16,12 +16,42 @@ const AdminSchema = new mongoose.Schema(
         },
         pin: {
             type: String,
-            match: [/^[\w-_.]{6}$/, "Please provide a valid 6 digit pin"]
+            match: [/^[\w-_.]{6}$/, "Please provide a valid 6 digit pin"],
+            required: true
         },
-        role: {
-            type: String,
-            enum: ["superadmin", "admin"],
-            default: "admin"
+        access: {
+            member_list: {
+                type: String,
+                required: true
+            },
+            create_member: {
+                type: String,
+                required: true
+            },
+            member_profile: {
+                type: String,
+                required: true
+            },
+            daily_report: {
+                type: String,
+                required: true
+            },
+            game_report: {
+                type: String,
+                required: true
+            },
+            ggr_report: {
+                type: String,
+                required: true
+            },
+            deposit_bonus_report: {
+                type: String,
+                required: true
+            },
+            create_admin: {
+                type: String,
+                required: true
+            }
         },
         suspend_status: {
             type: Boolean,

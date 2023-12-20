@@ -17,7 +17,7 @@ const {
     createFlashDrop,
     dailyReportByDate
 } = require('../controller/adminController')
-const { login, register, currentUser, findAdminById, findAdminByUsername, updatePin, updatePassword, suspend, role, updateAvailability,removeAdmin, getAllAdmin, createChatSettings, updateChatSettings, getChatSettings } = require('../controller/adminAuthController')
+const { login, register, currentUser, findAdminById, findAdminByUsername, updateAdmin, updatePin, updatePassword, suspend, role, updateAvailability,removeAdmin, getAllAdmin, createChatSettings, updateChatSettings, getChatSettings } = require('../controller/adminAuthController')
 const { protect } = require('../middleware/auth')
 
 const router = express.Router()
@@ -25,13 +25,12 @@ const router = express.Router()
 /* ADMIN AUTH */
 //POST
 router.post('/auth/login', login)
-router.post('/auth/register', register)
-
+router.post('/auth/register', protect, register)
 //PATCH
-router.patch('/auth/pin', protect, updatePin)
+router.patch('/auth/update', protect, updateAdmin)
+router.patch('/auth/update', protect, updatePin)
 router.patch('/auth/password', protect, updatePassword)
 router.patch('/auth/suspend', protect, suspend)
-router.patch('/auth/role', protect, role)
 router.patch('/auth/avalability', protect, updateAvailability)
 
 //DELETE
@@ -55,20 +54,20 @@ router.get('/wageredwonstats', totalWageredAndTotalWon)
 router.get('/wageredranking', totalWageredRanking)
 router.get('/wonranking', totalWonRanking)
 router.get('/lossranking', totalLossRanking)
-router.get('/members', getAllMembers)
-router.get('/member/:user_id', findUserById)
-router.get('/member/username/:username', findUserByUsername)
-router.get('/report', dailyReport)
-router.get('/dayreport', dailyReportByDate)
-router.get('/gamereport', gameReport)
-router.get('/ggrreport', ggrReport)
+router.get('/members', protect, getAllMembers)
+router.get('/member/:user_id', protect, findUserById)
+router.get('/member/username/:username', protect, findUserByUsername)
+router.get('/report', protect, dailyReport)
+router.get('/dayreport',protect,  dailyReportByDate)
+router.get('/gamereport', protect, gameReport)
+router.get('/ggrreport', protect, ggrReport)
 
 
 
 /* CREATE */
 
 /* Create Member */
-router.post('/create', createMember)
+router.post('/create', protect, createMember)
 
 //Chat Settings
 router.post('/chatsettings', protect, createChatSettings)
