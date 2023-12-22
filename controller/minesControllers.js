@@ -5,7 +5,6 @@ const minesgameInit = require('../model/minesgameInit');
 const currentTime = format(new Date(), 'yyyy-MM-dd HH:mm:ss');
 const PPFWallet = require("../model/PPF-wallet")
 const USDTWallet = require("../model/Usdt-wallet")
-
 const salt = 'Qede00000000000w00wd001bw4dc6a1e86083f95500b096231436e9b25cbdd0075c4';
 
 function getResult(hash) {
@@ -68,20 +67,19 @@ const UpdateGameState = (async(data)=>{
 const handleHasLost = (async(req, res)=>{
   try{
     const { user_id } = req.id
-    const { data} = req.body
+    const { data } = req.body
     await minesgameInit.updateOne({user_id,active: true },{
       gamaLoop: data.gameLoop,
       active: false,
-      has_won: false,
+      has_won: false
     }) 
-    res.status(200).json({message: "Mine lost"})
+    let mineGameHistory = await minesgameInit.find({user_id,game_id: data.game_id});
+    res.status(200).json(mineGameHistory)
   }
   catch(error){
     res.status(500).json({error})
   }
-
 })
-
 
 const handleMinesHistory = (async(req, res)=>{
   try{
@@ -94,7 +92,57 @@ const handleMinesHistory = (async(req, res)=>{
   }
 })
 
-  
+const handleDetailedHistory = (async(req, res)=>{
+  try{
+    const { user_id} = req.id;
+    const { data } = req.body;
+    let mineGameHistory = await minesgameInit.find({user_id,game_id: data.game_id});
+    res.status(200).json(mineGameHistory);
+  }
+  catch(error){
+    res.status(500).json({error})
+  }
+})
+
+const handleAutobet = (async(req, res)=>{
+  try{
+    const { user_id } = req.id
+    const { data } = req.body
+    let seed = data.server_seed
+    let hash = data.server_seed
+    let client = data.client_seed
+    let nonce = data.nonce
+    let jjsk =  main(seed, client, nonce);
+    let mines = []
+    let daajs = []
+    let selected = []
+    data.selected.forEach(element => {
+        if(element.active){
+          selected.push(element)
+        }
+    });
+    for(let i = 0; i < data.mines; i++){
+      mines.push(jjsk[i])
+    }
+    for(let u = 1; u < 26; u++){
+      if(mines.includes(u)){
+        daajs.push({id:u, active: false, mine: true})
+      }else{
+        daajs.push({id:u, active: false, mine: false})
+      }
+    }
+    daajs.forEach(element => {
+        if(element.mine){
+          console.log(element)
+        }
+    });
+    // console.log(data)
+  }
+  catch(error){
+    console.log(error)
+  }
+})
+
 const handleCashout = (async(req,res)=>{
   try{
     const {user_id} = req.id
@@ -108,13 +156,14 @@ const handleCashout = (async(req,res)=>{
     }
     let skjb = {
       is_active: true,
-      balance: prev_bal[0].balance + data.profit ,
+      balance: prev_bal[0].balance + data.profit,
       coin_image:data.bet_token_img, 
       coin_name: data.bet_token_name
   }
-  UpdateGameState({...data, user_id})
+  await UpdateGameState({...data, user_id})
    updateUserWallet({...skjb, user_id})
-   res.status(200).json({data,skjb}) 
+   let mineGameHistory = await minesgameInit.find({user_id,game_id: data.game_id});
+   res.status(200).json({data,skjb, mineGameHistory}) 
   }
   catch(err){
     console.log(err)
@@ -142,6 +191,9 @@ const handleMinesInit = (async(ev)=>{
   try{
     const liken = {
       user_id: ev.user_id,
+      profile_img: ev.data.profile_img,
+      username: ev.data.username,
+      time: ev.data.time,
       mine: ev.waskj[0].mines,
       bet_amount:ev.waskj[0].bet_amount,
       bet_token_name:ev.waskj[0].bet_token_name,
@@ -164,16 +216,16 @@ const handleMinesInit = (async(ev)=>{
 
 const handleInitialze = (async(req, res)=>{
   try{
-    const { user_id } = req.id
-    const { data } = req.body
-    let seed = data.server_seed
-    let hash = data.server_seed
-    let client = data.client_seed
-    let nonce = data.nonce
-   let jjsk =  main(seed, client, nonce);
+  const { user_id } = req.id
+  const { data } = req.body
+  let seed = data.server_seed
+  let hash = data.server_seed
+  let client = data.client_seed
+  let nonce = data.nonce
+  let jjsk =  main(seed, client, nonce);
   
-   let mines = []
-   let daajs = []
+  let mines = []
+  let daajs = []
   for(let i = 0; i < data.mines; i++){
     mines.push(jjsk[i])
   }
@@ -185,20 +237,20 @@ const handleInitialze = (async(req, res)=>{
     }
   }
   let game_id =  Math.floor(Math.random()* 10000000000)+ 10000000
-  let waskj = [
-    {
-      mines: data.mines,
-      bet_amount:data.bet_amount , 
-      bet_token_name:data.bet_token_name,
-      bet_token_img:data.bet_token_img
-  },
-  ]
+  let waskj = [{
+    mines: data.mines,
+    bet_amount:data.bet_amount , 
+    bet_token_name:data.bet_token_name,
+    bet_token_img:data.bet_token_img
+  }]
  let skjb = {
     is_active: true,
     balance: data.token_balance - data.bet_amount,
     coin_image:data.bet_token_img, 
-    coin_name: data.bet_token_name
-}
+    coin_name: data.bet_token_name,
+    profile_img: data.profile_img,
+    username: data.username,
+  }
   updateUserWallet({...skjb, user_id})
   UpdateEncrtip({nonce:data.nonce,user_id })
    handleMinesInit({user_id, waskj, daajs, data, game_id })
@@ -256,4 +308,20 @@ const handleHashGeneration = (()=>{
     }
       await minesEncrypt.create(data)
   })
-  module.exports = {handleMinesHistory, handleCashout,handleHasLost, InitializeMinesGame, handleInitialze, handleMinesEncryption , handleActiveMines}
+
+  const UpdateWins = (async(req, res)=>{
+    try{
+      const { user_id } = req.id
+      const { data } = req.body
+     await minesgameInit.updateOne({user_id, active: true },{
+        gameLoop: data
+      })
+      res.status(200).json({message: "Game saved"})
+    }
+    catch(error){
+      res.status(500).json({message: error})
+    }
+})
+
+  module.exports = {handleMinesHistory, handleCashout,handleHasLost,UpdateWins,handleDetailedHistory,
+     InitializeMinesGame, handleInitialze, handleMinesEncryption,handleAutobet, handleActiveMines}
