@@ -198,6 +198,22 @@ const handlePrev_Games = (async (req, res) => {
   const user_id = req.id
 })
 
+const UpdateWins = (async(req, res)=>{
+    try{
+      const { user_id } = req.id
+      const { data } = req.body
+     await minesgameInit.updateOne({user_id, active: true },{
+        gameLoop: data
+      })
+      // let sdff = await minesgameInit.find({user_id, active: true})
+      // console.log(sdff)
+      res.status(200).json({message: "Game saved"})
+    }
+    catch(error){
+      res.status(500).json({message: error})
+    }
+})
+
 
 const handleDiceGameEncryption = (async (req, res) => {
   const { user_id } = req.id

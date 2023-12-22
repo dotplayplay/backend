@@ -464,7 +464,6 @@ const dailyReport = async (req, res, next) => {
         tomorrowDate = dateD.tomorrowDate
     }
 
-
     try {
         console.log(todayDate, tomorrowDate)
         const users = await User.find({

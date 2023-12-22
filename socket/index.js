@@ -9,6 +9,7 @@ const USDTWallet = require("../model/Usdt-wallet");
 const Chats = require("../model/public-chat");
 const {handleWagerIncrease} = require("../profile_mangement/index");
 const Bills = require("../model/bill");
+const minesgameInit = require('../model/minesgameInit');
 let maxRange = 100
 
 async function createsocket(httpServer){
@@ -29,6 +30,11 @@ const fetchActivePlayers = (async(e)=>{
         activeplayers.push(e)
     }
     io.emit("dice-gamePLayers", activeplayers)
+})
+
+const getMinesHistory = (async(data)=>{
+   return 4
+    // await minesgameInit.find()
 })
 
 // setInterval(()=>{
@@ -161,16 +167,26 @@ const handleDicePoints = ((e)=>{
 })
 
 
-let newMessage = await Chats.find()
+let main_history =[]
+const handleMinesHistory = (async()=>{
+    io.emit("mines-hs", main_history)
+})
+
+// let newMessage = await Chats.find()
+let newMessage = []
 const handleNewChatMessages = (async(data)=>{
     io.emit("new-messages", newMessage)
   await Chats.create(data)
 })
 
-
 io.on("connection", (socket)=>{
     socket.on("dice-bet", data=>{
         handleDicePoints(data)
+    })
+
+    socket.on("mines-history", data=>{
+        main_history.push(data)
+        handleMinesHistory()
     })
 
     socket.on("message", data=>{
@@ -182,7 +198,6 @@ io.on("connection", (socket)=>{
     //     console.log("disconnected")
     // })
 })
-    
 }
 
 module.exports = {createsocket}
