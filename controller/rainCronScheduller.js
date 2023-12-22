@@ -28,7 +28,7 @@ const date = () => {
     return executedTime
 }
 const task = (fireDate) => {
-    console.log(colors.green.underline("[Rain-Drop] Dripping Task Triggered Every Minutes for Testing ===> Its another six (6) hours, Time for Coin Rain...", fireDate).italic)
+    console.log(colors.green.underline("[Rain-Drop] Dripping Task Triggered Every Minutes for Testing ===>", fireDate).italic)
     // Get the socket instance from the other file
     io.emit('coinRain', "Its another six (6) hours, Time for Coin Rain");
 }
@@ -44,5 +44,5 @@ rainScheduler()
 
 process.on('SIGINT', () => {
     schedule.gracefulShutdown()
-        .then(() => process.exit(0))
+    .then(() => process.exit(0))
 })
