@@ -9,10 +9,12 @@ const Affiliate = require("./routes/affiliate");
 const CrashGame = require("./routes/crashgame.js");
 const User = require("./routes/Users.js");
 const Admin = require("./routes/admin.js");
+const Promotion = require("./routes/promotion.js");
 const Profile = require("./routes/Profile.js");
 const Chat = require("./routes/chat");
 // require("./controller/lotteryEngine.js");
 // require("./controller/cronScheduler.js");
+require("./controller/rainCronScheduller.js")
 const minegame = require("./routes/mines");
 const Wallet = require("./routes/wallet.js");
 const diceGame = require("./routes/diceGame");
@@ -59,6 +61,7 @@ app.use("/api/transaction", Transaction);
 app.use("/api/lottery", Lottery);
 app.use("/api/transaction-history", TransactionHistory);
 app.use("/admin/all-players", AllPLays);
+app.use('/api/promotion', Promotion);
 
 //TODO: REMOVE
 app.post("/api/test-cashback", testCashback);
@@ -74,9 +77,9 @@ app.get("/", (req, res)=>{
 })
 
 mongoose.set('strictQuery', false);
-const dbUri = `mongodb+srv://highscoreteh:eNiIQbm4ZMSor8VL@cluster0.xmpkpjc.mongodb.net/main_page?retryWrites=true&w=majority`
+// const dbUri = `mongodb+srv://highscoreteh:eNiIQbm4ZMSor8VL@cluster0.xmpkpjc.mongodb.net/main_page?retryWrites=true&w=majority`
 
-// const dbUri = `mongodb://localhost:27017/dpp`;
+const dbUri = `mongodb://localhost:27017/dpp`;
 mongoose.connect(dbUri, { useNewUrlParser: true,  useUnifiedTopology: true })
     .then((result)=>  console.log('Database connected'))
     .catch((err)=> console.log(err))
