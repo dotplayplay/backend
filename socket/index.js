@@ -161,6 +161,17 @@ async function createsocket(httpServer) {
         handleMybet(kjks, e)
     })
 
+    let active_crash = []
+    const handleCrashActiveBet = ((event)=>{
+        if(active_crash.length > 30){
+            active_crash.shift()
+            active_crash.push(event)
+        }else{
+            active_crash.push(event)
+        }
+        io.emit("active-bets-crash", active_crash)
+    })
+
 
     let newMessage = await Chats.find()
     const handleNewChatMessages = (async (data) => {
@@ -177,6 +188,10 @@ async function createsocket(httpServer) {
         socket.on("message", data => {
             newMessage.push(data)
             handleNewChatMessages(data)
+        })
+
+        socket.on("crash-activebet", data => {
+            handleCrashActiveBet(data)
         })
 
         // socket.on("disconnect", ()=>{
