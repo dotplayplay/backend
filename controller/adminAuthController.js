@@ -46,13 +46,20 @@ const sendTokenResponse = (user, statusCode, res) => {
 
 // REGISTER
 const register = async (req, res, next) => {
-    const { username, password, confirmPassword } = req.body;
+    const { access } = req.user
+    const { username, password, pin, accesses } = req.body;
     try {
-
-        if (!username || !password) {
+        if (!(access.create_admin === 'Full Access')) {
             return res.status(400).json({
                 success: false,
-                message: "Kindly provide a Email and Password"
+                message: "You're not authorized to perform this operation"
+            });
+        }
+
+        if (!username || !password || !pin || !accesses) {
+            return res.status(400).json({
+                success: false,
+                message: "Kindly provide all field data"
             });
         }
 
@@ -65,28 +72,27 @@ const register = async (req, res, next) => {
             });
         }
 
-        if (!(password === confirmPassword)) {
-            return res.status(400).json({
-                success: false,
-                message: "Password do not match"
-            });
-        }
-
         // else create a new user
 
         const user = await Admin.create({
             username,
-            password
+            password,
+            pin,
+            access: accesses
         });
 
         if (req.user) {
             await createActivityLog(req.user.id, "New Admin Created", req)
         }
 
-        sendTokenResponse(user, 200, res);
+        return res.status(201).json({
+            success: true,
+            message: "Admin created successfully",
+            user
+        })
 
     } catch (err) {
-        return res.status(500).json({error: err});
+        return res.status(500).json({ error: err });
     }
 };
 
@@ -122,7 +128,7 @@ const login = async (req, res, next) => {
 
         sendTokenResponse(user, 200, res);
     } catch (err) {
-        return res.status(500).json({error: err});
+        return res.status(500).json({ error: err });
     }
 };
 // CURRENT USER
@@ -134,12 +140,19 @@ const currentUser = async (req, res) => {
             user: user
         });
     } catch (err) {
-        return res.status(500).json({error: err});
+        return res.status(500).json({ error: err });
     }
 };
 //FIND BY ID
 const findAdminById = async (req, res, next) => {
     try {
+        const { access } = req.user
+        if (!(access.member_profile === 'Full Access' || access.member_profile === 'View Only')) {
+            return res.status(400).json({
+                success: false,
+                message: "You're not authorized to perform this operation"
+            });
+        }
         const { id } = req.params
         const user = await Admin.findById(id)
         if (!user) {
@@ -155,12 +168,20 @@ const findAdminById = async (req, res, next) => {
             activity: userActivityLog || null
         });
     } catch (err) {
-        return res.status(500).json({error: err});   
+        return res.status(500).json({ error: err });
+        // console.log(err)
     }
 }
 //FIND BY USERNAME
 const findAdminByUsername = async (req, res, next) => {
     try {
+        const { access } = req.user
+        if (!(access.member_profile === 'Full Access' || access.member_profile === 'View Only')) {
+            return res.status(400).json({
+                success: false,
+                message: "You're not authorized to perform this operation"
+            });
+        }
         const user = await Admin.findOne({ username: req.params.username })
         if (!user) {
             return res.status(401).json({
@@ -175,7 +196,60 @@ const findAdminByUsername = async (req, res, next) => {
             activity: userActivityLog || null
         });
     } catch (err) {
-        return res.status(500).json({error: err});
+        return res.status(500).json({ error: err });
+    }
+}
+//UPDATE ADMIN
+const updateAdmin = async (req, res, next) => {
+    const { access } = req.user
+    const { user_id, accesses } = req.body;
+    try {
+        if (!(access.create_admin === 'Full Access')) {
+            return res.status(400).json({
+                success: false,
+                message: "You're not authorized to perform this operation"
+            });
+        }
+
+        if (!user_id || !accesses) {
+            return res.status(400).json({
+                success: false,
+                message: "Kindly provide all field data"
+            });
+        }
+        const user = await Admin.findById(user_id)
+        if (!user) {
+            return res.status(401).json({
+                success: false,
+                message: "No user found with this ID"
+            });
+        }
+        const result = await Admin.updateOne({ _id: user_id }, {
+            $set: {
+                "access": {
+                    "member_list": accesses.member_list,
+                    "create_member": accesses.create_member,
+                    "member_profile": accesses.member_profile,
+                    "daily_report": accesses.daily_report,
+                    "game_report": accesses.game_report,
+                    "ggr_report": accesses.ggr_report,
+                    "deposit_bonus_report": accesses.deposit_bonus_report,
+                    "create_admin": accesses.create_admin
+                }
+
+            }
+        }, { upsert: true })
+
+        //Log Activity
+        await createActivityLog(user._id, "Update Admin Access", req)
+
+        return res.status(401).json({
+            success: true,
+            message: "Admin Access has been updated",
+            data: result
+        });
+    } catch (err) {
+        return res.status(500).json({ error: err });
     }
 }
 //UPDATE PIN
@@ -201,7 +275,7 @@ const updatePin = async (req, res, next) => {
             data: user
         });
     } catch (err) {
-        return res.status(500).json({error: err});
+        return res.status(500).json({ error: err });
     }
 }
 //UPDATE PASSWORD
@@ -227,19 +301,21 @@ const updatePassword = async (req, res, next) => {
             data: user
         });
     } catch (err) {
-        return res.status(500).json({error: err});
+        return res.status(500).json({ error: err });
     }
 }
 //UPDATE SUSPEND
 const suspend = async (req, res, next) => {
     try {
         const { user_id } = req.body
-        if (!(req.user.role === 'superadmin')) {
-            return res.status(401).json({
+        const { access } = req.user
+        if (!(access.create_admin === 'Full Access')) {
+            return res.status(400).json({
                 success: false,
-                message: "Only Staff with Super Admin Priviledge can perform this operation"
+                message: "You're not authorized to perform this operation"
             });
         }
+        
         const user = await Admin.findById(user_id)
         if (!user) {
             return res.status(401).json({
@@ -258,40 +334,10 @@ const suspend = async (req, res, next) => {
             data: user
         });
     } catch (err) {
-        return res.status(500).json({error: err});
+        return res.status(500).json({ error: err });
     }
 }
-//UPDATE ROLE
-const role = async (req, res, next) => {
-    try {
-        const { user_id, role } = req.body
-        if (!(req.user.role === 'superadmin')) {
-            return res.status(401).json({
-                success: false,
-                message: "Only Staff with Super Admin Priviledge can perform this operation"
-            });
-        }
-        const user = await Admin.findById(user_id)
-        if (!user) {
-            return res.status(401).json({
-                success: false,
-                message: "No user found"
-            });
-        }
-        user.role = role
-        await user.save()
-        //Log Activity
-        await createActivityLog(req.user.id, "Changed User Role", req)
 
-        return res.status(401).json({
-            success: true,
-            message: "User Role Changed",
-            data: user
-        });
-    } catch (err) {
-        return res.status(500).json({error: err});
-    }
-}
 //UPDATE AVAILABILITY
 const updateAvailability = async (req, res, next) => {
     try {
@@ -319,17 +365,18 @@ const updateAvailability = async (req, res, next) => {
             data: user
         });
     } catch (err) {
-        return res.status(500).json({error: err});
+        return res.status(500).json({ error: err });
     }
 }
 //REMOVE ADMIN
 const removeAdmin = async (req, res, next) => {
     try {
         const { id } = req.params
-        if (!(req.user.role === 'superadmin')) {
-            return res.status(401).json({
+        const { access } = req.user
+        if (!(access.create_admin === 'Full Access')) {
+            return res.status(400).json({
                 success: false,
-                message: "Only Staff with Super Admin Priviledge can perform this operation"
+                message: "You're not authorized to perform this operation"
             });
         }
         const user = await Admin.deleteOne({ _id: id })
@@ -349,7 +396,7 @@ const removeAdmin = async (req, res, next) => {
             data: user
         });
     } catch (err) {
-        return res.status(500).json({error: err});
+        return res.status(500).json({ error: err });
     }
 }
 //Fetch all admin
@@ -429,6 +476,7 @@ const updateChatSettings = async (req, res, next) => {
         })
     } catch (err) {
         return res.status(500).json({ error: err });
+        // console.log(err)
     }
 }
 //Get chat Settings
@@ -456,10 +504,10 @@ module.exports = {
     currentUser,
     findAdminById,
     findAdminByUsername,
+    updateAdmin,
     updatePin,
     updatePassword,
     suspend,
-    role,
     updateAvailability,
     removeAdmin,
     getAllAdmin,
