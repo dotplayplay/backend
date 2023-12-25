@@ -20,6 +20,7 @@ const Deposit = require("./routes/deposit");
 const Withdraw = require("./routes/withdraw")
 const Bonus = require('./routes/bonus');
 const Lottery = require('./routes/lottery');
+const HiloGame = require('./routes/hiloGame.js');
 const TransactionHistory = require("./routes/transactionHistory.js");
 const { createsocket } = require("./socket/index.js");
 const { createServer } = require("node:http");
@@ -45,6 +46,7 @@ main();
 app.use("/api/user/crash-game", CrashGame);
 app.use("/api/user/dice-game", diceGame);
 app.use("/api/user/mine-game", minegame);
+app.use("/api/hilo-game", HiloGame);
 app.use("/api/users", User);
 app.use("/api/public-chat", Chat);
 app.use("/api/profile", Profile);
@@ -77,7 +79,7 @@ mongoose.set('strictQuery', false);
 const dbUri = `mongodb+srv://highscoreteh:eNiIQbm4ZMSor8VL@cluster0.xmpkpjc.mongodb.net/main_page?retryWrites=true&w=majority`
 
 
-// const dbUri = `mongodb://localhost:27017/dpp`;
+// const dbUri = `mongodb://127.0.0.1:27017/dpp?replicaSet=rs0`;
 mongoose.connect(dbUri, { useNewUrlParser: true,  useUnifiedTopology: true })
     .then((result)=>  console.log('Database connected'))
     .catch((err)=> console.log(err))
