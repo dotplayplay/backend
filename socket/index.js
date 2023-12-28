@@ -10,6 +10,7 @@ const Chats = require("../model/public-chat");
 const { handleWagerIncrease } = require("../profile_mangement/index");
 const Bills = require("../model/bill");
 const minesgameInit = require('../model/minesgameInit');
+const Profile = require("../model/Profile");
 let maxRange = 100
 
 async function createsocket(httpServer) {
@@ -179,10 +180,26 @@ async function createsocket(httpServer) {
         await Chats.create(data)
     })
 
+    //Live Bet Update
+    const latestBetUpdate = async (data, game) => {
+        const user = await Profile.findById(data.user_id)
+        const stats = {
+            gane_type: game,
+            player: user.hidden_from_public ? user.username : "Hidden",
+            bet_id: data.bet_id,
+            token_img: data.token_img,
+            payout: data.has_won ? ((data.wining_amount/data.bet_amount) * 100) : ((data.bet_amount/data.bet_amount) * 100),
+            profit_amount: data.has_won ? data.wining_amount : data.bet_amount,
+        }
+        return stats
+    }
 
     io.on("connection", (socket) => {
         socket.on("dice-bet", data => {
             handleDicePoints(data)
+            //Get New Bet and Update Latest Bet UI
+            const latestBet = latestBetUpdate(data, "Dice Game")
+            io.emit("latest-bet", latestBet)
         })
 
         socket.on("message", data => {
@@ -192,6 +209,9 @@ async function createsocket(httpServer) {
 
         socket.on("crash-activebet", data => {
             handleCrashActiveBet(data)
+            //Get New Bet and Update Latest Bet UI
+            const latestBet = latestBetUpdate(data, "Crash Game")
+            io.emit("latest-bet", latestBet)
         })
 
         // socket.on("disconnect", ()=>{
