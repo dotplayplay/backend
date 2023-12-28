@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const moment = require("moment");
 const schema = mongoose.Schema
 const CounterSchema = new schema({
     _id: { type: String, required: true },
@@ -27,20 +28,28 @@ const LotterySchema = new schema({
     },
     draw_date: {
         type: Date,
-        default: function() {
-            //return Date.now() + 60000;
-            let now = new Date();
-            let tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate()+1, 15, 0, 0, 0);
-            if (now.getUTCHours() >= 15) {
-                tomorrow.setDate(tomorrow.getDate() + 1);
+        default: function () {
+            const now = moment.utc();
+            // now.setUTCMinutes(now.getUTCMinutes() + 2);
+            // return now.add(2, "minute");
+            const date = moment.utc().set({hour:15, minute:0, second:0, millisecond:0});
+
+            if (now.get('hour') > 15 ) {
+                return date.add(1, 'day').toDate();
             }
-            return tomorrow;
+            return date.toDate();
+        }
+    },
+    start_date: {
+        type: Date,
+        default: function () {
+            return moment.utc().add(5, 'minutes').toDate();
         }
     }
-}, { timestamp : true})
-LotterySchema.pre('save', async function(next) {
+}, { timestamp: true })
+LotterySchema.pre('save', async function (next) {
     try {
-        const counter = await Counter.findByIdAndUpdate({_id: 'game_id'}, {$inc: { seq: 1}}, {new: true, upsert: true});
+        const counter = await Counter.findByIdAndUpdate({ _id: 'game_id' }, { $inc: { seq: 1 } }, { new: true, upsert: true });
         this.game_id = counter.seq;
         next();
     } catch (error) {

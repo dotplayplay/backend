@@ -16,5 +16,8 @@ const SchedulerSchema = new schema({
     task: {
         type: String
     },
+    args: {
+        type: String
+    },
 }, { timestamp : true});
 module.exports = mongoose.model('Scheduler', SchedulerSchema)

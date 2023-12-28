@@ -18,30 +18,7 @@ const updateUserWallet = (async(data)=>{
 
 const CraeatBetGame = (async(data)=>{
   try {
-  let bet = {
-    user_id: data.user_id,
-    username: data.username,
-    profile_img: data.user_img,
-    bet_amount: data.bet_amount,
-    token: data.bet_token_name,
-    token_img:data.bet_token_img,
-    bet_id: Math.floor(Math.random()*10000000)+ 72000000,
-    game_id: data.game_id,
-    cashout: 0,
-    auto_cashout: data.auto_cashout,
-    profit: 0,
-    game_hash: "-",
-    hidden_from_public: data.hidden,
-    game_type: data.game_type,
-    user_status: 1,
-    game_status: 1,
-    time: data.time,
-    payout: 0.0000,
-    has_won : 0 ,
-    chance: data.chance
-  }
-
-  await crash_game.create(bet)
+  await crash_game.create(data)
 
 } catch (err) {
   console.error(err);
@@ -68,30 +45,37 @@ const handleCrashBet = (async(req, res)=>{
     let skjk = await PPFWallet.find({user_id})
     current_amount = parseFloat(skjk[0].balance) - parseFloat(sent_data.bet_amount)
   }
-
   
   if(sent_data.bet_token_name === "USDT"){
     let skjk = await USDT_wallet.find({user_id})
     current_amount = parseFloat(skjk[0].balance) - parseFloat(sent_data.bet_amount)
   }
 
-//   let bil = {
-//     user_id: user_id,
-//     transaction_type: "Crash normal",
-//     token_img:data.bet_token_img,
-//     token_name:data.bet_token_name,
-//     balance: current_amount,
-//     trx_amount:data.bet_amount ,
-//     datetime: data.time,
-//     status: false,
-//     bill_id: data.game_id
-//  }
-
-//  handleSaveBills(bil)
-
-    CraeatBetGame({...sent_data, hidden, user_id, game_type})
+  let bet = {
+    user_id: user_id,
+    username: data.username,
+    profile_img: data.user_img,
+    bet_amount: data.bet_amount,
+    token: data.bet_token_name,
+    token_img:data.bet_token_img,
+    bet_id: Math.floor(Math.random()*10000000)+ 72000000,
+    game_id: data.game_id,
+    cashout: 0,
+    auto_cashout: data.auto_cashout,
+    profit: 0,
+    game_hash: "-",
+    hidden_from_public:hidden,
+    game_type: game_type,
+    user_status: true,
+    game_status: true,
+    time: data.time,
+    payout: 0.0000,
+    has_won : 0 ,
+    chance: data.chance
+  }
+    CraeatBetGame(bet)
     updateUserWallet({ ...sent_data, user_id, current_amount})
-    res.status(200).json({...sent_data,current_amount})
+    res.status(200).json({...bet, current_amount })
   } catch (err) {
     res.status(501).json({ message: err.message });
   }
@@ -150,7 +134,8 @@ const handleRedTrendball = (async(req, res)=>{
   let sent_data = data
 
   if(sent_data.bet_token_name !== "PPF"){
-    handleWagerIncrease(user_id, sent_data.bet_amount)
+    //TODO: check if bet_token_img exist
+    handleWagerIncrease({user_id, bet_amount: sent_data.bet_amount, token: sent_data.bet_token_img })
   }
 
   try {

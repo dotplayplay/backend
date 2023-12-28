@@ -105,6 +105,10 @@ const Userschema = new schema({
     profit:{
         type: Number,
         required: true,
+    },
+    time:{
+        type: Date,
+        required: true,
     }
 }, { timestamp : true})
 
