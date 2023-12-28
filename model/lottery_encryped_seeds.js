@@ -15,10 +15,10 @@ const LotterySchema = new schema({
         required: true,
     },
     client_start_block: {
-        type: BigInt,
+        type: String,
     },
     client_seed: {
-        type: BigInt,
+        type: String,
     },
     client_seed_hash: {
         type: String,
