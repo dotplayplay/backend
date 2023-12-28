@@ -24,6 +24,7 @@ const Bonus = require('./routes/bonus');
 const Lottery = require('./routes/lottery');
 const HiloGame = require('./routes/hiloGame.js');
 const TransactionHistory = require("./routes/transactionHistory.js");
+const homePageUpdates = require("./routes/homePageUpdates");
 const { createsocket } = require("./socket/index.js");
 const { createServer } = require("node:http");
 //Test
@@ -63,12 +64,13 @@ app.use("/api/transaction", Transaction);
 app.use("/api/lottery", Lottery);
 app.use("/api/transaction-history", TransactionHistory);
 app.use("/admin/all-players", AllPLays);
+app.use("/api/home-page-updates", homePageUpdates);
 app.use('/api/promotion', Promotion);
-
 //TODO: REMOVE
 app.post("/api/test-cashback", testCashback);
 //TODO: REMOVE
 app.post("/api/deactivate-recharge", testResetCashback)
+
 
 //admin routes
 app.use('/admin', Admin);
