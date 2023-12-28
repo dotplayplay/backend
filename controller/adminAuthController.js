@@ -131,6 +131,39 @@ const login = async (req, res, next) => {
         return res.status(500).json({ error: err });
     }
 };
+// LOGIN
+const confirmPin = async (req, res, next) => {
+    try {
+        const { pin } = req.body;
+        if (!pin) {
+            return res.status(400).json({
+                success: false,
+                message: "Kindly provide a Pin"
+            });
+        }
+        const user = await Admin.findById(req.user.id );
+        if (!user) {
+            return res.status(401).json({
+                success: false,
+                message: "No User Found"
+            });
+        }
+
+        if (!(await user.pin === pin)) {
+            return res.status(401).json({
+                success: false,
+                message: "Invalid Pin"
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "OK"
+        })
+    } catch (err) {
+        return res.status(500).json({ error: err });
+    }
+};
 // CURRENT USER
 const currentUser = async (req, res) => {
     try {
@@ -315,7 +348,7 @@ const suspend = async (req, res, next) => {
                 message: "You're not authorized to perform this operation"
             });
         }
-        
+
         const user = await Admin.findById(user_id)
         if (!user) {
             return res.status(401).json({
@@ -502,6 +535,7 @@ module.exports = {
     register,
     login,
     currentUser,
+    confirmPin,
     findAdminById,
     findAdminByUsername,
     updateAdmin,

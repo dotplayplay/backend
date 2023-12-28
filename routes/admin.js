@@ -17,7 +17,7 @@ const {
     createFlashDrop,
     dailyReportByDate
 } = require('../controller/adminController')
-const { login, register, currentUser, findAdminById, findAdminByUsername, updateAdmin, updatePin, updatePassword, suspend, role, updateAvailability,removeAdmin, getAllAdmin, createChatSettings, updateChatSettings, getChatSettings } = require('../controller/adminAuthController')
+const { login, register, currentUser, findAdminById, findAdminByUsername, updateAdmin, updatePin, updatePassword, suspend, role, updateAvailability,removeAdmin, getAllAdmin, createChatSettings, updateChatSettings, getChatSettings, confirmPin } = require('../controller/adminAuthController')
 const { protect } = require('../middleware/auth')
 
 const router = express.Router()
@@ -25,6 +25,7 @@ const router = express.Router()
 /* ADMIN AUTH */
 //POST
 router.post('/auth/login', login)
+router.post('/auth/pin', protect, confirmPin)
 router.post('/auth/register', protect, register)
 //PATCH
 router.patch('/auth/update', protect, updateAdmin)
