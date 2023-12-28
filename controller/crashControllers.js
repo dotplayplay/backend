@@ -6,7 +6,7 @@ const USDT_wallet = require("../model/Usdt-wallet")
 const PPFWallet = require("../model/PPF-wallet")
 const Bills = require("../model/bill")
 const CrashHistory = require("../model/crash-game-history")
-
+//
 const updateUserWallet = (async(data)=>{
   if(data.bet_token_name === "PPF"){
     await PPFWallet.updateOne({ user_id:data.user_id }, {balance: data.current_amount});
