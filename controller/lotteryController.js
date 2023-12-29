@@ -185,7 +185,7 @@ const getGameSeeds = async (req, res) => {
     }
     let update = {};
     if (!lottery.drawn) update = { server_seed_hash: seeds.server_seed_hash }
-    else update = { server_seed_hash: seeds.server_seed_hash, server_seed: seeds.server_seed, client_seed_hash: seeds.client_seed_hash, client_start_block: Number(seeds.client_start_block), client_seed: Number(seeds.client_seed) }
+    else update = { server_seed_hash: seeds.server_seed_hash, server_seed: seeds.server_seed, client_seed_hash: seeds.client_seed_hash, client_start_block: seeds.client_start_block.toString(), client_seed: seeds.client_seed.toString() }
     res.status(200).json({ seeds: update });
   } catch (error) {
     console.log("Error ", error);
@@ -213,7 +213,7 @@ const getGameLotteryTickets = async (req, res) => {
     const tickets = await LotteryTicket.find({ game_id: lottery.game_id, ...(purchased ? { bonus: false } : {}) }).sort({ '_id': -1 }).limit(limit);
     const userPopulatedTickets = await Promise.all(tickets.map(async (ticket) => {
       const user = await Profile.findOne({ user_id: ticket.user_id });
-      ticket.user = { user_id: user.user_id, username: user.username, image: user.profile_image };
+      ticket.user = { user_id: user.user_id, hidden: user.hidden_from_public, username: user.hidden_from_public ? "" : user.username, image: user.profile_image };
       return {
         bonus: ticket.bonus,
         jackpotNumber: Lottery.numbers?.[5] || 0,
@@ -297,7 +297,7 @@ async function initializeLottery() {
         const seeds = await LotterySeeds.findOne({ game_id: latestLottery.game_id });
         if (!seeds.client_start_block) {
           await LotterySeeds.updateOne({ game_id: latestLottery.game_id }, {
-            client_start_block: await web3.eth.getBlockNumber()
+            client_start_block: (await web3.eth.getBlockNumber()).toString()
           })
         }
         await runLotteryDraw();
@@ -386,7 +386,7 @@ async function runLotteryDraw() {
       throw new Error("NO Start Block, This should never happen!");
     }
 
-    const clientSeedBlock = seeds.client_start_block + BigInt(10);
+    const clientSeedBlock = BigInt(seeds.client_start_block) + BigInt(10);
     const clientSeedHash = (await web3.eth.getBlock(clientSeedBlock))?.hash || crypto.createHash('sha256').update(clientSeedBlock).digest('hex');
 
     // console.log("clientSeedHash => ", clientSeedHash, clientSeedBlock);
@@ -394,7 +394,7 @@ async function runLotteryDraw() {
     const { regularBalls, jackpotBall } = drawLottery(clientSeedHash, seeds.server_seed);
     const winningNumbers = [...regularBalls, jackpotBall];
 
-    await LotterySeeds.updateOne({ game_id: lottery.game_id }, { client_seed: clientSeedBlock, client_seed_hash: clientSeedHash }).session(session);
+    await LotterySeeds.updateOne({ game_id: lottery.game_id }, { client_seed: clientSeedBlock.toString(), client_seed_hash: clientSeedHash }).session(session);
 
     const tickets = await LotteryTicket.find({ game_id: lottery.game_id }).session(session);
 
@@ -447,7 +447,7 @@ async function setDeadlineBlock() {
     }
     // latest ETH block
     const latestBlock = await web3.eth.getBlockNumber();
-    await LotterySeeds.updateOne({ game_id: lottery.game_id }, { client_start_block: latestBlock }).session(session);
+    await LotterySeeds.updateOne({ game_id: lottery.game_id }, { client_start_block: latestBlock.toString() }).session(session);
     console.log('Seeds updated :::> ', latestBlock);
     await session.commitTransaction();
   } catch (error) {

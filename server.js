@@ -23,6 +23,7 @@ const Deposit = require("./routes/deposit");
 const Withdraw = require("./routes/withdraw")
 const Bonus = require('./routes/bonus');
 const Lottery = require('./routes/lottery');
+const HiloGame = require('./routes/hiloGame.js');
 const TransactionHistory = require("./routes/transactionHistory.js");
 const homePageUpdates = require("./routes/homePageUpdates");
 const { createsocket } = require("./socket/index.js");
@@ -49,6 +50,7 @@ main();
 app.use("/api/user/crash-game", CrashGame);
 app.use("/api/user/dice-game", diceGame);
 app.use("/api/user/mine-game", minegame);
+app.use("/api/hilo-game", HiloGame);
 app.use("/api/users", User);
 app.use("/api/public-chat", Chat);
 app.use("/api/profile", Profile);
