@@ -16,6 +16,7 @@ const { handleNewNewlyRegisteredCount } = require("../profile_mangement/cashback
 const { InitializeMinesGame } = require("../controller/minesControllers")
 const {twoFactorAuth} = require("../utils/twoFactorAuth");
 const { twoFactorAuthVerify } = require('../utils/twoFactorAuthVerify');
+const { createNotify } = require('./notify');
 const createToken = ((_id)=>{
    return  jwt.sign({_id}, SECRET, { expiresIn: '4d' })
 })
@@ -55,6 +56,7 @@ const CreateAccount = (async (req, res)=>{
         const Token = createToken(user_id)
         const default_wallet = await handleDefaultWallet(user_id)
         let result = await createProfile(email, username, invited_code, user_id )
+        createNotify("User Registration", user_id)
          res.status(200).json({Token,default_wallet,result })
         }
         catch(err){

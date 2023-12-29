@@ -125,9 +125,9 @@ const createMember = async (req, res, next) => {
             createCashbackTable(user_id)
             handleCreatePPDunlocked(user_id)
             CreateAffiliate(user_id)
-            createNotify("User Registration", newUser._id)
             const default_wallet = await handleDefaultWallet(user_id)
             let profile = await createProfile(profileDetails)
+            createNotify("User Registration", user_id)
             return res.status(200).json({
                 success: true,
                 message: "User Resgistration Successfull",
