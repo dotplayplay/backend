@@ -9,6 +9,8 @@ const USDTWallet = require("../model/Usdt-wallet");
 const Chats = require("../model/public-chat");
 const { handleWagerIncrease } = require("../profile_mangement/index");
 const Bills = require("../model/bill");
+const { handleHiloBet, handleHiloNextRound, handleHiloCashout, initHiloGame } = require("../controller/hiloController");
+
 const minesgameInit = require('../model/minesgameInit');
 const Profile = require("../model/Profile");
 let maxRange = 100
@@ -214,21 +216,30 @@ async function createsocket(httpServer) {
             io.emit("latest-bet", latestBet)
         })
 
-        // socket.on("disconnect", ()=>{
-        //     console.log("disconnected")
-        // })
-        // function getSocketInstance() {
-        //     if (!socketInstance) {
-        //         socketInstance = io;
-        //     }
-        //     return socketInstance;
-        // }
-        // return {
-        //     getSocketInstance
-        // }
+        //HILO GAME
+        socket.on("hilo-init", data => {
+            initHiloGame(data, (event, payload) => {
+                io.emit(event, payload);
+            });
+        });
+        socket.on("hilo-bet", data => {
+            
+            handleHiloBet(data, (event, payload) => {
+                io.emit(event, payload);
+            });
+        });
+        socket.on("hilo-cashout", data => {
+            handleHiloCashout(data, (event, payload) => {
+                io.emit(event, payload);
+            });
+        });
+        socket.on("hilo-next-round", data => {
+            handleHiloNextRound(data, (event, payload) => {
+                io.emit(event, payload);
+            });
+        });
     })
+
 }
-
-
 
 module.exports = { createsocket }
