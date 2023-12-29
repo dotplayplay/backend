@@ -3,6 +3,7 @@ const axios = require('axios');
 const Admin = require("../model/admin");
 const AdminActivityLog = require("../model/adminactivitylog");
 const AdminChatSettings = require('../model/adminchatsettings');
+const userIdGeneratorService = require('../utils/userId');
 
 const createActivityLog = async (admin_id, action, req) => {
     try {
@@ -39,7 +40,7 @@ const sendTokenResponse = (user, statusCode, res) => {
             id: user._id,
             username: user.username,
             avatar: user.avatar,
-            role: user.role,
+            access: user.access,
         }
     });
 };
@@ -75,6 +76,7 @@ const register = async (req, res, next) => {
         // else create a new user
 
         const user = await Admin.create({
+            user_id: await userIdGeneratorService(),
             username,
             password,
             pin,
@@ -125,6 +127,40 @@ const login = async (req, res, next) => {
         await createActivityLog(user._id, "Logged In", req)
 
         await Admin.findOneAndUpdate({ _id: user._id }, { lastLogin: Date.now() });
+
+        return res.status(200).json({
+            success: true,
+            userId: user.user_id
+        })
+
+    } catch (err) {
+        return res.status(500).json({ error: err });
+    }
+};
+// LOGIN
+const confirmPin = async (req, res, next) => {
+    try {
+        const { pin, userId } = req.body;
+        if (!pin || !userId) {
+            return res.status(400).json({
+                success: false,
+                message: "Kindly provide a Pin and User ID"
+            });
+        }
+        const user = await Admin.findOne({ user_id: userId });
+        if (!user) {
+            return res.status(401).json({
+                success: false,
+                message: "No User Found"
+            });
+        }
+
+        if (!(await user.pin === pin)) {
+            return res.status(401).json({
+                success: false,
+                message: "Invalid Pin"
+            });
+        }
 
         sendTokenResponse(user, 200, res);
     } catch (err) {
@@ -315,7 +351,7 @@ const suspend = async (req, res, next) => {
                 message: "You're not authorized to perform this operation"
             });
         }
-        
+
         const user = await Admin.findById(user_id)
         if (!user) {
             return res.status(401).json({
@@ -502,6 +538,7 @@ module.exports = {
     register,
     login,
     currentUser,
+    confirmPin,
     findAdminById,
     findAdminByUsername,
     updateAdmin,

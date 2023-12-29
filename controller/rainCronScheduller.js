@@ -28,12 +28,12 @@ const date = () => {
     return executedTime
 }
 const task = (fireDate) => {
-    console.log(colors.green.underline("[Rain-Drop] Dripping Task Triggered Every Minutes for Testing ===>", fireDate).italic)
+    // console.log(colors.green.underline("[Rain-Drop] Dripping Task Triggered Every Minutes for Testing ===>", fireDate).italic)
     // Get the socket instance from the other file
     io.emit('coinRain', "Its another six (6) hours, Time for Coin Rain");
 }
 const rainScheduler = () => {
-    console.log(colors.cyan.underline("Sending A [Rain-Drop] Every six(6) Hours to Run at ===>", date()).italic)
+    // console.log(colors.cyan.underline("Sending A [Rain-Drop] Every six(6) Hours to Run at ===>", date()).italic)
     const job = schedule.scheduleJob('* * * * *', (fireDate) => {
         task(fireDate)
     })
