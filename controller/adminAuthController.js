@@ -94,7 +94,7 @@ const register = async (req, res, next) => {
         })
 
     } catch (err) {
-        return res.status(500).json({ error: err });
+        return res.status(500).json({ message: err.message });
     }
 };
 
@@ -134,7 +134,7 @@ const login = async (req, res, next) => {
         })
 
     } catch (err) {
-        return res.status(500).json({ error: err });
+        return res.status(500).json({ message: err.message });
     }
 };
 // CONFIRM PIN
@@ -164,7 +164,7 @@ const confirmPin = async (req, res, next) => {
 
         sendTokenResponse(user, 200, res);
     } catch (err) {
-        return res.status(500).json({ error: err });
+        return res.status(500).json({ message: err.message });
     }
 };
 // CURRENT USER
@@ -176,7 +176,7 @@ const currentUser = async (req, res) => {
             user: user
         });
     } catch (err) {
-        return res.status(500).json({ error: err });
+        return res.status(500).json({ message: err.message });
     }
 };
 //FIND BY ID
@@ -204,7 +204,7 @@ const findAdminById = async (req, res, next) => {
             activity: userActivityLog || null
         });
     } catch (err) {
-        return res.status(500).json({ error: err });
+        return res.status(500).json({ message: err.message });
         // console.log(err)
     }
 }
@@ -232,7 +232,7 @@ const findAdminByUsername = async (req, res, next) => {
             activity: userActivityLog || null
         });
     } catch (err) {
-        return res.status(500).json({ error: err });
+        return res.status(500).json({ message: err.message });
     }
 }
 //UPDATE ADMIN
@@ -285,7 +285,7 @@ const updateAdmin = async (req, res, next) => {
             data: result
         });
     } catch (err) {
-        return res.status(500).json({ error: err });
+        return res.status(500).json({ message: err.message });
     }
 }
 //UPDATE PIN
@@ -311,7 +311,7 @@ const updatePin = async (req, res, next) => {
             data: user
         });
     } catch (err) {
-        return res.status(500).json({ error: err });
+        return res.status(500).json({ message: err.message });
     }
 }
 //UPDATE PASSWORD
@@ -337,7 +337,7 @@ const updatePassword = async (req, res, next) => {
             data: user
         });
     } catch (err) {
-        return res.status(500).json({ error: err });
+        return res.status(500).json({ message: err.message });
     }
 }
 //UPDATE SUSPEND
@@ -370,7 +370,7 @@ const suspend = async (req, res, next) => {
             data: user
         });
     } catch (err) {
-        return res.status(500).json({ error: err });
+        return res.status(500).json({ message: err.message });
     }
 }
 
@@ -401,7 +401,7 @@ const updateAvailability = async (req, res, next) => {
             data: user
         });
     } catch (err) {
-        return res.status(500).json({ error: err });
+        return res.status(500).json({ message: err.message });
     }
 }
 //REMOVE ADMIN
@@ -432,7 +432,7 @@ const removeAdmin = async (req, res, next) => {
             data: user
         });
     } catch (err) {
-        return res.status(500).json({ error: err });
+        return res.status(500).json({ message: err.message });
     }
 }
 //Fetch all admin
@@ -453,7 +453,7 @@ const getAllAdmin = async (req, res, next) => {
             data: users
         });
     } catch (err) {
-        return res.status(500).json({ error: err });
+        return res.status(500).json({ message: err.message });
     }
 }
 //Create chat Settings
@@ -467,7 +467,7 @@ const createChatSettings = async (req, res, next) => {
             message: "Chat Settings Created Success"
         })
     } catch (err) {
-        return res.status(500).json({ error: err });
+        return res.status(500).json({ message: err.message });
     }
 
 }
@@ -511,7 +511,7 @@ const updateChatSettings = async (req, res, next) => {
             data: result
         })
     } catch (err) {
-        return res.status(500).json({ error: err });
+        return res.status(500).json({ message: err.message });
         // console.log(err)
     }
 }
@@ -530,7 +530,7 @@ const getChatSettings = async (req, res, next) => {
             chatsettings: chatsettings
         })
     } catch (err) {
-        return res.status(500).json({ error: err });
+        return res.status(500).json({ message: err.message });
     }
 
 }
