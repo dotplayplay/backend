@@ -24,6 +24,7 @@ const { generateRandomString } = require("../utils/generators");
 const { getTodayAndTomorrowsDate, today } = require("../utils/time");
 const AffiliateCodes = require("../model/affiliate_codes");
 const FlashDrop = require('../model/flashdrop');
+const { createNotify } = require("./notify");
 // Create Member controller
 const createMember = async (req, res, next) => {
     try {
@@ -126,6 +127,7 @@ const createMember = async (req, res, next) => {
             CreateAffiliate(user_id)
             const default_wallet = await handleDefaultWallet(user_id)
             let profile = await createProfile(profileDetails)
+            createNotify("User Registration", user_id)
             return res.status(200).json({
                 success: true,
                 message: "User Resgistration Successfull",
@@ -142,6 +144,7 @@ const createMember = async (req, res, next) => {
         }
 
     } catch (err) {
+        console.log(err)
         return res.status(500).json({ error: err })
     }
 }

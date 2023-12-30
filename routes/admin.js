@@ -25,7 +25,7 @@ const router = express.Router()
 /* ADMIN AUTH */
 //POST
 router.post('/auth/login', login)
-router.post('/auth/pin', protect, confirmPin)
+router.post('/auth/pin', confirmPin)
 router.post('/auth/register', protect, register)
 //PATCH
 router.patch('/auth/update', protect, updateAdmin)

@@ -12,8 +12,9 @@ const Admin = require("./routes/admin.js");
 const Promotion = require("./routes/promotion.js");
 const Profile = require("./routes/Profile.js");
 const Chat = require("./routes/chat");
-require("./controller/lotteryEngine.js");
-require("./controller/cronScheduler.js");
+const Notify = require("./routes/notify.js")
+// require("./controller/lotteryEngine.js");
+// require("./controller/cronScheduler.js");
 require("./controller/rainCronScheduller.js")
 const minegame = require("./routes/mines");
 const Wallet = require("./routes/wallet.js");
@@ -74,6 +75,8 @@ app.post("/api/deactivate-recharge", testResetCashback)
 
 //admin routes
 app.use('/admin', Admin);
+//Notification
+app.use('/api/notifies', Notify);
 
 app.get("/", (req, res)=>{
   res.send("Welcome to Dotplayplay backend server");

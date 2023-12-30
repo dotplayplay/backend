@@ -2,6 +2,8 @@
 const CrashGame = require("../../model/crashgame");
 const DiceGame = require("../../model/dice_game");
 const MineGame = require("../../model/minesgameInit");
+const { dailyGamesWon } = require("../../utils/dashboard");
+const { today } = require("../../utils/time");
 
 const winningList = [];
   
@@ -66,5 +68,29 @@ const Favorite_played_games = async (req, res) => {
     }
 }
 
+const biggestWin = async (req, res, next) => {
+    try{
+        const todaysD = today()
+        todayDate = todaysD.todayDate
+        tomorrowDate = todaysD.tomorrowDate
+    //Daily Total Payout Across all games
+    const crashDailyPayout = await dailyGamesWon(todayDate, tomorrowDate, 'crashgame')
+    const diceDailyPayout = await dailyGamesWon(todayDate, tomorrowDate, 'dicegame')
+    const minesDailyPayout = await dailyGamesWon(todayDate, tomorrowDate, 'minesgame')
 
-module.exports = { Recently_played, Favorite_played_games };
+    const totalPayout = {
+        ...crashDailyPayout,
+        ...diceDailyPayout,
+        ...minesDailyPayout
+    }
+    return res.status(200).json({
+        success: true,
+        biggestWin: totalPayout
+    })
+    }catch(err) {
+        return res.status(500).json({message : err.message})
+    }
+}
+
+
+module.exports = { Recently_played, Favorite_played_games, biggestWin };

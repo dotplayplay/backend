@@ -3,6 +3,7 @@ const axios = require('axios');
 const Admin = require("../model/admin");
 const AdminActivityLog = require("../model/adminactivitylog");
 const AdminChatSettings = require('../model/adminchatsettings');
+const userIdGeneratorService = require('../utils/userId');
 
 const createActivityLog = async (admin_id, action, req) => {
     try {
@@ -39,7 +40,7 @@ const sendTokenResponse = (user, statusCode, res) => {
             id: user._id,
             username: user.username,
             avatar: user.avatar,
-            role: user.role,
+            access: user.access,
         }
     });
 };
@@ -75,6 +76,7 @@ const register = async (req, res, next) => {
         // else create a new user
 
         const user = await Admin.create({
+            user_id: await userIdGeneratorService(),
             username,
             password,
             pin,
@@ -126,7 +128,11 @@ const login = async (req, res, next) => {
 
         await Admin.findOneAndUpdate({ _id: user._id }, { lastLogin: Date.now() });
 
-        sendTokenResponse(user, 200, res);
+        return res.status(200).json({
+            success: true,
+            userId: user.user_id
+        })
+
     } catch (err) {
         return res.status(500).json({ error: err });
     }
@@ -134,14 +140,14 @@ const login = async (req, res, next) => {
 // LOGIN
 const confirmPin = async (req, res, next) => {
     try {
-        const { pin } = req.body;
-        if (!pin) {
+        const { pin, userId } = req.body;
+        if (!pin || !userId) {
             return res.status(400).json({
                 success: false,
-                message: "Kindly provide a Pin"
+                message: "Kindly provide a Pin and User ID"
             });
         }
-        const user = await Admin.findById(req.user.id );
+        const user = await Admin.findOne({ user_id: userId });
         if (!user) {
             return res.status(401).json({
                 success: false,
@@ -156,10 +162,7 @@ const confirmPin = async (req, res, next) => {
             });
         }
 
-        return res.status(200).json({
-            success: true,
-            message: "OK"
-        })
+        sendTokenResponse(user, 200, res);
     } catch (err) {
         return res.status(500).json({ error: err });
     }
