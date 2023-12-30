@@ -32,7 +32,7 @@ router.patch('/auth/update', protect, updateAdmin)
 router.patch('/auth/update', protect, updatePin)
 router.patch('/auth/password', protect, updatePassword)
 router.patch('/auth/suspend', protect, suspend)
-router.patch('/auth/avalability', protect, updateAvailability)
+// router.patch('/auth/avalability', protect, updateAvailability)
 
 //DELETE
 router.delete('/remove/:id', protect, removeAdmin)
