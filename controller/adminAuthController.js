@@ -112,14 +112,14 @@ const login = async (req, res, next) => {
         if (!user) {
             return res.status(401).json({
                 success: false,
-                message: "Invalid Credentials"
+                message: "Username does not exist."
             });
         }
 
         if (!(await user.verifyPassword(password))) {
             return res.status(401).json({
                 success: false,
-                message: "Invalid Credentials"
+                message: "Password do not match. Please try again."
             });
         }
 
