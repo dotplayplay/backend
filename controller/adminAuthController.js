@@ -137,7 +137,7 @@ const login = async (req, res, next) => {
         return res.status(500).json({ error: err });
     }
 };
-// LOGIN
+// CONFIRM PIN
 const confirmPin = async (req, res, next) => {
     try {
         const { pin, userId } = req.body;
