@@ -158,7 +158,7 @@ const confirmPin = async (req, res, next) => {
         if (!(await user.pin === pin)) {
             return res.status(401).json({
                 success: false,
-                message: "Invalid Pin"
+                message: "Incorrect Pin"
             });
         }
 
