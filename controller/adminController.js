@@ -611,7 +611,7 @@ const dailyReportByDate = async (req, res, next) => {
             dailyLotterys
         })
     } catch (err) {
-        return res.status(500).json({ error: err });
+        return res.status(500).json({ message: err.message });
     }
 }
 
@@ -752,7 +752,7 @@ const dailyReport = async (req, res, next) => {
             data: resultData.sort((a, b) => new Date(b.date) - new Date(a.date))
         })
     } catch (err) {
-        return res.status(500).json({ error: err });
+        return res.status(500).json({ message: err.message });
     }
 }
 
@@ -846,7 +846,7 @@ const gameReport = async (req, res, next) => {
             totalPlayerCount
         })
     } catch (err) {
-        return res.status(500).json({ error: err });
+        return res.status(500).json({ message: err.message });
     }
 }
 
@@ -931,7 +931,7 @@ const createFlashDrop = async (req, res) => {
             data: result
         })
     } catch (err) {
-        return res.status(500).json({ error: err });
+        return res.status(500).json({ message: err.message });
     }
 
 }

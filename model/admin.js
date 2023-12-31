@@ -67,11 +67,11 @@ const AdminSchema = new mongoose.Schema(
             default:
                 "https://res.cloudinary.com/creative-builder/image/upload/v1627792946/WeShare/avatar_cugq40_ocwbvk.png"
         },
-        availability_status: {
-            type: String,
-            enum: ["active", "inactive"],
-            default: "active"
-        },
+        // availability_status: {
+        //     type: String,
+        //     enum: ["active", "inactive"],
+        //     default: "active"
+        // },
         lastLogin: {
             type: Date,
             default: Date.now
