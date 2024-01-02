@@ -45,7 +45,17 @@ const today = () => {
     tomorrowDate
    }
 }
+
+const timeLeftTo24hrs = () => {
+    const currentTime = new Date();
+    const endOfDay = new Date(currentTime.getFullYear(), currentTime.getMonth(), currentTime.getDate(), 23, 59, 59);
+    const remainingTimeInSeconds = Math.floor((endOfDay.getTime() - currentTime.getTime()) / 1000);
+    return remainingTimeInSeconds
+
+}
+
 module.exports = {
     getTodayAndTomorrowsDate,
-    today
+    today,
+    timeLeftTo24hrs
 }
