@@ -30,6 +30,10 @@ const SpinSchema = new mongoose.Schema({
 })
 
 const backUp = new mongoose.Schema({
+    spin_id: {
+        type: mongoose.Schema.ObjectId,
+        required: true,
+    },
     user_id: {
         type: String,
         required: true
@@ -53,6 +57,10 @@ const backUp = new mongoose.Schema({
     is_spin: {
         type: Boolean,
         default:false
+    },
+    timeSpinned: {
+        type: Date,
+        required: true
     }
 },{
     timestamps: true

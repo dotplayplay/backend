@@ -339,10 +339,34 @@ const resetSpinAndRollCompetitionCron = () => {
         try {
             // Backup all documents in the RollCompetitionBackUp collection
             const backupData = await RollCompetition.find({});
-            await RollCompetitionBackUp.insertMany(backupData);
+            // Create Backup 
+            const backupRecords = backupData.map(item => {
+                return {
+                    rolled_id: item._id,
+                    user_id: item.user_id,
+                    rolled_figure: item.rolled_figure,
+                    is_rolled: item.is_rolled,
+                    playedTime: item.createdAt
+                }
+            });
+
+            await RollCompetitionBackUp.insertMany(backupRecords);
             // Backup all documents in the SpinBackUp collection
             const spinData = await Spin.find({});
-            await SpinBackUp.insertMany(spinData);
+             // Create Backup 
+             const spinDataRecords = spinData.map(item => {
+                return {
+                    spin_id: item._id,
+                    user_id: item.user_id,
+                    username: item.username,
+                    prize_amount_won: item.prize_amount_won,
+                    prize_image: item.prize_image,
+                    prize_type: item.prize_type,
+                    is_spin: item.is_spin,
+                    timeSpinned: item.createdAt
+                }
+            });
+            await SpinBackUp.insertMany(spinDataRecords);
 
             // Delete all documents in the RollCompetition and Spin collection
             await RollCompetition.deleteMany({});

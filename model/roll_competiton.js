@@ -18,6 +18,10 @@ const rollCompetition = new mongoose.Schema({
 }, { timestamps: true })
 
 const backUp = new mongoose.Schema({
+    rolled_id: {
+        type: mongoose.Schema.ObjectId,
+        required: true
+    },
     user_id: {
         type: String,
         required: true
@@ -30,8 +34,12 @@ const backUp = new mongoose.Schema({
         type: Boolean,
         required: true,
         default: true
+    },
+    playedTime: {
+        type: Date,
+        required: true
     }
-}, { timestamps: true })
+}, {timestamps: true})
 // 
 // rollCompetition.methods.determineWinners =  () => {
 //     // Sort participants based on totalScore in descending order
