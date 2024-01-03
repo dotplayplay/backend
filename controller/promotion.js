@@ -1,6 +1,7 @@
 const Profile = require('../model/Profile');
-const RollCompetition = require('../model/roll_competiton');
-const Spin = require('../model/spin');
+const { RollCompetition, RollCompetitionBackUp } = require('../model/roll_competiton');
+const { Spin, SpinBackUp } = require('../model/spin');
+const schedule = require('node-schedule');
 
 
 //Spin 
@@ -34,7 +35,7 @@ const is_spin = async (req, res, next) => {
             is_spin: false
         })
     } catch (err) {
-         return res.status(500).json({ message: err.message });
+        return res.status(500).json({ message: err.message });
     }
 }
 
@@ -173,7 +174,7 @@ const spin = async (req, res, next) => {
         const userProfile = await Profile.findOne({ user_id: req.user.id })
         const savedSpin = await Spin.create({
             user_id: req.user.id,
-            username: " userProfile.username",
+            username: "userProfile.username",
             prize_amount_won: result.amount,
             prize_image: result.image,
             prize_type: result.type,
@@ -193,16 +194,15 @@ const spin = async (req, res, next) => {
         nxt_spin = `${hours}:${minutes}:${seconds}`;
         return res.status(201).json({ success: true, savedSpin, nxt_spin });
     } catch (err) {
-         return res.status(500).json({ message: err.message });
+        return res.status(500).json({ message: err.message });
     }
 }
-
 const getUserSpinTransaction = async (req, res, next) => {
     try {
         const userTrx = await Spin.findOne({ user_id: req.user.id });
         return res.status(200).json({ success: true, userTrx });
     } catch (err) {
-         return res.status(500).json({ message: err.message });
+        return res.status(500).json({ message: err.message });
     }
 }
 
@@ -218,14 +218,13 @@ const getAllSpin = async (req, res, next) => {
         })
         return res.status(200).json({ success: true, sortedUser });
     } catch (err) {
-         return res.status(500).json({ message: err.message });
+        return res.status(500).json({ message: err.message });
     }
 }
-
 //Roll Competition
 const rollcompetition = async (req, res, next) => {
-    // const id = req.id;
-    const id = '3d2f3f2d3f2fg3fg3gwqr'
+    const id = req.id;
+    // const id = '3d2f3f2d3f2fg3fg3gwqr'
     try {
         const user = await Profile.findOne({ user_id: id })
         if (!user) {
@@ -270,8 +269,8 @@ const rollcompetition = async (req, res, next) => {
 }
 const check_level_and_is_rolled = async (req, res, next) => {
     try {
-        // const id = req.id;
-        const id = '3d2f3f2d3f2fg3fg3gwqr'
+        const id = req.id;
+        // const id = '3d2f3f2d3f2fg3fg3gwqr'
         const date = new Date()
         const currentTime = Date.now()
         const endOfTheDay = date.setHours(24, 59, 59, 999)
@@ -317,22 +316,52 @@ const check_level_and_is_rolled = async (req, res, next) => {
             is_rolled: false
         })
     } catch (err) {
-         return res.status(500).json({ message: err.message });
+        return res.status(500).json({ message: err.message });
     }
 }
 const winners = async (req, res, next) => {
     try {
-        const winners = await RollCompetition.find().sort({rolled_figure: -1})
+        const winners = await RollCompetition.find().sort({ rolled_figure: -1 })
 
         return res.status(200).json({
             success: true,
             message: "Top 10 Winners:",
-            winners: winners.splice(0, 2)
+            winners: winners.splice(0, 10)
         })
     } catch (err) {
         return res.status(500).json({ message: err.message });
     }
 }
+
+// Schedule task to delete all Spin and Roll Competition  run every day at midnight
+const resetSpinAndRollCompetitionCron = () => {
+    schedule.scheduleJob('0 0 * * *', async (fireDate) => {
+        try {
+            // Backup all documents in the RollCompetitionBackUp collection
+            const backupData = await RollCompetition.find({});
+            await RollCompetitionBackUp.insertMany(backupData);
+            // Backup all documents in the SpinBackUp collection
+            const spinData = await Spin.find({});
+            await SpinBackUp.insertMany(spinData);
+
+            // Delete all documents in the RollCompetition and Spin collection
+            await RollCompetition.deleteMany({});
+            await Spin.deleteMany({});
+
+            // console.log('Deleted all data from RollCompetition and created a backup every 24hrs ===>', fireDate);
+        } catch (error) {
+            console.error('Error deleting and creating backup:', error);
+        }
+    });
+}
+resetSpinAndRollCompetitionCron()
+// Handle process exit gracefully
+process.on('SIGINT', () => {
+    mongoose.connection.close(() => {
+        console.log('Mongoose disconnected due to application termination');
+        process.exit(0);
+    });
+});
 
 
 module.exports = {

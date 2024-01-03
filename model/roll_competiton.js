@@ -1,8 +1,5 @@
 const mongoose = require('mongoose')
-const { timeLeftTo24hrs } = require('../utils/time')
 
-
-const time = timeLeftTo24hrs()
 
 const rollCompetition = new mongoose.Schema({
     user_id: {
@@ -18,8 +15,23 @@ const rollCompetition = new mongoose.Schema({
         required: true,
         default: true
     }
-}, { timestamps: true , expires: time})
+}, { timestamps: true })
 
+const backUp = new mongoose.Schema({
+    user_id: {
+        type: String,
+        required: true
+    },
+    rolled_figure: {
+        type: String,
+        required: true
+    },
+    is_rolled: {
+        type: Boolean,
+        required: true,
+        default: true
+    }
+}, { timestamps: true })
 // 
 // rollCompetition.methods.determineWinners =  () => {
 //     // Sort participants based on totalScore in descending order
@@ -34,4 +46,10 @@ const rollCompetition = new mongoose.Schema({
 //     return topTenWinners;
 //   };
 
-module.exports = mongoose.model('roll-competition', rollCompetition)
+const RollCompetition =  mongoose.model('roll-competition', rollCompetition)
+const RollCompetitionBackUp = mongoose.model('roll-competition_backup', backUp)
+
+module.exports = {
+    RollCompetition,
+    RollCompetitionBackUp
+}
