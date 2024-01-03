@@ -97,7 +97,6 @@ const register = async (req, res, next) => {
         return res.status(500).json({ message: err.message });
     }
 };
-
 // LOGIN
 const login = async (req, res, next) => {
     try {
@@ -373,7 +372,6 @@ const suspend = async (req, res, next) => {
         return res.status(500).json({ message: err.message });
     }
 }
-
 //UPDATE AVAILABILITY
 const updateAvailability = async (req, res, next) => {
     try {
@@ -534,6 +532,7 @@ const getChatSettings = async (req, res, next) => {
     }
 
 }
+
 module.exports = {
     register,
     login,

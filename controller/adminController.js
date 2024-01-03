@@ -145,7 +145,7 @@ const createMember = async (req, res, next) => {
 
     } catch (err) {
         console.log(err)
-        return res.status(500).json({ error: err })
+        return res.status(500).json({ message: err.message });
     }
 }
 //Get Members List
@@ -214,7 +214,7 @@ const getAllMembers = async (req, res, next) => {
             data: membersDataFromProfile
         })
     } catch (err) {
-        return res.status(500).json({ error: err })
+        return res.status(500).json({ message: err.message });
     }
 
 }
@@ -275,7 +275,7 @@ const adminDashbaord = async (req, res, next) => {
             }
         })
     } catch (err) {
-        // return res.status(500).json({ error: err })
+        // return res.status(500).json({ message: err.message });
         console.log(err)
     }
 }
@@ -298,7 +298,7 @@ const findUserById = async (req, res, next) => {
         })
 
     } catch (err) {
-        return res.status(500).json({ error: err })
+        return res.status(500).json({ message: err.message });
     }
 }
 //GET BY USERNAME
@@ -320,7 +320,7 @@ const findUserByUsername = async (req, res, next) => {
         })
 
     } catch (err) {
-        return res.status(500).json({ error: err })
+        return res.status(500).json({ message: err.message });
     }
 }
 //Get User STATS 
@@ -376,7 +376,7 @@ const registeredUserstats = async (req, res, next) => {
             registeredUser: registeredUser
         })
     } catch (err) {
-        return res.status(500).json({ error: err })
+        return res.status(500).json({ message: err.message });
     }
 }
 
@@ -391,7 +391,7 @@ const totalWageredAndTotalWon = async (req, res, next) => {
             totalWon: totalWon,
         })
     } catch (err) {
-        return res.status(500).json({ error: err })
+        return res.status(500).json({ message: err.message });
     }
 }
 
@@ -405,7 +405,7 @@ const totalWageredRanking = async (req, res, next) => {
         })
         return res.status(200).json(totalWageredRanking.filter(user => user.total_wagered !== 0))
     } catch (err) {
-        return res.status(500).json({ error: err })
+        return res.status(500).json({ message: err.message });
     }
 
 }
@@ -445,7 +445,7 @@ const totalWonRanking = async (req, res, next) => {
             wonRanking: membersWonData.filter(user => user.totalWon > 0)
         })
     } catch (err) {
-        return res.status(500).json({ error: err })
+        return res.status(500).json({ message: err.message });
     }
 }
 
@@ -484,7 +484,7 @@ const totalLossRanking = async (req, res, next) => {
             lossRanking: membersLossData.filter(user => user.totalLoss > 0)
         })
     } catch (err) {
-        return res.status(500).json({ error: err })
+        return res.status(500).json({ message: err.message });
     }
 }
 
@@ -906,7 +906,7 @@ const ggrReport = async (req, res, next) => {
             data: usersDataFromProfile.filter(user => user.totalWagered !== 0),
         })
     } catch (err) {
-        return res.status(500).json({ error: err })
+        return res.status(500).json({ message: err.message });
     }
 
 }
