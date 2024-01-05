@@ -81,6 +81,7 @@ const handlePlinkoBet = (async (req, res) => {
             let wallet = await USDT_wallet.find({ user_id })
             current_amount = parseFloat(wallet[0].balance) - parseFloat(data.bet_amount)
         }
+        //Get Score and PNL
         const score = plinkoGame(data.rows)
         const pnl = PNL(`row${data.rows}${data.risk}`, score)
         let bet = {
