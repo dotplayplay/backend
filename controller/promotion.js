@@ -378,6 +378,7 @@ const resetSpinAndRollCompetitionCron = () => {
         }
     });
 }
+
 resetSpinAndRollCompetitionCron()
 // Handle process exit gracefully
 process.on('SIGINT', () => {
