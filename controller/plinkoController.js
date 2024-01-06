@@ -11,6 +11,8 @@ const rowAndRisk = {
     row8low: [{ name: 'Win', val1: 0, val2: 8, prize: 5.6 }, { name: 'Win', val1: 1, val2: 7, prize: 2.1 }, { name: 'Win', val1: 2, val2: 6, prize: 1.1 }, { name: 'No Win', val1: 3, val2: 5, prize: 1.0 }, { name: 'Loss', val1: 4, val2: 4, prize: 0.5 }],
     row9low: [{ name: 'Win', val1: 0, val2: 9, prize: 5.6 }, { name: 'Win', val1: 1, val2: 8, prize: 2.0 }, { name: 'Win', val1: 2, val2: 7, prize: 1.6 }, { name: 'No Win', val1: 3, val2: 6, prize: 1.0 }, { name: 'Loss', val1: 5, val2: 5, prize: 0.7 }],
     row10low: [{ name: 'Win', val1: 0, val2: 10, prize: 8.9 }, { name: 'Win', val1: 1, val2: 9, prize: 3.0 }, { name: 'Win', val1: 2, val2: 8, prize: 1.4 }, { name: 'Win', val1: 3, val2: 7, prize: 1.1 }, { name: 'No Win', val1: 4, val2: 6, prize: 1.0 }, { name: 'No Win', val1: 0, val2: 8, prize: 0.5 }]
+
+    //Other row and risk array will be added once verified to continue
 }
 //Get PNL based on Numbe of Row and the Risk Parameter
 const PNL = (rows, score) => {
@@ -84,7 +86,6 @@ const InitializePlinkoGame = async (rows, user_id) => {
     await PlinkoEncription.create(data)
 }
 
-
 let hidden = false
 const handlePlinkoBet = (async (req, res) => {
     try {
@@ -130,8 +131,8 @@ const handlePlinkoBet = (async (req, res) => {
             user_status: true,
             game_status: true,
             time: data.time,
-            payout: 0.0000,
-            has_won: 0,
+            payout: pnl,
+            has_won: true,
             chance: data.chance
         }
         CreateBetGame(bet)
