@@ -489,6 +489,9 @@ const updateSeeds = async (req, res) => {
 
         const seeds = await HiloEncrypt.findOne({ is_open: false }).sort({ '_id': -1 }).session(session);
         if (!seeds) throw new Error("Seeds not found. Play at least one game!");
+
+        if (!client_seed) throw new Error("Client Seed not found!");
+
         const { next_server_seed: server_seed, next_hash_seed: hash_seed } = seeds;
 
         await HiloEncrypt.updateOne({ seed_id: seeds.seed_id }, {
