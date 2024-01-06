@@ -13,6 +13,7 @@ const { handleHiloBet, handleHiloNextRound, handleHiloCashout, initHiloGame } = 
 
 const minesgameInit = require('../model/minesgameInit');
 const Profile = require("../model/Profile");
+const { handlePlinkoBet } = require("../controller/plinkoController");
 let maxRange = 100
 
 async function createsocket(httpServer) {
@@ -238,6 +239,14 @@ async function createsocket(httpServer) {
                 io.emit(event, payload);
             });
         });
+
+        //PLINKO GAME BET 
+        socket.on("plinko-bet", data => {
+            handlePlinkoBet(data)
+            //Get New Bet and Update Latest Bet UI
+            const latestBet = latestBetUpdate(data, "Plinko Game")
+            io.emit("latest-bet", latestBet)
+        })
     })
 
 }
