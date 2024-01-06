@@ -1,9 +1,10 @@
-
 const Profile = require('../model/Profile');
-const RollCompetition = require('../model/roll_competiton');
-const Spin = require('../model/spin');
+const { RollCompetition, RollCompetitionBackUp } = require('../model/roll_competiton');
+const { Spin, SpinBackUp } = require('../model/spin');
+const schedule = require('node-schedule');
 
 
+//Spin 
 const is_spin = async (req, res, next) => {
     try {
         const date = new Date()
@@ -34,7 +35,7 @@ const is_spin = async (req, res, next) => {
             is_spin: false
         })
     } catch (err) {
-        return res.status(500).json({ err })
+        return res.status(500).json({ message: err.message });
     }
 }
 
@@ -173,7 +174,7 @@ const spin = async (req, res, next) => {
         const userProfile = await Profile.findOne({ user_id: req.user.id })
         const savedSpin = await Spin.create({
             user_id: req.user.id,
-            username:" userProfile.username",
+            username: "userProfile.username",
             prize_amount_won: result.amount,
             prize_image: result.image,
             prize_type: result.type,
@@ -193,16 +194,15 @@ const spin = async (req, res, next) => {
         nxt_spin = `${hours}:${minutes}:${seconds}`;
         return res.status(201).json({ success: true, savedSpin, nxt_spin });
     } catch (err) {
-        return res.status(500).json({ err })
+        return res.status(500).json({ message: err.message });
     }
 }
-
 const getUserSpinTransaction = async (req, res, next) => {
     try {
         const userTrx = await Spin.findOne({ user_id: req.user.id });
         return res.status(200).json({ success: true, userTrx });
     } catch (err) {
-        return res.status(500).json({ err })
+        return res.status(500).json({ message: err.message });
     }
 }
 
@@ -218,14 +218,13 @@ const getAllSpin = async (req, res, next) => {
         })
         return res.status(200).json({ success: true, sortedUser });
     } catch (err) {
-        return res.status(500).json({ err })
+        return res.status(500).json({ message: err.message });
     }
 }
-
-
+//Roll Competition
 const rollcompetition = async (req, res, next) => {
-    // const id = req.id;
-    const id = '3d2f3f2d3f2ffg3gwq3'
+    const id = req.id;
+    // const id = '3d2f3f2d3f2fg3fg3gwqr'
     try {
         const user = await Profile.findOne({ user_id: id })
         if (!user) {
@@ -265,14 +264,136 @@ const rollcompetition = async (req, res, next) => {
             rolled
         })
     } catch (err) {
-        return res.status(500).json({ error: err })
+        return res.status(500).json({ message: err.message });
     }
 }
+const check_level_and_is_rolled = async (req, res, next) => {
+    try {
+        const id = req.id;
+        // const id = '3d2f3f2d3f2fg3fg3gwqr'
+        const date = new Date()
+        const currentTime = Date.now()
+        const endOfTheDay = date.setHours(24, 59, 59, 999)
+
+        const remainingTime = endOfTheDay - currentTime
+
+        const hours = Math.floor(remainingTime / (1000 * 60 * 60));
+        const minutes = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((remainingTime % (1000 * 60)) / 1000);
+
+        const nxt_roll = `${hours}:${minutes}:${seconds}`;
+        //Get if loggged in user have roll and vip_level greater than 3
+        const user = await Profile.findOne({ user_id: id })
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "No user with this ID"
+            })
+        }
+
+        if (user.vip_level < 3) {
+            return res.status(404).json({
+                success: false,
+                message: "Only user with vip level above 3 are allowed to participate in the Roll Competition",
+                nxt_roll: nxt_roll
+            })
+        }
+        //Check if user already rolled before
+        const user_rolled = await RollCompetition.findOne({ user_id: user.user_id })
+        if (user_rolled) {
+            if (user_rolled.is_rolled === true) {
+                return res.status(200).json({
+                    success: true,
+                    message: "You can only roll once per day",
+                    is_rolled: user_rolled.is_rolled,
+                    nxt_roll: nxt_roll
+                })
+            }
+        }
+
+        return res.status(200).json({
+            success: true,
+            is_rolled: false
+        })
+    } catch (err) {
+        return res.status(500).json({ message: err.message });
+    }
+}
+const winners = async (req, res, next) => {
+    try {
+        const winners = await RollCompetition.find().sort({ rolled_figure: -1 })
+
+        return res.status(200).json({
+            success: true,
+            message: "Top 10 Winners:",
+            winners: winners.splice(0, 10)
+        })
+    } catch (err) {
+        return res.status(500).json({ message: err.message });
+    }
+}
+
+// Schedule task to delete all Spin and Roll Competition  run every day at midnight
+const resetSpinAndRollCompetitionCron = () => {
+    schedule.scheduleJob('0 0 * * *', async (fireDate) => {
+        try {
+            // Backup all documents in the RollCompetitionBackUp collection
+            const backupData = await RollCompetition.find({});
+            // Create Backup 
+            const backupRecords = backupData.map(item => {
+                return {
+                    rolled_id: item._id,
+                    user_id: item.user_id,
+                    rolled_figure: item.rolled_figure,
+                    is_rolled: item.is_rolled,
+                    playedTime: item.createdAt
+                }
+            });
+
+            await RollCompetitionBackUp.insertMany(backupRecords);
+            // Backup all documents in the SpinBackUp collection
+            const spinData = await Spin.find({});
+             // Create Backup 
+             const spinDataRecords = spinData.map(item => {
+                return {
+                    spin_id: item._id,
+                    user_id: item.user_id,
+                    username: item.username,
+                    prize_amount_won: item.prize_amount_won,
+                    prize_image: item.prize_image,
+                    prize_type: item.prize_type,
+                    is_spin: item.is_spin,
+                    timeSpinned: item.createdAt
+                }
+            });
+            await SpinBackUp.insertMany(spinDataRecords);
+
+            // Delete all documents in the RollCompetition and Spin collection
+            await RollCompetition.deleteMany({});
+            await Spin.deleteMany({});
+
+            // console.log('Deleted all data from RollCompetition and created a backup every 24hrs ===>', fireDate);
+        } catch (error) {
+            console.error('Error deleting and creating backup:', error);
+        }
+    });
+}
+resetSpinAndRollCompetitionCron()
+// Handle process exit gracefully
+process.on('SIGINT', () => {
+    mongoose.connection.close(() => {
+        console.log('Mongoose disconnected due to application termination');
+        process.exit(0);
+    });
+});
+
 
 module.exports = {
     is_spin,
     spin,
     rollcompetition,
+    check_level_and_is_rolled,
+    winners,
     getUserSpinTransaction,
     getAllSpin
 }

@@ -17,7 +17,7 @@ const {
     createFlashDrop,
     dailyReportByDate
 } = require('../controller/adminController')
-const { login, register, currentUser, findAdminById, findAdminByUsername, updateAdmin, updatePin, updatePassword, suspend, role, updateAvailability,removeAdmin, getAllAdmin, createChatSettings, updateChatSettings, getChatSettings } = require('../controller/adminAuthController')
+const { login, register, currentUser, findAdminById, findAdminByUsername, updateAdmin, updatePin, updatePassword, suspend, role, updateAvailability,removeAdmin, getAllAdmin, createChatSettings, updateChatSettings, getChatSettings, confirmPin } = require('../controller/adminAuthController')
 const { protect } = require('../middleware/auth')
 
 const router = express.Router()
@@ -25,13 +25,14 @@ const router = express.Router()
 /* ADMIN AUTH */
 //POST
 router.post('/auth/login', login)
+router.post('/auth/pin', confirmPin)
 router.post('/auth/register', protect, register)
 //PATCH
 router.patch('/auth/update', protect, updateAdmin)
-router.patch('/auth/update', protect, updatePin)
+router.patch('/auth/pin', protect, updatePin)
 router.patch('/auth/password', protect, updatePassword)
 router.patch('/auth/suspend', protect, suspend)
-router.patch('/auth/avalability', protect, updateAvailability)
+// router.patch('/auth/avalability', protect, updateAvailability)
 
 //DELETE
 router.delete('/remove/:id', protect, removeAdmin)
@@ -48,12 +49,12 @@ router.get('/adminuser/:username', protect, findAdminByUsername)
 /* READ DASHBOARD AND REPORT */
 
 /* Get Admin Dashboard */
-router.get('/dashboard', adminDashbaord)
-router.get('/userstats', registeredUserstats)
-router.get('/wageredwonstats', totalWageredAndTotalWon)
-router.get('/wageredranking', totalWageredRanking)
-router.get('/wonranking', totalWonRanking)
-router.get('/lossranking', totalLossRanking)
+router.get('/dashboard', protect, adminDashbaord)
+router.get('/userstats', protect, registeredUserstats)
+router.get('/wageredwonstats', protect,  totalWageredAndTotalWon)
+router.get('/wageredranking', protect, totalWageredRanking)
+router.get('/wonranking', protect, totalWonRanking)
+router.get('/lossranking', protect, totalLossRanking)
 router.get('/members', protect, getAllMembers)
 router.get('/member/:user_id', protect, findUserById)
 router.get('/member/username/:username', protect, findUserByUsername)

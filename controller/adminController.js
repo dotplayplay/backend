@@ -24,6 +24,7 @@ const { generateRandomString } = require("../utils/generators");
 const { getTodayAndTomorrowsDate, today } = require("../utils/time");
 const AffiliateCodes = require("../model/affiliate_codes");
 const FlashDrop = require('../model/flashdrop');
+const { createNotify } = require("./notify");
 // Create Member controller
 const createMember = async (req, res, next) => {
     try {
@@ -126,6 +127,7 @@ const createMember = async (req, res, next) => {
             CreateAffiliate(user_id)
             const default_wallet = await handleDefaultWallet(user_id)
             let profile = await createProfile(profileDetails)
+            createNotify("User Registration", user_id)
             return res.status(200).json({
                 success: true,
                 message: "User Resgistration Successfull",
@@ -142,7 +144,8 @@ const createMember = async (req, res, next) => {
         }
 
     } catch (err) {
-        return res.status(500).json({ error: err })
+        console.log(err)
+        return res.status(500).json({ message: err.message });
     }
 }
 //Get Members List
@@ -211,7 +214,7 @@ const getAllMembers = async (req, res, next) => {
             data: membersDataFromProfile
         })
     } catch (err) {
-        return res.status(500).json({ error: err })
+        return res.status(500).json({ message: err.message });
     }
 
 }
@@ -272,7 +275,7 @@ const adminDashbaord = async (req, res, next) => {
             }
         })
     } catch (err) {
-        // return res.status(500).json({ error: err })
+        // return res.status(500).json({ message: err.message });
         console.log(err)
     }
 }
@@ -295,7 +298,7 @@ const findUserById = async (req, res, next) => {
         })
 
     } catch (err) {
-        return res.status(500).json({ error: err })
+        return res.status(500).json({ message: err.message });
     }
 }
 //GET BY USERNAME
@@ -317,7 +320,7 @@ const findUserByUsername = async (req, res, next) => {
         })
 
     } catch (err) {
-        return res.status(500).json({ error: err })
+        return res.status(500).json({ message: err.message });
     }
 }
 //Get User STATS 
@@ -373,7 +376,7 @@ const registeredUserstats = async (req, res, next) => {
             registeredUser: registeredUser
         })
     } catch (err) {
-        return res.status(500).json({ error: err })
+        return res.status(500).json({ message: err.message });
     }
 }
 
@@ -388,7 +391,7 @@ const totalWageredAndTotalWon = async (req, res, next) => {
             totalWon: totalWon,
         })
     } catch (err) {
-        return res.status(500).json({ error: err })
+        return res.status(500).json({ message: err.message });
     }
 }
 
@@ -402,7 +405,7 @@ const totalWageredRanking = async (req, res, next) => {
         })
         return res.status(200).json(totalWageredRanking.filter(user => user.total_wagered !== 0))
     } catch (err) {
-        return res.status(500).json({ error: err })
+        return res.status(500).json({ message: err.message });
     }
 
 }
@@ -442,7 +445,7 @@ const totalWonRanking = async (req, res, next) => {
             wonRanking: membersWonData.filter(user => user.totalWon > 0)
         })
     } catch (err) {
-        return res.status(500).json({ error: err })
+        return res.status(500).json({ message: err.message });
     }
 }
 
@@ -481,7 +484,7 @@ const totalLossRanking = async (req, res, next) => {
             lossRanking: membersLossData.filter(user => user.totalLoss > 0)
         })
     } catch (err) {
-        return res.status(500).json({ error: err })
+        return res.status(500).json({ message: err.message });
     }
 }
 
@@ -608,7 +611,7 @@ const dailyReportByDate = async (req, res, next) => {
             dailyLotterys
         })
     } catch (err) {
-        return res.status(500).json({ error: err });
+        return res.status(500).json({ message: err.message });
     }
 }
 
@@ -749,7 +752,7 @@ const dailyReport = async (req, res, next) => {
             data: resultData.sort((a, b) => new Date(b.date) - new Date(a.date))
         })
     } catch (err) {
-        return res.status(500).json({ error: err });
+        return res.status(500).json({ message: err.message });
     }
 }
 
@@ -843,7 +846,7 @@ const gameReport = async (req, res, next) => {
             totalPlayerCount
         })
     } catch (err) {
-        return res.status(500).json({ error: err });
+        return res.status(500).json({ message: err.message });
     }
 }
 
@@ -903,7 +906,7 @@ const ggrReport = async (req, res, next) => {
             data: usersDataFromProfile.filter(user => user.totalWagered !== 0),
         })
     } catch (err) {
-        return res.status(500).json({ error: err })
+        return res.status(500).json({ message: err.message });
     }
 
 }
@@ -928,7 +931,7 @@ const createFlashDrop = async (req, res) => {
             data: result
         })
     } catch (err) {
-        return res.status(500).json({ error: err });
+        return res.status(500).json({ message: err.message });
     }
 
 }

@@ -12,8 +12,9 @@ const Admin = require("./routes/admin.js");
 const Promotion = require("./routes/promotion.js");
 const Profile = require("./routes/Profile.js");
 const Chat = require("./routes/chat");
-require("./controller/lotteryEngine.js");
-require("./controller/cronScheduler.js");
+const Notify = require("./routes/notify.js")
+// require("./controller/lotteryEngine.js");
+// require("./controller/cronScheduler.js");
 require("./controller/rainCronScheduller.js")
 const minegame = require("./routes/mines");
 const Wallet = require("./routes/wallet.js");
@@ -74,15 +75,17 @@ app.post("/api/deactivate-recharge", testResetCashback)
 
 //admin routes
 app.use('/admin', Admin);
+//Notification
+app.use('/api/notifies', Notify);
 
 app.get("/", (req, res)=>{
   res.send("Welcome to Dotplayplay backend server");
 })
 
 mongoose.set('strictQuery', false);
-const dbUri = `mongodb+srv://highscoreteh:eNiIQbm4ZMSor8VL@cluster0.xmpkpjc.mongodb.net/main_page?retryWrites=true&w=majority`
+// const dbUri = `mongodb+srv://highscoreteh:eNiIQbm4ZMSor8VL@cluster0.xmpkpjc.mongodb.net/main_page?retryWrites=true&w=majority`
 
-// const dbUri = `mongodb://localhost:27017/dpp`;
+const dbUri = `mongodb://localhost:27017/dpp`;
 mongoose.connect(dbUri, { useNewUrlParser: true,  useUnifiedTopology: true })
     .then((result)=>  console.log('Database connected'))
     .catch((err)=> console.log(err))
