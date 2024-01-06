@@ -327,7 +327,7 @@ class CrashGameEngine {
         { used: false },
         { used: true }
       ).sort({
-        _id: -1,
+        "_id": -1,
       });
       if (!hash) {
         throw new Error("No game hash available");
