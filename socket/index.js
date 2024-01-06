@@ -10,7 +10,7 @@ const Chats = require("../model/public-chat");
 const { handleWagerIncrease } = require("../profile_mangement/index");
 const Bills = require("../model/bill");
 const { handleHiloBet, handleHiloNextRound, handleHiloCashout, initHiloGame } = require("../controller/hiloController");
-
+const { CrashGameEngine } = require("../controller/crashControllers");
 const minesgameInit = require('../model/minesgameInit');
 let maxRange = 100
 
@@ -20,6 +20,11 @@ async function createsocket(httpServer) {
             origin: "https://dotplayplay.netlify.app"
             // origin: "http://localhost:5173"
         }
+    });
+
+    //Crash Game
+    new CrashGameEngine(io).run().catch(err => {
+        console.log("Crash Game failed to start ::> ", err);
     });
 
     // let fghhs = await DiceGame.find()
@@ -163,16 +168,16 @@ async function createsocket(httpServer) {
         handleMybet(kjks, e)
     })
 
-    let active_crash = []
-    const handleCrashActiveBet = ((event)=>{
-        if(active_crash.length > 30){
-            active_crash.shift()
-            active_crash.push(event)
-        }else{
-            active_crash.push(event)
-        }
-        io.emit("active-bets-crash", active_crash)
-    })
+    // let active_crash = []
+    // const handleCrashActiveBet = ((event)=>{
+    //     if(active_crash.length > 30){
+    //         active_crash.shift()
+    //         active_crash.push(event)
+    //     }else{
+    //         active_crash.push(event)
+    //     }
+    //     io.emit("active-bets-crash", active_crash)
+    // })
 
 
     let newMessage = await Chats.find()

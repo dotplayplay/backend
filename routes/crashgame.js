@@ -1,14 +1,12 @@
 const express = require('express')
 const router = express.Router()
 const requireAuth = require('../middleware/requireAuth')
-const { handleCrashBet, handleCashout ,handleCrashHistory,handleMybets, handleRedTrendball} = require('../controller/crashControllers')
-router.post('/history', handleCrashHistory)
+const {handleCrashHistory,handleMybets, handleCrashGamePlayers, handleBetDetails} = require('../controller/crashControllers')
+router.get('/history', handleCrashHistory)
+router.get('/details/:betID', handleBetDetails)
+router.get('/players/:gameID', handleCrashGamePlayers)
 // auth middleware
 router.use(requireAuth);
-router.post('/bet', handleCrashBet)
-router.get('/my-bet', handleMybets)
-router.post('/cashout', handleCashout)
-router.post('/red-trendball', handleRedTrendball)
-router.get("/crash-history", handleCrashHistory);
+router.post('/my-bet', handleMybets);
 
 module.exports = router
