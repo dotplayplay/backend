@@ -179,6 +179,33 @@ const handlePlinkoGameEncryption = (async (req, res) => {
     }
 })
 
+const seedSettings = async (req, res) => {
+    const { user_id } = req.id
+    let { data } = req.body
+    const handleHashGeneration = (() => {
+      const serverSeed = crypto.randomBytes(32).toString('hex');
+      const clientSeed = data;
+      const combinedSeed = serverSeed + salt + clientSeed;
+      const hash = crypto.createHash('sha256').update(combinedSeed).digest('hex');
+      return hash
+    })
+    try {
+      let client_seed = data
+      let server_seed = handleHashGeneration()
+      nonce = 0
+      await PlinkoEncription.updateOne({ user_id }, {
+        server_seed: server_seed,
+        client_seed: client_seed,
+        updated_at: new Date()
+      })
+      console.log(client_seed)
+      res.status(200).json("Updated sucessfully")
+    }
+    catch (err) {
+      res.status(501).json({ message: err });
+    }
+  }
 
 
-module.exports = { handlePlinkoBet, HandlePlayPlinko, getGameHistory, InitializePlinkoGame, handlePlinkoGameEncryption }
+
+module.exports = { handlePlinkoBet, HandlePlayPlinko, getGameHistory, InitializePlinkoGame, handlePlinkoGameEncryption, seedSettings }
