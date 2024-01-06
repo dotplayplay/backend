@@ -4,7 +4,7 @@ const { handleWagerIncrease, handleProfileTransactions } = require("../profile_m
 const Plinko = require("../model/plinko_game")
 const USDT_wallet = require("../model/Usdt-wallet")
 const PPFWallet = require("../model/PPF-wallet")
-const PlinkEncription = require("../model/plinko_encryption")
+const PlinkoEncription = require("../model/plinko_encryption")
 
 //Plink Bucket List and Corresponding Win value
 const rowAndRisk = {
@@ -40,8 +40,8 @@ const generatePinkoScore = (rows) => {
     // For simplicity, am using random score based on the number of rows
     // Randomly choose a row
     const score = Math.floor(Math.random() * rows) + 1;
-    return  score ;
-    }
+    return score;
+}
 const updateUserWallet = (async (data) => {
     if (data.bet_token_name === "PPF") {
         await PPFWallet.updateOne({ user_id: data.user_id }, { balance: data.current_amount });
@@ -64,25 +64,25 @@ const InitializePlinkoGame = async (rows, user_id) => {
     const salt = 'Qede00000000000w00wd001bw4dc6a1e86083f95500b096231436e9b25cbdd0075c4';
 
     const handleHashGeneration = (() => {
-      const serverSeed = crypto.randomBytes(32).toString('hex');
-      const clientSeed = generateString(23);
-      const combinedSeed = serverSeed + salt + clientSeed;
-      const hash = crypto.createHash('sha256').update(combinedSeed).digest('hex');
-      let encrypt = { hash, clientSeed, serverSeed }
-      return encrypt
+        const serverSeed = crypto.randomBytes(32).toString('hex');
+        const clientSeed = generateString(23);
+        const combinedSeed = serverSeed + salt + clientSeed;
+        const hash = crypto.createHash('sha256').update(combinedSeed).digest('hex');
+        let encrypt = { hash, clientSeed, serverSeed }
+        return encrypt
     })
-    const {serverSeed: server_seed, hash: hash_seed, clientSeed: client_seed } = handleHashGeneration();
+    const { serverSeed: server_seed, hash: hash_seed, clientSeed: client_seed } = handleHashGeneration();
     let data = {
-      user_id: user_id,
-      nonce: 0,
-      server_seed,
-      hash_seed,
-      client_seed,
-      is_open: false,
-      updated_at: currentTime
+        user_id: user_id,
+        nonce: 0,
+        server_seed,
+        hash_seed,
+        client_seed,
+        is_open: false,
+        updated_at: currentTime
     }
-    await PlinkEncription.create(data)
-  }
+    await PlinkoEncription.create(data)
+}
 
 
 let hidden = false
@@ -146,28 +146,39 @@ const HandlePlayPlinko = ((req, res) => {
     const { user_id } = req.id
     let { data } = req.body
     function generateRandomNumber(serverSeed, clientSeed, hash, nonce) {
-      const combinedSeed = `${serverSeed}-${clientSeed}-${hash}-${nonce}-${salt}`;
-      const hmac = crypto.createHmac('sha256', combinedSeed);
-      const hmacHex = hmac.digest('hex');
-      const decimalValue = (parseInt(hmacHex, 32) % 10001 / 100)
-      const randomValue = (decimalValue % maxRange).toFixed(2);
-      let row = { point: randomValue, server_seed: serverSeed, client_seed: clientSeed, hash, nonce }
-      return row;
+        const combinedSeed = `${serverSeed}-${clientSeed}-${hash}-${nonce}-${salt}`;
+        const hmac = crypto.createHmac('sha256', combinedSeed);
+        const hmacHex = hmac.digest('hex');
+        const decimalValue = (parseInt(hmacHex, 32) % 10001 / 100)
+        const randomValue = (decimalValue % maxRange).toFixed(2);
+        let row = { point: randomValue, server_seed: serverSeed, client_seed: clientSeed, hash, nonce }
+        return row;
     }
     // handleDiceBet(user_id,data, generateRandomNumber(data.server_seed,data.client_seed, data.hash_seed,data.nonce ))
     res.status(200).json(generateRandomNumber(data.server_seed, data.client_seed, data.hash_seed, data.nonce))
-  })
+})
 
-  const getGameHistory = (async (req, res) => {
+const getGameHistory = (async (req, res) => {
     const { user_id } = req.id
     try {
-      let plinkoGameHistory = await Plinko.find({ user_id });
-      res.status(200).json(plinkoGameHistory);
+        let plinkoGameHistory = await Plinko.find({ user_id });
+        res.status(200).json(plinkoGameHistory);
     } catch (err) {
-      res.status(501).json({ message: err.message });
+        res.status(501).json({ message: err.message });
     }
-  })
+})
+
+const handlePlinkoGameEncryption = (async (req, res) => {
+    const { user_id } = req.id
+    try {
+        let result = await PlinkoEncription.find({ user_id })
+        res.status(200).json(result)
+    }
+    catch (err) {
+        console.log(err)
+    }
+})
 
 
 
-module.exports = { handlePlinkoBet, HandlePlayPlinko, getGameHistory , InitializePlinkoGame }
+module.exports = { handlePlinkoBet, HandlePlayPlinko, getGameHistory, InitializePlinkoGame, handlePlinkoGameEncryption }
