@@ -34,6 +34,14 @@ const PNL = (rows, score) => {
     }
 }
 
+const generatePinkoScore = (rows) => {
+    // Number of rows in the Plinko board
+    const rows = row;
+    // For simplicity, am using random score based on the number of rows
+    // Randomly choose a row
+    const score = Math.floor(Math.random() * rows) + 1;
+    return  score ;
+    }
 const updateUserWallet = (async (data) => {
     if (data.bet_token_name === "PPF") {
         await PPFWallet.updateOne({ user_id: data.user_id }, { balance: data.current_amount });
@@ -52,15 +60,7 @@ const CreateBetGame = (async (data) => {
     }
 })
 
-const InitializeDiceGame = async (rows, user_id) => {
-    const generatePinkoScore = (rows) => {
-    // Number of rows in the Plinko board
-    const rows = row;
-    // For simplicity, am using random score based on the number of rows
-    // Randomly choose a row
-    const score = Math.floor(Math.random() * rows) + 1;
-    return  score ;
-    }
+const InitializePlinkoGame = async (rows, user_id) => {
     const salt = 'Qede00000000000w00wd001bw4dc6a1e86083f95500b096231436e9b25cbdd0075c4';
 
     const handleHashGeneration = (() => {
@@ -105,7 +105,7 @@ const handlePlinkoBet = (async (req, res) => {
             current_amount = parseFloat(wallet[0].balance) - parseFloat(data.bet_amount)
         }
         //Get Score and PNL
-        // const score = InitializeDiceGame(data.rows)
+        const score = generatePlinkoScore(data.rows)
         const pnl = PNL(`row${data.rows}${data.risk}`, score)
 
         let bet = {
@@ -117,7 +117,6 @@ const handlePlinkoBet = (async (req, res) => {
             token_img: data.bet_token_img,
             bet_id: Math.floor(Math.random() * 10000000) + 72000000,
             game_id: data.game_id,
-            // score: score,
             risk: data.risk,
             pnl: pnl,
             server_seed: data.server_seed,
@@ -171,4 +170,4 @@ const HandlePlayPlinko = ((req, res) => {
 
 
 
-module.exports = { handlePlinkoBet, HandlePlayPlinko, getGameHistory  }
+module.exports = { handlePlinkoBet, HandlePlayPlinko, getGameHistory , InitializePlinkoGame }
