@@ -27,10 +27,6 @@ const Userschema = new schema(
       type: String,
       required: true,
     },
-    game_id: {
-      type: Number,
-      required: true,
-    },
     bet_id: {
       type: Number,
       required: true,
