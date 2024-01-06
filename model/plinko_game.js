@@ -18,10 +18,6 @@ const PlinkoSchema = new schema({
         type: Number,
         required: true,
     },
-    score: {
-        type: String,
-        required: true,
-    },
     risk: {
         type: String,
         required: true,
