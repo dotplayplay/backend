@@ -105,7 +105,7 @@ const handlePlinkoBet = (async (req, res) => {
             current_amount = parseFloat(wallet[0].balance) - parseFloat(data.bet_amount)
         }
         //Get Score and PNL
-        const score = generatePlinkoScore(data.rows)
+        const score = generatePinkoScore(data.rows)
         const pnl = PNL(`row${data.rows}${data.risk}`, score)
 
         let bet = {
