@@ -899,7 +899,7 @@ function generateHashes(seed, numberOfHashes) {
             hash: currentHash,
           },
         ]);
-        console.log("generated hash => ", currentHash);
+        console.log("generated hash => ", currentHash, numberOfHashes);
         setTimeout(createHash, 50);
       } else {
         console.log("Generated hashes completed");
