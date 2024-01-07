@@ -3,7 +3,6 @@ const schema = mongoose.Schema
 const CounterSchema = new schema({
     _id: { type: String, required: true },
     seq: { type: Number, default: 0 },
-    seqb: { type: String, default: BigInt(15000).toString() }
 });
 const Counter = mongoose.model('BetCounter', CounterSchema);
 const CrashBetSchema = new schema({
@@ -45,7 +44,7 @@ const CrashBetSchema = new schema({
 CrashBetSchema.pre('save', async function (next) {
     try {
         const counter = await Counter.findByIdAndUpdate({ _id: 'bet_id' }, { $inc: { seq: 1 } }, { new: true, upsert: true });
-        this.bet_id = (BigInt(counter.seqb) + BigInt(counter.seq)).toString();
+        this.bet_id = (BigInt("1500") + BigInt(counter.seq)).toString();
         next();
     } catch (error) {
         return next(error);

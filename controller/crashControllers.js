@@ -259,6 +259,7 @@ class CrashGameEngine {
     let rate = this.game.currentRate;
     // console.log('Game loop => %dx', rate)
     if (rate >= this.game.crash_point) {
+      console.log("Crashed > ", rate)
       rate = this.game.crash_point;
       //crashed
       const session = await mongoose.startSession();
@@ -276,8 +277,6 @@ class CrashGameEngine {
         });
 
         await this.handlePayouts(rate, session);
-
-        session.commitTransaction();
 
         this.io.to("crash-game").emit("mybet", {
           bets: [
@@ -334,6 +333,7 @@ class CrashGameEngine {
           await waitFor(NEXT_GAME_DELAY - timeDiff);
         await this.run();
       } catch (error) {
+        console.log("Error in game end ", error)
         await session.abortTransaction();
       } finally {
         await session.endSession();
@@ -385,7 +385,7 @@ class CrashGameEngine {
 
       const normalBets = this.getBetPromises(
         this.game.bets,
-        (bet) => this.game.escapes.find((e) => e.userId === bet.userId).rate || rate,
+        (bet) => this.game.escapes.find((e) => e.userId === bet.userId)?.rate || rate,
         (bet) =>
           this.game.escapes.findIndex((e) => e.userId === bet.userId) !== -1,
         "Classic",
@@ -428,6 +428,9 @@ class CrashGameEngine {
           }
         ).session(session),
       ]);
+
+      await session.commitTransaction();
+      // console.log("Bets for gameID => ", this.game.gameId, this.game.bets, this.game.xBets);
       // Release lock. We dont have to do this since its a one off event. Might review this later
       await CrashGameLock.deleteOne({ game_id: this.game.gameId });
     } else {
@@ -438,11 +441,13 @@ class CrashGameEngine {
   getBetPromises(bets, getPayout, wonCallback, bet_type, session) {
     const betPromisses = [];
     for (let i = 0; i < bets.length; i++) {
+      
       const bet = bets[i];
       // console.log("Bet ", bet)
       const rate = getPayout(bet);
       const won = wonCallback(bet);
       const balanceUpdate = won ? bet.bet * rate - bet.bet : -bet.bet;
+      // console.log("Updating user wallet balance > ", balanceUpdate, bet, won)
       if (bet.currencyName !== "PPF") {
         handleWagerIncrease({
           bet_amount: bet.bet,
@@ -450,6 +455,7 @@ class CrashGameEngine {
           token: bet.currencyName,
         });
       }
+
 
       if (bet.currencyName === "USDT") {
         betPromisses.push(
@@ -513,14 +519,16 @@ class CrashGameEngine {
   async run() {
     try {
       clearTimeout(this.loopTimeout);
-      let game = await CrashGameModel.findOne({ concluded: false });
+      let game = await CrashGameModel.findOne({ concluded: false }).sort({
+        _id: -1,
+      });
       if (!game) {
-        const { hash } = await CrashGameHash.findOneAndUpdate(
+        const { hash } = (await CrashGameHash.findOneAndUpdate(
           { used: false },
           { used: true }
         ).sort({
           _id: -1,
-        });
+        })) || {};
         if (!hash) {
           throw new Error("No game hash available");
         }
@@ -587,7 +595,7 @@ class CrashGameEngine {
           prepareTime: this.game.prepareTime,
         });
         setTimeout(async () => {
-          // console.log("Game stating in ", this.game.rate, this.game.gameId);
+          // console.log("Game starting in %d with crashPoint %dx", this.game.gameId, this.game.crash_point);
           await CrashGameModel.updateOne(
             { game_id: this.game.gameId },
             { status: 2 }
@@ -599,165 +607,14 @@ class CrashGameEngine {
           });
           this.gameLoop();
         }, this.game.prepareTime);
-      } else this.gameLoop();
+      } else {
+        console.log("Continuing existing game %d at crash point %dx ", this.game.gameId, this.game.crash_point)
+        this.gameLoop()};
     } catch (err) {
       console.log("Error in crash game", err);
     }
   }
 }
-
-//
-
-// const updateUserWallet = (async(data)=>{
-//   if(data.bet_token_name === "PPF"){
-//     await PPFWallet.updateOne({ user_id:data.user_id }, {balance: data.current_amount});
-//   }
-//  if(data.bet_token_name === "USDT"){
-//     await USDT_wallet.updateOne({ user_id:data.user_id }, {balance: data.current_amount});
-//   }
-// })
-
-// const CraeatBetGame = (async(data)=>{
-//   try {
-//   await crash_game.create(data)
-
-// } catch (err) {
-//   console.error(err);
-// }
-// })
-
-// const handleSaveBills = (async(data)=>{
-//  await Bills.create(data)
-// })
-
-// let hidden = false
-// const handleCrashBet = (async(req, res)=>{
-//   try {
-//   const {user_id} = req.id
-//   const {data} = req.body
-//   let sent_data = data
-//   let game_type = "Classic"
-//   if(sent_data.bet_token_name !== "PPF"){
-//     handleWagerIncrease(user_id, sent_data.bet_amount, sent_data.bet_token_img)
-//   }
-//   let current_amount;
-//   if(sent_data.bet_token_name === "PPF"){
-//     let skjk = await PPFWallet.find({user_id})
-//     current_amount = parseFloat(skjk[0].balance) - parseFloat(sent_data.bet_amount)
-//   }
-
-//   if(sent_data.bet_token_name === "USDT"){
-//     let skjk = await USDT_wallet.find({user_id})
-//     current_amount = parseFloat(skjk[0].balance) - parseFloat(sent_data.bet_amount)
-//   }
-
-//   let bet = {
-//     user_id: user_id,
-//     username: data.username,
-//     profile_img: data.user_img,
-//     bet_amount: data.bet_amount,
-//     token: data.bet_token_name,
-//     token_img:data.bet_token_img,
-//     bet_id: Math.floor(Math.random()*10000000)+ 72000000,
-//     game_id: data.game_id,
-//     cashout: 0,
-//     auto_cashout: data.auto_cashout,
-//     profit: 0,
-//     game_hash: "-",
-//     hidden_from_public:hidden,
-//     game_type: game_type,
-//     user_status: true,
-//     game_status: true,
-//     time: data.time,
-//     payout: 0.0000,
-//     has_won : 0 ,
-//     chance: data.chance
-//   }
-//     CraeatBetGame(bet)
-//     updateUserWallet({ ...sent_data, user_id, current_amount})
-//     res.status(200).json({...bet, current_amount })
-//   } catch (err) {
-//     res.status(501).json({ message: err.message });
-//   }
-// })
-
-// const handleUpdateCrashState = async(event)=>{
-//   await crash_game.updateOne({ user_id:event.user_id, game_id:event.game_id },
-//   {cashout: event.crash,
-//     profit:event.profit,
-//     user_status:false ,
-//     has_won: true
-//    });
-// }
-
-// const handleCashout = (async(req, res)=>{
-//   const {user_id} = req.id
-//   const {data} = req.body
-//   let sent_data = data
-//   try {
-//     let current_amount;
-//     if(sent_data.bet_token_name === "PPF"){
-//       let skjk = await PPFWallet.find({user_id})
-//       current_amount = parseFloat(skjk[0].balance) + parseFloat(sent_data.cashout_at)
-//     }
-
-//     if(sent_data.bet_token_name === "USDT"){
-//       let skjk = await USDT_wallet.find({user_id})
-//       current_amount = parseFloat(skjk[0].balance) + parseFloat(sent_data.cashout_at)
-//     }
-
-//   //   let bil = {
-//   //     user_id: user_id,
-//   //     transaction_type: "Crash normal",
-//   //     token_img:data.bet_token_img,
-//   //     token_name:data.bet_token_name,
-//   //     balance: current_amount,
-//   //     trx_amount:data.cashout_at ,
-//   //     datetime: currentTime,
-//   //     status: true,
-//   //     bill_id: data.game_id
-//   //  }
-
-//   //  handleSaveBills(bil)
-
-//     handleUpdateCrashState({...sent_data, user_id, current_amount:current_amount })
-//     updateUserWallet({current_amount, ...sent_data, user_id})
-//       res.status(200).json({...sent_data, balance:current_amount})
-//   } catch (err) {
-//     res.status(501).json({ message: err.message });
-//   }
-// })
-
-// const handleRedTrendball = (async(req, res)=>{
-//   const {user_id} = req.id
-//   const {data} = req.body
-//   let sent_data = data
-
-//   if(sent_data.bet_token_name !== "PPF"){
-//     //TODO: check if bet_token_img exist
-//     handleWagerIncrease({user_id, bet_amount: sent_data.bet_amount, token: sent_data.bet_token_img })
-//   }
-
-//   try {
-//     let current_amount;
-//     if(sent_data.bet_token_name === "PPF"){
-//       let skjk = await PPFWallet.find({user_id})
-//       current_amount = parseFloat(skjk[0].balance) - parseFloat(sent_data.bet_amount)
-//     }
-
-//     if(sent_data.bet_token_name === "USDT"){
-//       let skjk = await USDT_wallet.find({user_id})
-//       current_amount = parseFloat(skjk[0].balance) - parseFloat(sent_data.bet_amount)
-//     }
-//     CraeatBetGame({...sent_data, hidden, user_id})
-//     updateUserWallet({ ...sent_data, user_id, current_amount})
-//     res.status(200).json({...sent_data,current_amount})
-//   } catch (err) {
-//     res.status(501).json({ message: err.message });
-//     console.log(err)
-//   }
-// })
-
 const handleCrashHistory = async (req, res) => {
   try {
     const data = await CrashGameModel.find({ concluded: true })
@@ -917,7 +774,7 @@ const resetCrashDB = async () => {
     CrashGameModel.deleteMany({}),
     CrashGameHash.deleteMany({}),
   ]);
-  await generateHashes(input, 10_000);
+  await generateHashes(input, 1_000);
   console.log("Reset complete")
 }
 

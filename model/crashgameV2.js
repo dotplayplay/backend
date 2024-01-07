@@ -49,7 +49,6 @@ const EscapeSchema = new schema({
 const CounterSchema = new schema({
   _id: { type: String, required: true },
   seq: { type: Number, default: 0 },
-  seqb: { type: String, default: BigInt(10000).toString() },
 });
 const Counter = mongoose.model("CrashGameCounter", CounterSchema);
 const CrashGameSchema = new schema(
@@ -96,7 +95,7 @@ CrashGameSchema.pre("save", async function (next) {
       { $inc: { seq: 1 } },
       { new: true, upsert: true }
     );
-    this.game_id = (BigInt(counter.seqb) + BigInt(counter.seq)).toString();
+    this.game_id = (BigInt("1000") + BigInt(counter.seq)).toString();
     next();
   } catch (error) {
     return next(error);

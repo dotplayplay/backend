@@ -19,15 +19,15 @@ let maxRange = 100
 async function createsocket(httpServer) {
     const io = new Server(httpServer, {
         cors: {
-            origin: "https://dotplayplay.netlify.app"
-            // origin: "http://localhost:5173"
+            // origin: "https://dotplayplay.netlify.app"
+            origin: "http://localhost:5173"
         }
     });
 
     //Crash Game
-    // new CrashGameEngine(io).run().catch(err => {
-    //     console.log("Crash Game failed to start ::> ", err);
-    // });
+    new CrashGameEngine(io).run().catch(err => {
+        console.log("Crash Game failed to start ::> ", err);
+    });
 
     // let fghhs = await DiceGame.find()
     let activeplayers = []
