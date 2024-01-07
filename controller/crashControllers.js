@@ -511,99 +511,98 @@ class CrashGameEngine {
   }
 
   async run() {
-    return Promise.resolve();
-    // try {
-    //   clearTimeout(this.loopTimeout);
-    //   let game = await CrashGameModel.findOne({ concluded: false });
-    //   if (!game) {
-    //     const { hash } = await CrashGameHash.findOneAndUpdate(
-    //       { used: false },
-    //       { used: true }
-    //     ).sort({
-    //       _id: -1,
-    //     });
-    //     if (!hash) {
-    //       throw new Error("No game hash available");
-    //     }
-    //     [game] = await CrashGameModel.create([
-    //       {
-    //         hash,
-    //         crash_point: calculateCrashPoint(hash),
-    //       },
-    //     ]);
-    //   }
-    //   this.game = new CrashGame();
-    //   this.game.status = game.status;
-    //   this.game.gameId = game.game_id;
-    //   this.game.crash_point = game.crash_point;
-    //   this.game.hash = game.hash;
-    //   this.game.startTime = game.start.getTime();
-    //   this.game.bets = game.bets
-    //     .filter((b) => b.bet_type === 0)
-    //     .map((b) => ({
-    //       userId: b.user_id,
-    //       name: b.name,
-    //       avatar: b.avatar,
-    //       hidden: b.hidden,
-    //       currencyName: b.token,
-    //       currencyImage: b.token_img,
-    //       bet: b.bet,
-    //       betTime: b.bet_time,
-    //       autoEscapeRate: b.auto_escape,
-    //     }));
-    //   this.game.xBets = game.bets
-    //     .filter((b) => b.bet_type !== 0)
-    //     .map((b) => ({
-    //       userId: b.user_id,
-    //       name: b.name,
-    //       avatar: b.avatar,
-    //       hidden: b.hidden,
-    //       currencyName: b.token,
-    //       currencyImage: b.token_img,
-    //       bet: b.bet,
-    //       betTime: b.bet_time,
-    //       x: b.bet_type,
-    //     }));
-    //   this.game.escapes = game.bets
-    //     .filter(
-    //       (b) =>
-    //         b.bet_type === 0 &&
-    //         game.escapes.findIndex((e) => e.user_id === b.user_id) !== -1
-    //     )
-    //     .map((b) => ({
-    //       userId: b.user_id,
-    //       name: b.name,
-    //       avatar: b.avatar,
-    //       hidden: b.hidden,
-    //       currencyName: b.token,
-    //       currencyImage: b.token_img,
-    //       bet: b.bet,
-    //       betTime: b.bet_time,
-    //       rate: game.escapes.find((e) => e.user_id === b.user_id)?.rate || 0,
-    //     }));
-    //   if (this.game.status === 1) {
-    //     this.io.to("crash-game").emit("pr", {
-    //       gameId: this.game.gameId,
-    //       startTime: Date.now() + this.game.prepareTime,
-    //       prepareTime: this.game.prepareTime,
-    //     });
-    //     setTimeout(async () => {
-    //       // console.log("Game stating in ", this.game.rate, this.game.gameId);
-    //       await CrashGameModel.updateOne(
-    //         { game_id: this.game.gameId },
-    //         { status: 2 }
-    //       );
-    //       this.game.status = 2;
-    //       this.game.startTime = Date.now();
-    //       this.io.to("crash-game").emit("bg", {
-    //         betUserIds: this.game.bets.map((b) => b.userId),
-    //       });
-    //       this.gameLoop();
-    //     }, this.game.prepareTime);
-    //   } else this.gameLoop();
-    // } catch (err) {
-    //   console.log("Error in crash game", err);
-    // }
+    try {
+      clearTimeout(this.loopTimeout);
+      let game = await CrashGameModel.findOne({ concluded: false });
+      if (!game) {
+        const { hash } = await CrashGameHash.findOneAndUpdate(
+          { used: false },
+          { used: true }
+        ).sort({
+          _id: -1,
+        });
+        if (!hash) {
+          throw new Error("No game hash available");
+        }
+        [game] = await CrashGameModel.create([
+          {
+            hash,
+            crash_point: calculateCrashPoint(hash),
+          },
+        ]);
+      }
+      this.game = new CrashGame();
+      this.game.status = game.status;
+      this.game.gameId = game.game_id;
+      this.game.crash_point = game.crash_point;
+      this.game.hash = game.hash;
+      this.game.startTime = game.start.getTime();
+      this.game.bets = game.bets
+        .filter((b) => b.bet_type === 0)
+        .map((b) => ({
+          userId: b.user_id,
+          name: b.name,
+          avatar: b.avatar,
+          hidden: b.hidden,
+          currencyName: b.token,
+          currencyImage: b.token_img,
+          bet: b.bet,
+          betTime: b.bet_time,
+          autoEscapeRate: b.auto_escape,
+        }));
+      this.game.xBets = game.bets
+        .filter((b) => b.bet_type !== 0)
+        .map((b) => ({
+          userId: b.user_id,
+          name: b.name,
+          avatar: b.avatar,
+          hidden: b.hidden,
+          currencyName: b.token,
+          currencyImage: b.token_img,
+          bet: b.bet,
+          betTime: b.bet_time,
+          x: b.bet_type,
+        }));
+      this.game.escapes = game.bets
+        .filter(
+          (b) =>
+            b.bet_type === 0 &&
+            game.escapes.findIndex((e) => e.user_id === b.user_id) !== -1
+        )
+        .map((b) => ({
+          userId: b.user_id,
+          name: b.name,
+          avatar: b.avatar,
+          hidden: b.hidden,
+          currencyName: b.token,
+          currencyImage: b.token_img,
+          bet: b.bet,
+          betTime: b.bet_time,
+          rate: game.escapes.find((e) => e.user_id === b.user_id)?.rate || 0,
+        }));
+      if (this.game.status === 1) {
+        this.io.to("crash-game").emit("pr", {
+          gameId: this.game.gameId,
+          startTime: Date.now() + this.game.prepareTime,
+          prepareTime: this.game.prepareTime,
+        });
+        setTimeout(async () => {
+          // console.log("Game stating in ", this.game.rate, this.game.gameId);
+          await CrashGameModel.updateOne(
+            { game_id: this.game.gameId },
+            { status: 2 }
+          );
+          this.game.status = 2;
+          this.game.startTime = Date.now();
+          this.io.to("crash-game").emit("bg", {
+            betUserIds: this.game.bets.map((b) => b.userId),
+          });
+          this.gameLoop();
+        }, this.game.prepareTime);
+      } else this.gameLoop();
+    } catch (err) {
+      console.log("Error in crash game", err);
+    }
   }
 }
 

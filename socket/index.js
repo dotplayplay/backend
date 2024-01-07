@@ -25,9 +25,9 @@ async function createsocket(httpServer) {
     });
 
     //Crash Game
-    new CrashGameEngine(io).run().catch(err => {
-        console.log("Crash Game failed to start ::> ", err);
-    });
+    // new CrashGameEngine(io).run().catch(err => {
+    //     console.log("Crash Game failed to start ::> ", err);
+    // });
 
     // let fghhs = await DiceGame.find()
     let activeplayers = []
