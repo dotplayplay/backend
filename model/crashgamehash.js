@@ -1,8 +1,8 @@
 const mongoose = require("mongoose");
 const schema = mongoose.Schema
 
-const Hashschema = new schema({
-    game_hash: {
+const HashSchema = new schema({
+    hash: {
         type: String,
         required: true,
     },
@@ -12,4 +12,4 @@ const Hashschema = new schema({
     }
 }, { timestamp : true})
 
-module.exports = mongoose.model('CrashGameHash', Hashschema)
+module.exports = mongoose.model('CrashGameHash', HashSchema)
