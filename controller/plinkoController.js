@@ -38,7 +38,7 @@ const PNL = (rows, score) => {
 
 const generatePinkoScore = (rows) => {
     // Number of rows in the Plinko board
-    const rows = row;
+    // const rows = rows;
     // For simplicity, am using random score based on the number of rows
     // Randomly choose a row
     const score = Math.floor(Math.random() * rows) + 1;

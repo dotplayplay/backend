@@ -7,7 +7,7 @@ const { handleMonthlyCashback } = require("./monthlycashback")
 const { handleAffiliateRewards, handleAffiliateCommission, handleProgressPercentage } = require("../profile_mangement/affilliate-system")
 const { unlockedPPD } = require("./ppd_unlock")
 const transaction = require("../model/transaction")
-
+// TODO: await all promises
 const handleWagerIncrease = (async (event) => {
         let data = await CashBackDB.find({ user_id: event.user_id })
         let prev_wager = parseFloat(data[0].total_wagered)
