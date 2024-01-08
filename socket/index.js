@@ -181,6 +181,16 @@ async function createsocket(httpServer) {
     //     io.emit("active-bets-crash", active_crash)
     // })
 
+    let active_keno_games = [];
+    const handleKenoActiveBet = (event) => {
+    if (active_keno_games.length > 30) {
+        active_keno_games.shift();
+        active_keno_games.push(event);
+    } else {
+      active_keno_games.push(event);
+    }
+    io.emit("active-bets-keno", active_keno_games);
+    };
 
     let newMessage = await Chats.find()
     const handleNewChatMessages = (async (data) => {
@@ -221,6 +231,15 @@ async function createsocket(httpServer) {
             const latestBet = latestBetUpdate(data, "Crash Game")
             io.emit("latest-bet", latestBet)
         })
+
+        //KENO GAME
+        socket.on("keno-activebets", (data) => {
+            //   handleCrashActiveBet(data);
+            handleKenoActiveBet(data);
+            //Get New Bet and Update Latest Bet UI
+            const latestBet = latestBetUpdate(data, "Keno Game");
+            io.emit("latest-bet", latestBet);
+          });
 
         //HILO GAME
         socket.on("hilo-init", data => {
