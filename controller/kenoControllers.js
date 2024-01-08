@@ -3,12 +3,9 @@ const kenoEncrypt = require("../model/keno_encrypt");
 const PPFWallet = require("../model/PPF-wallet");
 const USDTWallet = require("../model/Usdt-wallet");
 const keno_game = require("../model/keno_game");
-const { format } = require("date-fns");
-const currentTime = format(new Date(), "yyyy-MM-dd HH:mm:ss");
 const Profile = require("../model/Profile");
 const salt = "000000000000000000076973be291d219d283d4af9135601ff37df46491cca7e";
 
-// Random start function
 const kenoStart = async (req, res) => {
   try {
     res.status(200).json({ msg: "hello" });
@@ -17,7 +14,6 @@ const kenoStart = async (req, res) => {
   }
 };
 
-// Function to get winning numbers and verify result
 function getResult(hash) {
   const allNums = [
     1, 30, 11, 40, 2, 29, 12, 39, 3, 28, 13, 38, 4, 27, 14, 37, 5, 26, 15, 36,
@@ -30,7 +26,6 @@ function getResult(hash) {
   return finalNums.slice(0, 10).map((m) => m.num.num);
 }
 
-// create winning numbers for getResult()
 function createNums(allNums, hash) {
   let nums = [];
   let h = crypto.createHash("SHA256").update(hash).digest("hex");
@@ -50,16 +45,16 @@ function createNums(allNums, hash) {
   return nums;
 }
 
-// function main(serverSeed, clientSeed, nonce) {
-//   let resultArr = [clientSeed, nonce];
-//   let hmacSha256Result = crypto
-//     .createHmac("sha256", serverSeed)
-//     .update(resultArr.join(":"))
-//     .digest("hex");
-//   let resultList = getResult(hmacSha256Result);
-//   return resultList;
-// }
-// Update ser wallet function for handlingCashout
+function main(serverSeed, clientSeed, nonce) {
+  let resultArr = [clientSeed, nonce];
+  let hmacSha256Result = crypto
+    .createHmac("sha256", serverSeed)
+    .update(resultArr.join(":"))
+    .digest("hex");
+  let resultList = getResult(hmacSha256Result);
+  return resultList;
+}
+
 const updateUserWallet = async (data) => {
   if (data.coin_name === "PPF") {
     await PPFWallet.updateOne(
@@ -75,24 +70,10 @@ const updateUserWallet = async (data) => {
   }
 };
 
-// update state of the game and create list of games played
 const updateGameState = async (data) => {
   const { user_id } = data;
   const profileData = await Profile.findOne({ user_id });
-  // console.log(profileData);
-  // console.log("++++++++++++++PROFILE!+++++++++++++++");
-  const encryptData = await kenoEncrypt.findOne({ user_id });
-  // console.log(encryptData);
-  // console.log("++++++++++++ENCYRPT++++++++++++++++++");
-  let payout;
-  let profit;
-  if (data.has_won == true) {
-    payout = data.amount * data.profit;
-    profit = payout;
-  } else {
-    payout = 0;
-    profit = 0;
-  }
+  const encryptData = kenoEncrypt.findOne({ user_id });
   await keno_game.create({
     user_id: user_id,
     username: profileData.username,
@@ -102,17 +83,17 @@ const updateGameState = async (data) => {
     token: data.bet_token_name,
     bet_id: data.bet_id,
     game_nonce: encryptData.nonce,
-    payout: payout,
+    payout: data.amount * data.profit,
     server_seed: encryptData.server_seed,
     client_seed: encryptData.client_seed,
     hidden_from_public: data.hidden || false,
     active: false,
-    profit: profit,
+    profit: data.profit,
+    cashout: data.cashout,
     has_won: data.has_won,
   });
 };
 
-// handle cashout function whether game wins or loses
 const handleCashout = async (req, res) => {
   try {
     if (!req.id) {
@@ -120,19 +101,7 @@ const handleCashout = async (req, res) => {
       return;
     }
     const { user_id } = req.id;
-    const data = req.body;
-    if (
-      !data.bet_id ||
-      !data.amount ||
-      data.profit == undefined ||
-      data.has_won == undefined
-    ) {
-      res.status(501).json({
-        message:
-          "please make sure betId, amount, profit and has_won was set properly",
-      });
-      return;
-    }
+    let { data } = req.body;
     let prev_bal;
     if (data.bet_token_name === "USDT") {
       prev_bal = await USDTWallet.find({ user_id });
@@ -140,27 +109,12 @@ const handleCashout = async (req, res) => {
     if (data.bet_token_name === "PPF") {
       prev_bal = await PPFWallet.find({ user_id });
     }
-    let payload;
-    let balance;
-    if (data.has_won) {
-      const profit = data.profit * data.amount;
-      balance = prev_bal[0].balance + profit;
-      payload = {
-        is_active: true,
-        balance: balance,
-        // balance: 20000,
-        coin_image: data.bet_token_img,
-        coin_name: data.bet_token_name,
-      };
-    } else {
-      balance = prev_bal[0].balance - data.amount;
-      payload = {
-        is_active: true,
-        balance: balance,
-        coin_image: data.bet_token_img,
-        coin_name: data.bet_token_name,
-      };
-    }
+    let payload = {
+      is_active: true,
+      balance: prev_bal[0].balance + data.profit,
+      coin_image: data.bet_token_img,
+      coin_name: data.bet_token_name,
+    };
     await updateGameState({ ...data, user_id });
     updateUserWallet({ ...payload, user_id });
     let kenoGameHistory = await keno_game.find({
@@ -173,45 +127,39 @@ const handleCashout = async (req, res) => {
   }
 };
 
-// set new User seeds for keno games
 const seedSettings = async (req, res) => {
   if (!req.id) {
     res.status(501).json({ message: "user not logged in" });
     return;
   }
-
   const { user_id } = req.id;
-  let { seed } = req.body;
-  if (!seed) {
-    res.status(501).json({ message: "seed not sent" });
-    return;
-  }
+  let { data } = req.body;
   const handleHashGeneration = () => {
     const serverSeed = crypto.randomBytes(32).toString("hex");
-    const clientSeed = seed;
+    const clientSeed = data;
     const combinedSeed = serverSeed + salt + clientSeed;
     const hash = crypto.createHash("sha256").update(combinedSeed).digest("hex");
     return hash;
   };
   try {
-    let client_seed = seed;
+    let client_seed = data;
     let server_seed = handleHashGeneration();
+    nonce = 0;
     await kenoEncrypt.updateOne(
       { user_id },
       {
         server_seed: server_seed,
         client_seed: client_seed,
-        nonce: 0,
         updated_at: new Date(),
       }
     );
-    res.status(200).json({ msg: "Updated seed sucessfully" });
+    console.log(client_seed);
+    res.status(200).json("Updated seed sucessfully");
   } catch (err) {
     res.status(501).json({ message: err });
   }
 };
 
-// Initialize new settings for a new user for keno games
 const InitializeKenoGame = async (user_id) => {
   const characters =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -252,7 +200,6 @@ const InitializeKenoGame = async (user_id) => {
   await kenoEncrypt.create(data);
 };
 
-// get all user keno games history
 const getKenoGameHistory = async (req, res) => {
   if (!req.id) {
     res.status(501).json({ message: "user not logged in" });
@@ -260,14 +207,13 @@ const getKenoGameHistory = async (req, res) => {
   }
   const { user_id } = req.id;
   try {
-    let kenoGameHistory = await keno_game.find({ user_id });
+    let kenoGameHistory = await KenoGame.find({ user_id });
     res.status(200).json(kenoGameHistory);
   } catch (err) {
     res.status(501).json({ message: err.message });
   }
 };
 
-// get user settings and seeeds for keno games
 const handleKenoGameEncryption = async (req, res) => {
   if (!req.id) {
     res.status(501).json({ message: "user not logged in" });
@@ -283,7 +229,6 @@ const handleKenoGameEncryption = async (req, res) => {
   }
 };
 
-// verify game numbers with the hash from frontend
 const verifyHash = async (req, res) => {
   const body = req.body;
   const nums = getResult(body.hash);
@@ -306,31 +251,26 @@ const bet = async (req, res) => {
   } else {
     nonce = seedData.nonce;
   }
-  const handleHashGeneration = (client_seed, server_seed, nonce) => {
-    const serverSeed = server_seed;
-    const clientSeed = client_seed;
-    const combinedSeed = serverSeed + salt + clientSeed + nonce;
-    const hash = crypto.createHash("sha256").update(combinedSeed).digest("hex");
-    return hash;
-  };
-  const { client_seed, server_seed } = seedData;
-  const newHash = handleHashGeneration(client_seed, server_seed, nonce);
+  //update the user nonce
   await kenoEncrypt.findOneAndUpdate(
     { user_id },
     {
       nonce: nonce + 1,
-      hash_seed: newHash,
     }
   );
-  // const seedData2 = await kenoEncrypt.findOne({ user_id });
+  const { hash_seed } = seedData;
+  const nums = getResult(hash_seed);
 
-  // console.log(server_seed);
-  // console.log(client_seed);
-  // console.log(newHash);
-  const nums = getResult(newHash);
-
-  res.status(200).json({ nums });
+  res.status(200).json(nums);
 };
+
+// const hash = "game hash";
+// console.log(
+//   "result =>",
+//   keno(hash)
+//     .map((item) => item.num)
+//     .join(",")
+// );
 
 module.exports = {
   kenoStart,

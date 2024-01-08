@@ -59,6 +59,10 @@ const Userschema = new schema(
       type: Number,
       required: true,
     },
+    time: {
+      type: Date,
+      required: true,
+    },
   },
   { timestamp: true }
 );
