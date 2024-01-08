@@ -15,6 +15,7 @@ const { CreateAffiliate, CheckValidity } = require("./affiliateControllers")
 const { handleCreatePPDunlocked } = require("../profile_mangement/ppd_unlock")
 const { handleNewNewlyRegisteredCount } = require("../profile_mangement/cashbacks")
 const { InitializeMinesGame } = require("../controller/minesControllers")
+const { InitializeKenoGame } = require('../controller/kenoControllers')
 const { twoFactorAuth } = require("../utils/twoFactorAuth");
 const { twoFactorAuthVerify } = require('../utils/twoFactorAuthVerify');
 const { createNotify } = require('./notify');
@@ -50,6 +51,7 @@ const CreateAccount = (async (req, res) => {
             createPPD(user_id)
             createUsdt(user_id)
             InitializeDiceGame(user_id)
+            InitializeKenoGame(user_id)
             createCashbackTable(user_id)
             InitializeMinesGame(user_id)
             InitializePlinkoGame(user_id)
@@ -146,6 +148,7 @@ const Register = (async (req, res) => {
             createPPD(user_id)
             createUsdt(user_id)
             InitializeDiceGame(user_id)
+            InitializeKenoGame(user_id)
             InitializeMinesGame(user_id)
             createCashbackTable(user_id)
             CreateAffiliate(user_id)
