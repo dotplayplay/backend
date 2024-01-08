@@ -73,7 +73,7 @@ const updateUserWallet = async (data) => {
 const updateGameState = async (data) => {
   const { user_id } = data;
   const profileData = await Profile.findOne({ user_id });
-  const encryptData = kenoEncrypt.findOne({ user_id });
+  const encryptData = await kenoEncrypt.findOne({ user_id });
   await keno_game.create({
     user_id: user_id,
     username: profileData.username,
@@ -101,20 +101,33 @@ const handleCashout = async (req, res) => {
       return;
     }
     const { user_id } = req.id;
-    let { data } = req.body;
+    let data = req.body;
     let prev_bal;
+    let payload;
     if (data.bet_token_name === "USDT") {
       prev_bal = await USDTWallet.find({ user_id });
     }
     if (data.bet_token_name === "PPF") {
       prev_bal = await PPFWallet.find({ user_id });
     }
-    let payload = {
-      is_active: true,
-      balance: prev_bal[0].balance + data.profit,
-      coin_image: data.bet_token_img,
-      coin_name: data.bet_token_name,
-    };
+
+    if (data.has_won == true) {
+      let profit = data.profit * data.amount;
+      payload = {
+        is_active: true,
+        balance: prev_bal[0].balance + profit,
+        coin_image: data.bet_token_img,
+        coin_name: data.bet_token_name,
+      };
+    } else {
+      payload = {
+        is_active: true,
+        balance: prev_bal[0].balance - data.amount,
+        coin_image: data.bet_token_img,
+        coin_name: data.bet_token_name,
+      };
+    }
+
     await updateGameState({ ...data, user_id });
     updateUserWallet({ ...payload, user_id });
     let kenoGameHistory = await keno_game.find({
@@ -133,23 +146,25 @@ const seedSettings = async (req, res) => {
     return;
   }
   const { user_id } = req.id;
-  let { data } = req.body;
-  const handleHashGeneration = () => {
+  let { seed } = req.body;
+  const handleHashGeneration = (seed, nonce) => {
     const serverSeed = crypto.randomBytes(32).toString("hex");
-    const clientSeed = data;
-    const combinedSeed = serverSeed + salt + clientSeed;
+    const clientSeed = seed;
+    const combinedSeed = serverSeed + salt + clientSeed + nonce;
     const hash = crypto.createHash("sha256").update(combinedSeed).digest("hex");
-    return hash;
+    return { hash, serverSeed };
   };
   try {
-    let client_seed = data;
-    let server_seed = handleHashGeneration();
+    let client_seed = seed;
+    let server_seed = handleHashGeneration(seed, 0).serverSeed;
     nonce = 0;
     await kenoEncrypt.updateOne(
       { user_id },
       {
+        nonce: 0,
         server_seed: server_seed,
         client_seed: client_seed,
+        hash_seed: handleHashGeneration(seed, 0).hash,
         updated_at: new Date(),
       }
     );
@@ -207,7 +222,7 @@ const getKenoGameHistory = async (req, res) => {
   }
   const { user_id } = req.id;
   try {
-    let kenoGameHistory = await KenoGame.find({ user_id });
+    let kenoGameHistory = await keno_game.find({ user_id });
     res.status(200).json(kenoGameHistory);
   } catch (err) {
     res.status(501).json({ message: err.message });
@@ -249,19 +264,25 @@ const bet = async (req, res) => {
   if (!seedData.nonce) {
     nonce = 0;
   } else {
-    nonce = seedData.nonce;
+    nonce = seedData.nonce + 1;
   }
+  const combinedSeed =
+    seedData.server_seed + salt + seedData.client_seed + nonce;
+  const hash = crypto.createHash("sha256").update(combinedSeed).digest("hex");
   //update the user nonce
   await kenoEncrypt.findOneAndUpdate(
     { user_id },
     {
-      nonce: nonce + 1,
+      hash_seed: hash,
+      nonce: seedData.nonce + 1,
     }
   );
-  const { hash_seed } = seedData;
-  const nums = getResult(hash_seed);
 
-  res.status(200).json(nums);
+  const newData = await kenoEncrypt.findOne({ user_id });
+  // const { hash_seed } = seedData;
+  const nums = getResult(hash);
+
+  res.status(200).json({ nums, newData });
 };
 
 // const hash = "game hash";
