@@ -18,7 +18,6 @@ const { InitializeMinesGame } = require("../controller/minesControllers")
 const { twoFactorAuth } = require("../utils/twoFactorAuth");
 const { twoFactorAuthVerify } = require('../utils/twoFactorAuthVerify');
 const { createNotify } = require('./notify');
-const { InitializeKenoGame } = require("../controller/kenoControllers");
 const createToken = ((_id) => {
     return jwt.sign({ _id }, SECRET, { expiresIn: '4d' })
 })
@@ -53,7 +52,6 @@ const CreateAccount = (async (req, res) => {
             InitializeDiceGame(user_id)
             createCashbackTable(user_id)
             InitializeMinesGame(user_id)
-            InitializeKenoGame(user_id);
             InitializePlinkoGame(user_id)
             handleCreatePPDunlocked(user_id)
             CreateAffiliate(user_id)
@@ -149,7 +147,6 @@ const Register = (async (req, res) => {
             createUsdt(user_id)
             InitializeDiceGame(user_id)
             InitializeMinesGame(user_id)
-            InitializeKenoGame(user_id);
             createCashbackTable(user_id)
             CreateAffiliate(user_id)
             handleCreatePPDunlocked(user_id)
