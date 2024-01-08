@@ -8,6 +8,7 @@ const CrashBet = require("../model/crashbet");
 const CrashGameModel = require("../model/crashgameV2");
 const CrashGameLock = require("../model/crash_endgame_lock");
 const CrashGameHash = require("../model/crashgamehash");
+const GameScripts = require("../model/gamescript");
 const { handleWagerIncrease } = require("../profile_mangement/index");
 const crypto = require("crypto");
 const Bills = require("../model/bill");
@@ -259,7 +260,7 @@ class CrashGameEngine {
     let rate = this.game.currentRate;
     // console.log('Game loop => %dx', rate)
     if (rate >= this.game.crash_point) {
-      console.log("Crashed > ", rate)
+      console.log("Crashed > ", rate);
       rate = this.game.crash_point;
       //crashed
       const session = await mongoose.startSession();
@@ -333,7 +334,7 @@ class CrashGameEngine {
           await waitFor(NEXT_GAME_DELAY - timeDiff);
         await this.run();
       } catch (error) {
-        console.log("Error in game end ", error)
+        console.log("Error in game end ", error);
         await session.abortTransaction();
       } finally {
         await session.endSession();
@@ -342,7 +343,7 @@ class CrashGameEngine {
       const autoEscapes = this.game.bets.filter(
         (b) => !!b.autoEscapeRate && rate >= b.autoEscapeRate && !b.escaped
       );
-      autoEscapes.forEach(b => this.handleEscape(b, b.autoEscapeRate));
+      autoEscapes.forEach((b) => this.handleEscape(b, b.autoEscapeRate));
       this.io.to("crash-game").emit("pg", { elapsed: calculateElapsed(rate) });
       this.loopTimeout = setTimeout(this.gameLoop.bind(this), 35);
     }
@@ -357,7 +358,7 @@ class CrashGameEngine {
     });
     this.game.escapes.push({
       ...bet,
-      rate
+      rate,
     });
   }
   async handlePayouts(rate, session) {
@@ -373,7 +374,8 @@ class CrashGameEngine {
       // add auto Escapes
       const autoEscapes = this.game.bets.filter(
         (b) =>
-          !!b.autoEscapeRate && rate >= b.autoEscapeRate &&
+          !!b.autoEscapeRate &&
+          rate >= b.autoEscapeRate &&
           this.game.escapes.findIndex((e) => e.userId === b.userId) === -1
       );
       this.game.escapes.push(
@@ -385,7 +387,8 @@ class CrashGameEngine {
 
       const normalBets = this.getBetPromises(
         this.game.bets,
-        (bet) => this.game.escapes.find((e) => e.userId === bet.userId)?.rate || rate,
+        (bet) =>
+          this.game.escapes.find((e) => e.userId === bet.userId)?.rate || rate,
         (bet) =>
           this.game.escapes.findIndex((e) => e.userId === bet.userId) !== -1,
         "Classic",
@@ -441,7 +444,6 @@ class CrashGameEngine {
   getBetPromises(bets, getPayout, wonCallback, bet_type, session) {
     const betPromisses = [];
     for (let i = 0; i < bets.length; i++) {
-      
       const bet = bets[i];
       // console.log("Bet ", bet)
       const rate = getPayout(bet);
@@ -455,7 +457,6 @@ class CrashGameEngine {
           token: bet.currencyName,
         });
       }
-
 
       if (bet.currencyName === "USDT") {
         betPromisses.push(
@@ -523,12 +524,13 @@ class CrashGameEngine {
         _id: -1,
       });
       if (!game) {
-        const { hash } = (await CrashGameHash.findOneAndUpdate(
-          { used: false },
-          { used: true }
-        ).sort({
-          _id: -1,
-        })) || {};
+        const { hash } =
+          (await CrashGameHash.findOneAndUpdate(
+            { used: false },
+            { used: true }
+          ).sort({
+            _id: -1,
+          })) || {};
         if (!hash) {
           throw new Error("No game hash available");
         }
@@ -595,7 +597,11 @@ class CrashGameEngine {
           prepareTime: this.game.prepareTime,
         });
         setTimeout(async () => {
-          // console.log("Game starting in %d with crashPoint %dx", this.game.gameId, this.game.crash_point);
+          console.log(
+            "Game starting in %d with crashPoint %dx",
+            this.game.gameId,
+            this.game.crash_point
+          );
           await CrashGameModel.updateOne(
             { game_id: this.game.gameId },
             { status: 2 }
@@ -608,8 +614,13 @@ class CrashGameEngine {
           this.gameLoop();
         }, this.game.prepareTime);
       } else {
-        console.log("Continuing existing game %d at crash point %dx ", this.game.gameId, this.game.crash_point)
-        this.gameLoop()};
+        console.log(
+          "Continuing existing game %d at crash point %dx ",
+          this.game.gameId,
+          this.game.crash_point
+        );
+        this.gameLoop();
+      }
     } catch (err) {
       console.log("Error in crash game", err);
     }
@@ -661,11 +672,11 @@ const handleBetDetails = async (req, res) => {
       currencyName: data.token,
       payout: data.payout,
       betType: data.bet_type,
-      crashPoint: game.payout,
-      gameHash: game.game_hash,
+      crashPoint: game.crash_point,
+      gameHash: game.hash,
       betAmount: parseFloat(data.bet),
       betTime: data.bet_time,
-      winAmount: data.won ? parseFloat(b.payout * data.bet) : 0,
+      winAmount: data.won ? parseFloat(data.payout * data.bet) : 0,
       profitAmount: data.won ? data.bet * data.payout - data.bet : 0,
     };
     res.status(200).json({ details });
@@ -690,6 +701,7 @@ const handleCrashGamePlayers = async (req, res) => {
           gameID: b.game_id,
           won: b.won,
           currencyName: b.token,
+          currencyImage: b.token_img,
           payout: b.payout,
           amount: b.won ? b.bet * b.payout - b.bet : 0,
         };
@@ -739,12 +751,219 @@ const handleMybets = async (req, res) => {
   }
 };
 
+const handleScriptAddOrUpdate = async (req, res) => {
+  try {
+    const { user_id } = req.id;
+    const { id: script_id, content, name } = req.body;
+    let script = await GameScripts.findOne({ user_id, script_id }).lean();
+    if (!script) {
+      [script] = await GameScripts.create([
+        { game_name: "crash", user_id, name, content },
+      ]);
+    }
+    res.status(200).json({
+      id: script.script_id,
+      name: script.name,
+      content: script.content,
+      userId: script.user_id,
+    });
+  } catch (error) {
+    console.log("Error", error);
+    res.status(500).json({ error });
+  }
+};
+const handleScriptDelete = async (req, res) => {
+  const { user_id } = req.id;
+  const { id: script_id } = req.body;
+  try {
+    await GameScripts.findOneAndDelete({ user_id, script_id });
+    res.status(200).json({ id: script_id });
+  } catch (error) {
+    console.log("Error", error);
+
+    res.status(500).json({ error });
+  }
+};
+const SYSTEM_SCRIPTS = {
+  Simple: `var config = {
+    bet: { label: "bet", value: currency.minAmount, type: "number" },
+    payout: { label: "payout", value: 2, type: "number" },
+  };
+  
+  function main() {
+    game.onBet = function() {
+      game.bet(config.bet.value, config.payout.value).then(function(payout) {
+        if (payout > 1) {
+          log.success("We won, payout " + payout + "X!");
+        } else {
+          log.error("We lost, payout " + payout + "X!");
+        }
+      });
+    };
+  }`,
+  Martingale: `var config = {
+    baseBet: { label: "base bet", value: currency.minAmount, type: "number" },
+    payout: { label: "payout", value: 2, type: "number" },
+    stop: { label: "stop if next bet >", value: 1e8, type: "number" },
+    onLoseTitle: { label: "On Lose", type: "title" },
+    onLoss: {
+      label: "",
+      value: "reset",
+      type: "radio",
+      options: [
+        { value: "reset", label: "Return to base bet" },
+        { value: "increase", label: "Increase bet by (loss multiplier)" },
+      ],
+    },
+    lossMultiplier: { label: "loss multiplier", value: 2, type: "number" },
+    onWinTitle: { label: "On Win", type: "title" },
+    onWin: {
+      label: "",
+      value: "reset",
+      type: "radio",
+      options: [
+        { value: "reset", label: "Return to base bet" },
+        { value: "increase", label: "Increase bet by (win multiplier)" },
+      ],
+    },
+    winMultiplier: { label: "win multiplier", value: 2, type: "number" },
+  };
+  function main() {
+    var currentBet = config.baseBet.value;
+    game.onBet = function () {
+      game.bet(currentBet, config.payout.value).then(function (payout) {
+        if (payout > 1) {
+          if (config.onWin.value === "reset") {
+            currentBet = config.baseBet.value;
+          } else {
+            currentBet *= config.winMultiplier.value;
+          }
+          log.success(
+            "We won, so next bet will be " +
+              currentBet +
+              " " +
+              currency.currencyName
+          );
+        } else {
+          if (config.onLoss.value === "reset") {
+            currentBet = config.baseBet.value;
+          } else {
+            currentBet *= config.lossMultiplier.value;
+          }
+          log.error(
+            "We lost, so next bet will be " +
+              currentBet +
+              " " +
+              currency.currencyName
+          );
+        }
+        if (currentBet > config.stop.value) {
+          log.error(
+            "Was about to bet " + currentBet + " which triggers the stop"
+          );
+          game.stop();
+        }
+      });
+    };
+  }`,
+  "Payout Martingale": `var config = {
+    bet: { label: "bet", value: currency.minAmount, type: "number" },
+    basePayout: { label: "base payout", value: 2, type: "number" },
+    stop: { value: 20, type: "number", label: "stop if next payout >" },
+    onLoseTitle: { label: "On Lose", type: "title" },
+    onLoss: {
+      label: "",
+      value: "reset",
+      type: "radio",
+      options: [
+        { value: "reset", label: "Return to base bet" },
+        { value: "increase", label: "Increase payout by (loss payout)" },
+      ],
+    },
+    lossAdd: { label: "loss payout +", value: 1, type: "number" },
+    onWinTitle: { label: "On Win", type: "title" },
+    onWin: {
+      label: "",
+      value: "reset",
+      type: "radio",
+      options: [
+        { value: "reset", label: "Return to base bet" },
+        { value: "increase", label: "Increase payout by (win payout)" },
+      ],
+    },
+    winAdd: { label: "win payout +", value: 1, type: "number" },
+  };
+  
+  function main() {
+    var currentPayout = config.basePayout.value;
+    game.onBet = function () {
+      game.bet(config.bet.value, currentPayout).then(function (payout) {
+        if (payout > 1) {
+          if (config.onWin.value === "reset") {
+            currentPayout = config.basePayout.value;
+          } else {
+            currentPayout += config.winAdd.value;
+          }
+          log.success("We won, so next payout will be " + currentPayout + " x");
+        } else {
+          if (config.onLoss.value === "reset") {
+            currentPayout = config.basePayout.value;
+          } else {
+            currentPayout += config.lossAdd.value;
+          }
+          log.error("We lost, so next payout will be " + currentPayout + " x");
+        }
+        if (currentPayout > config.stop.value) {
+          log.error(
+            "Was about to bet with payout " +
+              currentPayout +
+              " which triggers the stop"
+          );
+          game.stop();
+        }
+      });
+    };
+  }`,
+};
+async function addSystemScripts() {
+  let scripts = Object.keys(SYSTEM_SCRIPTS).map((k) => ({
+    user_id: 0,
+    name: k,
+    game_name: "crash",
+    content: SYSTEM_SCRIPTS[k],
+  }));
+  return GameScripts.create([...scripts]);
+}
+const handleScriptList = async (req, res) => {
+  const { userId: user_id } = req.body;
+  try {
+    let scripts = await GameScripts.find({
+      game_name: "crash",
+      user_id: { $in: [0, user_id || 0] },
+    }).lean();
+    if (!scripts.length) {
+      scripts = await addSystemScripts();
+    }
+    res.status(200).json({
+      scripts: scripts.map((s) => ({
+        id: s.script_id,
+        userId: s.user_id,
+        name: s.name,
+        game: "crash",
+        content: s.content,
+      })),
+    });
+  } catch (error) {
+    console.log("Error", error);
+    res.status(500).json({ error });
+  }
+};
 
 const input = `13d64828e4187853581fdaf22758c13843bbb91e518c67a44c6b55a1cc3e3a5a`;
 const numberOfTimesToHash = 300000;
 function generateHashes(seed, numberOfHashes) {
   let currentHash = seed;
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     const createHash = async () => {
       if (numberOfHashes-- > 0) {
         currentHash = crypto
@@ -764,19 +983,19 @@ function generateHashes(seed, numberOfHashes) {
       }
     };
     createHash();
-  })
+  });
 }
 // generateHashes(input, numberOfTimesToHash);
 
 const resetCrashDB = async () => {
-  await Promise.all([
-    CrashBet.deleteMany({}),
-    CrashGameModel.deleteMany({}),
-    CrashGameHash.deleteMany({}),
-  ]);
+  // await Promise.all([
+  //   CrashBet.deleteMany({}),
+  //   CrashGameModel.deleteMany({}),
+  //   CrashGameHash.deleteMany({}),
+  // ]);
   await generateHashes(input, 1_000);
-  console.log("Reset complete")
-}
+  console.log("Reset complete");
+};
 
 module.exports = {
   CrashGameEngine,
@@ -784,5 +1003,8 @@ module.exports = {
   handleMybets,
   handleCrashGamePlayers,
   handleBetDetails,
-  resetCrashDB
+  resetCrashDB,
+  handleScriptAddOrUpdate,
+  handleScriptDelete,
+  handleScriptList,
 };
