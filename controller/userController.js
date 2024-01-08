@@ -187,6 +187,17 @@ const previousChats = (async(req, res)=>{
     }
 })
 
+const mentionUsers = (async (req, res, next) => {
+    try {
+      const usernames = await Profile.find()
+      const usernamesArray = usernames.map(obj => obj.username);
+      return res.status(200).json(usernamesArray)
+    }
+    catch (error) {
+      console.log(error.message)
+    }
+  })
+
 const twoFacAuth =  (async (req, res) => {
     await twoFactorAuth(req, res);
 })
@@ -204,5 +215,6 @@ module.exports = {
     previousChats,
     SingleUserByID,
     twoFacAuth,
-    twoFacAuthVerify
+    twoFacAuthVerify,
+    mentionUsers
 }
