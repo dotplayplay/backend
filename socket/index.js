@@ -192,7 +192,6 @@ async function createsocket(httpServer) {
     io.emit("active-bets-keno", active_keno_games);
     };
 
-
     let newMessage = await Chats.find()
     const handleNewChatMessages = (async (data) => {
         io.emit("new-messages", newMessage)
