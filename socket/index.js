@@ -10,16 +10,12 @@ const USDTWallet = require("../model/Usdt-wallet");
 const Chats = require("../model/public-chat");
 const { handleWagerIncrease } = require("../profile_mangement/index");
 const Bills = require("../model/bill");
-const {
-  handleHiloBet,
-  handleHiloNextRound,
-  handleHiloCashout,
-  initHiloGame,
-} = require("../controller/hiloController");
-
-const minesgameInit = require("../model/minesgameInit");
+const { handleHiloBet, handleHiloNextRound, handleHiloCashout, initHiloGame } = require("../controller/hiloController");
+const { CrashGameEngine } = require("../controller/crashControllers");
+const minesgameInit = require('../model/minesgameInit');
 const Profile = require("../model/Profile");
-let maxRange = 100;
+const { handlePlinkoBet } = require("../controller/plinkoController");
+let maxRange = 100
 
 async function createsocket(httpServer) {
   const io = new Server(httpServer, {
