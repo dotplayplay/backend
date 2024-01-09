@@ -102,6 +102,15 @@ const handleCashout = async (req, res) => {
     }
     const { user_id } = req.id;
     let data = req.body;
+    if (
+      !data.bet_token_name ||
+      !data.bet_id ||
+      !data.amount ||
+      !data.profit >= 0
+    ) {
+      res.status(501).json({ message: "body payload incomplete" });
+      return;
+    }
     let prev_bal;
     let payload;
     if (data.bet_token_name === "USDT") {
@@ -110,7 +119,7 @@ const handleCashout = async (req, res) => {
     if (data.bet_token_name === "PPF") {
       prev_bal = await PPFWallet.find({ user_id });
     }
-
+    console.log(prev_bal);
     if (data.has_won == true) {
       let profit = data.profit * data.amount;
       payload = {
