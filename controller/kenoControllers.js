@@ -102,12 +102,7 @@ const handleCashout = async (req, res) => {
     }
     const { user_id } = req.id;
     let data = req.body;
-    if (
-      !data.bet_token_name ||
-      !data.bet_id ||
-      !data.amount ||
-      !data.profit >= 0
-    ) {
+    if (!data.bet_token_name || !data.bet_id || !data.amount) {
       res.status(501).json({ message: "body payload incomplete" });
       return;
     }
