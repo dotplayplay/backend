@@ -260,10 +260,11 @@ async function createsocket(httpServer) {
 
   //Live Bet Update
   const latestBetUpdate = async (data, game) => {
-    const user = await Profile.findOne({ user_id: data.user_id });
+    // const user = await Profile.findOne({ user_id: data.user_id });
+    // console.log(user);
     const stats = {
       game_type: game,
-      player: user.hidden_from_public ? user.username : "Hidden",
+      player: data.username,
       bet_id: data.bet_id,
       token_img: data.token_img,
       payout: data.has_won
