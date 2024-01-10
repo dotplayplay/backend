@@ -119,18 +119,18 @@ class CrashGameEngine {
             maxRate: this.game.maxRate * 100,
             players: this.game.bets.map((b) => ({
               userId: b.userId,
-              name: b.hidden ? "Hidden" : b.userName,
+              name: b.hidden ? "Hidden" : b.name,
               avatar: b.avatar,
               hidden: b.hidden,
               currencyName: b.currencyName,
               currencyImage: b.currencyImage,
               bet: b.bet,
-              rate: b.rate || 0,
+              rate: this.game.escapes.find(e => e.userId === b.userId)?.rate || 0,
             })),
             xBets: this.game.xBets.map((b) => ({
               userId: b.userId,
               hidden: b.hidden,
-              name: b.hidden ? "Hidden" : b.userName,
+              name: b.hidden ? "Hidden" : b.name,
               avatar: b.avatar,
               currencyName: b.currencyName,
               currencyImage: b.currencyImage,
@@ -260,7 +260,7 @@ class CrashGameEngine {
     let rate = this.game.currentRate;
     // console.log('Game loop => %dx', rate)
     if (rate >= this.game.crash_point) {
-      console.log("Crashed > ", rate);
+      // console.log("Crashed > ", rate);
       rate = this.game.crash_point;
       //crashed
       const session = await mongoose.startSession();
@@ -352,6 +352,7 @@ class CrashGameEngine {
   async handleEscape(bet, rate = this.game.currentRate) {
     if (!bet) return;
     bet.escaped = true;
+    bet.rate = rate;
     this.io.to("crash-game").emit("e", {
       userId: bet.userId,
       rate,
@@ -557,6 +558,7 @@ class CrashGameEngine {
           currencyName: b.token,
           currencyImage: b.token_img,
           bet: b.bet,
+          escaped: !!game.escapes.find((e) => e.user_id === b.user_id),
           betTime: b.bet_time,
           autoEscapeRate: b.auto_escape,
         }));
@@ -597,11 +599,11 @@ class CrashGameEngine {
           prepareTime: this.game.prepareTime,
         });
         setTimeout(async () => {
-          console.log(
-            "Game starting in %d with crashPoint %dx",
-            this.game.gameId,
-            this.game.crash_point
-          );
+          // console.log(
+          //   "Game starting in %d with crashPoint %dx",
+          //   this.game.gameId,
+          //   this.game.crash_point
+          // );
           await CrashGameModel.updateOne(
             { game_id: this.game.gameId },
             { status: 2 }
@@ -614,11 +616,11 @@ class CrashGameEngine {
           this.gameLoop();
         }, this.game.prepareTime);
       } else {
-        console.log(
-          "Continuing existing game %d at crash point %dx ",
-          this.game.gameId,
-          this.game.crash_point
-        );
+        // console.log(
+        //   "Continuing existing game %d at crash point %dx ",
+        //   this.game.gameId,
+        //   this.game.crash_point
+        // );
         this.gameLoop();
       }
     } catch (err) {
@@ -993,7 +995,7 @@ const resetCrashDB = async () => {
   //   CrashGameModel.deleteMany({}),
   //   CrashGameHash.deleteMany({}),
   // ]);
-  await generateHashes(input, 1_000);
+  await generateHashes(input, 2_000);
   console.log("Reset complete");
 };
 
