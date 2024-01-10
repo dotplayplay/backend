@@ -352,6 +352,7 @@ class CrashGameEngine {
   async handleEscape(bet, rate = this.game.currentRate) {
     if (!bet) return;
     bet.escaped = true;
+    bet.rate = rate;
     this.io.to("crash-game").emit("e", {
       userId: bet.userId,
       rate,
