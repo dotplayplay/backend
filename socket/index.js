@@ -295,8 +295,8 @@ async function createsocket(httpServer) {
       io.emit("latest-bet", latestBet);
     });
 
-    //KENO GAME
-    socket.on("keno-activebets", (data) => {
+    //KENO GAME SOCKET
+    socket.on("keno-activebets", async (data) => {
       //   handleCrashActiveBet(data);
       handleKenoActiveBet(data);
       //Get New Bet and Update Latest Bet UI
