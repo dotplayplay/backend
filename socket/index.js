@@ -255,10 +255,10 @@ async function createsocket(httpServer) {
 
     //Live Bet Update
     const latestBetUpdate = async (data, game) => {
-        const user = await Profile.findById(data.user_id)
+        // const user = await Profile.findById(data.user_id)
         const stats = {
             gane_type: game,
-            player: user.hidden_from_public ? user.username : "Hidden",
+            player: data.username,
             bet_id: data.bet_id,
             token_img: data.token_img,
             payout: data.has_won ? ((data.wining_amount/data.bet_amount) * 100) : ((data.bet_amount/data.bet_amount) * 100),
@@ -287,37 +287,46 @@ async function createsocket(httpServer) {
       io.emit("latest-bet", latestBet);
     });
 
-    //KENO GAME SOCKET
-    socket.on("keno-activebets", async (data) => {
-      //   handleCrashActiveBet(data);
-      handleKenoActiveBet(data);
-      //Get New Bet and Update Latest Bet UI
-      const latestBet = await latestBetUpdate(data, "Keno Game");
-      io.emit("latest-bet", latestBet);
-    });
+          //KENO GAME SOCKET
+      socket.on("keno-activebets", async (data) => {
+        //   handleCrashActiveBet(data);
+        handleKenoActiveBet(data);
+        //Get New Bet and Update Latest Bet UI
+        const latestBet = await latestBetUpdate(data, "Keno Game");
+        io.emit("latest-bet", latestBet);
+      });
 
-    //HILO GAME
-    socket.on("hilo-init", (data) => {
-      initHiloGame(data, (event, payload) => {
-        io.emit(event, payload);
+      //HILO GAME
+      socket.on("hilo-init", data => {
+          initHiloGame(data, (event, payload) => {
+              io.emit(event, payload);
+          });
       });
-    });
-    socket.on("hilo-bet", (data) => {
-      handleHiloBet(data, (event, payload) => {
-        io.emit(event, payload);
+      socket.on("hilo-bet", data => {
+          
+          handleHiloBet(data, (event, payload) => {
+              io.emit(event, payload);
+          });
       });
-    });
-    socket.on("hilo-cashout", (data) => {
-      handleHiloCashout(data, (event, payload) => {
-        io.emit(event, payload);
+      socket.on("hilo-cashout", data => {
+          handleHiloCashout(data, (event, payload) => {
+              io.emit(event, payload);
+          });
       });
-    });
-    socket.on("hilo-next-round", (data) => {
-      handleHiloNextRound(data, (event, payload) => {
-        io.emit(event, payload);
+      socket.on("hilo-next-round", data => {
+          handleHiloNextRound(data, (event, payload) => {
+              io.emit(event, payload);
+          });
       });
-    });
-  });
+
+      //PLINKO GAME BET 
+      socket.on("plinko-bet", data => {
+          handlePlinkoBet(data)
+          //Get New Bet and Update Latest Bet UI
+          const latestBet = latestBetUpdate(data, "Plinko Game")
+          io.emit("latest-bet", latestBet)
+      })
+  })
 }
 
 module.exports = { createsocket };
