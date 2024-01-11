@@ -90,7 +90,6 @@ const CreateAccount = async (req, res) => {
 
 const Register = async (req, res) => {
   const data = req.body;
-  //   console.log(data);
   let email = data.user.email;
   let emailVerified = data.user.emailVerified;
   let google_auth = false;
