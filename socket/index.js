@@ -68,6 +68,12 @@ const handleCoinDrop = async (data) => {
     const amount = data.coin_drop_amount;
     const wallet = detectWallet(data.coin_drop_token);
     const user_id = data.user_id;
+
+    const dropper = await Profile.findOne({ user_id })
+    if (dropper.vip_level < 7) {
+        return
+    }
+
     return deductFromWalletBalance(wallet, amount, user_id);
 };
 
@@ -109,8 +115,8 @@ const handleTip = async (data) => {
 async function createsocket(httpServer) {
     const io = new Server(httpServer, {
         cors: {
-            origin: "https://dotplayplay.netlify.app"
-            // origin: "http://localhost:5173",
+            // origin: "https://dotplayplay.netlify.app"
+            origin: "http://localhost:5173",
         },
     });
 
@@ -419,6 +425,13 @@ async function createsocket(httpServer) {
 
         if (!coin_drop) {
             io.emit('grabCoinDropResponse', { message: "Invalid coin drop" });
+            return
+        }
+
+        const grabber = await Profile.findOne({ user_id })
+
+        if (grabber.vip_level < 7) {
+            io.emit('grabCoinDropResponse', { message: `${user_id} vip level is less than 7` });
             return
         }
 

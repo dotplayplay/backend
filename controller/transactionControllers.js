@@ -15,7 +15,6 @@ const Chats = require("../model/public-chat");
 
 
 const detectWallet = (type) => {
-    console.log({ type });
     if (typeof type === "string") {
         if (type.toLowerCase().includes("usdt")) {
             return USDT_wallet
