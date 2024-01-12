@@ -205,28 +205,44 @@ const SingleUserByID = async (req, res) => {
 };
 
 // ============= get previous messages ====================
-const previousChats = async (req, res) => {
-  try {
-    let newMessage = await Chats.find();
-    res.status(200).json(newMessage);
-  } catch (err) {
-    res.status(500).json({ error: err });
-  }
-};
+const previousChats = (async(req, res)=>{
+    try{
+        let newMessage = await Chats.find()
+        res.status(200).json(newMessage)
+    }
+    catch(err){
+        res.status(500).json({error: err})
+    }
+})
 
-const twoFacAuth = async (req, res) => {
-  await twoFactorAuth(req, res);
-};
+const mentionUsers = (async (req, res, next) => {
+    try {
+      const usernames = await Profile.find()
+      const usernamesArray = usernames.map(obj => obj.username);
+      return res.status(200).json(usernamesArray)
+    }
+    catch (error) {
+      console.log(error.message)
+    }
+  })
 
-const twoFacAuthVerify = async (req, res) => {
-  await twoFactorAuthVerify(req, res);
-};
+const twoFacAuth =  (async (req, res) => {
+    await twoFactorAuth(req, res);
+})
 
-module.exports = {
-  CreateAccount,
-  Register,
-  previousChats,
-  SingleUserByID,
-  twoFacAuth,
-  twoFacAuthVerify,
-};
+const twoFacAuthVerify =  (async (req, res) => {
+    await twoFactorAuthVerify(req, res);
+})
+
+
+
+
+module.exports = { 
+    CreateAccount, 
+    Register, 
+    previousChats,
+    SingleUserByID,
+    twoFacAuth,
+    twoFacAuthVerify,
+    mentionUsers
+}
