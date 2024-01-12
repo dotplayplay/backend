@@ -261,10 +261,10 @@ async function createsocket(httpServer) {
 
   //Live Bet Update
   const latestBetUpdate = async (data, game) => {
-    const user = await Profile.findById(data.user_id);
+    // const user = await Profile.findById(data.user_id)
     const stats = {
       gane_type: game,
-      player: user.hidden_from_public ? user.username : "Hidden",
+      player: data.username,
       bet_id: data.bet_id,
       token_img: data.token_img,
       payout: data.has_won
@@ -300,7 +300,7 @@ async function createsocket(httpServer) {
       //   handleCrashActiveBet(data);
       handleKenoActiveBet(data);
       //Get New Bet and Update Latest Bet UI
-      const latestBet = latestBetUpdate(data, "Keno Game");
+      const latestBet = await latestBetUpdate(data, "Keno Game");
       io.emit("latest-bet", latestBet);
     });
 
