@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const schema = mongoose.Schema
 const CounterSchema = new schema({
     _id: { type: String, required: true },
-    seq: { type: Number, default: 0 }
+    seq: { type: Number, default: 0 },
 });
 const Counter = mongoose.model('HiloGameCounter', CounterSchema);
 const roundSchema = new schema({
@@ -64,8 +64,8 @@ const Schema = new schema({
         required: true,
     },
     bet_id: {
-        type: Number,
-        default: 1,
+        type: String,
+        default: "1",
         required: true,
     },
     seed_id: {
@@ -116,7 +116,7 @@ const Schema = new schema({
 Schema.pre('save', async function (next) {
     try {
         const counter = await Counter.findByIdAndUpdate({ _id: 'bet_id' }, { $inc: { seq: 1 } }, { new: true, upsert: true });
-        this.bet_id = counter.seq;
+        this.bet_id = (BigInt("4000") + BigInt(counter.seq)).toString();
         next();
     } catch (error) {
         return next(error);

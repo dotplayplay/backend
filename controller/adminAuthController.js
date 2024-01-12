@@ -94,10 +94,9 @@ const register = async (req, res, next) => {
         })
 
     } catch (err) {
-        return res.status(500).json({ error: err });
+        return res.status(500).json({ message: err.message });
     }
 };
-
 // LOGIN
 const login = async (req, res, next) => {
     try {
@@ -112,14 +111,14 @@ const login = async (req, res, next) => {
         if (!user) {
             return res.status(401).json({
                 success: false,
-                message: "Invalid Credentials"
+                message: "Username does not exist."
             });
         }
 
         if (!(await user.verifyPassword(password))) {
             return res.status(401).json({
                 success: false,
-                message: "Invalid Credentials"
+                message: "Password do not match. Please try again."
             });
         }
 
@@ -134,10 +133,10 @@ const login = async (req, res, next) => {
         })
 
     } catch (err) {
-        return res.status(500).json({ error: err });
+        return res.status(500).json({ message: err.message });
     }
 };
-// LOGIN
+// CONFIRM PIN
 const confirmPin = async (req, res, next) => {
     try {
         const { pin, userId } = req.body;
@@ -158,13 +157,13 @@ const confirmPin = async (req, res, next) => {
         if (!(await user.pin === pin)) {
             return res.status(401).json({
                 success: false,
-                message: "Invalid Pin"
+                message: "Incorrect Pin"
             });
         }
 
         sendTokenResponse(user, 200, res);
     } catch (err) {
-        return res.status(500).json({ error: err });
+        return res.status(500).json({ message: err.message });
     }
 };
 // CURRENT USER
@@ -176,7 +175,7 @@ const currentUser = async (req, res) => {
             user: user
         });
     } catch (err) {
-        return res.status(500).json({ error: err });
+        return res.status(500).json({ message: err.message });
     }
 };
 //FIND BY ID
@@ -204,7 +203,7 @@ const findAdminById = async (req, res, next) => {
             activity: userActivityLog || null
         });
     } catch (err) {
-        return res.status(500).json({ error: err });
+        return res.status(500).json({ message: err.message });
         // console.log(err)
     }
 }
@@ -232,7 +231,7 @@ const findAdminByUsername = async (req, res, next) => {
             activity: userActivityLog || null
         });
     } catch (err) {
-        return res.status(500).json({ error: err });
+        return res.status(500).json({ message: err.message });
     }
 }
 //UPDATE ADMIN
@@ -285,7 +284,7 @@ const updateAdmin = async (req, res, next) => {
             data: result
         });
     } catch (err) {
-        return res.status(500).json({ error: err });
+        return res.status(500).json({ message: err.message });
     }
 }
 //UPDATE PIN
@@ -311,7 +310,7 @@ const updatePin = async (req, res, next) => {
             data: user
         });
     } catch (err) {
-        return res.status(500).json({ error: err });
+        return res.status(500).json({ message: err.message });
     }
 }
 //UPDATE PASSWORD
@@ -337,7 +336,7 @@ const updatePassword = async (req, res, next) => {
             data: user
         });
     } catch (err) {
-        return res.status(500).json({ error: err });
+        return res.status(500).json({ message: err.message });
     }
 }
 //UPDATE SUSPEND
@@ -370,10 +369,9 @@ const suspend = async (req, res, next) => {
             data: user
         });
     } catch (err) {
-        return res.status(500).json({ error: err });
+        return res.status(500).json({ message: err.message });
     }
 }
-
 //UPDATE AVAILABILITY
 const updateAvailability = async (req, res, next) => {
     try {
@@ -401,7 +399,7 @@ const updateAvailability = async (req, res, next) => {
             data: user
         });
     } catch (err) {
-        return res.status(500).json({ error: err });
+        return res.status(500).json({ message: err.message });
     }
 }
 //REMOVE ADMIN
@@ -432,7 +430,7 @@ const removeAdmin = async (req, res, next) => {
             data: user
         });
     } catch (err) {
-        return res.status(500).json({ error: err });
+        return res.status(500).json({ message: err.message });
     }
 }
 //Fetch all admin
@@ -453,7 +451,7 @@ const getAllAdmin = async (req, res, next) => {
             data: users
         });
     } catch (err) {
-        return res.status(500).json({ error: err });
+        return res.status(500).json({ message: err.message });
     }
 }
 //Create chat Settings
@@ -467,7 +465,7 @@ const createChatSettings = async (req, res, next) => {
             message: "Chat Settings Created Success"
         })
     } catch (err) {
-        return res.status(500).json({ error: err });
+        return res.status(500).json({ message: err.message });
     }
 
 }
@@ -511,7 +509,7 @@ const updateChatSettings = async (req, res, next) => {
             data: result
         })
     } catch (err) {
-        return res.status(500).json({ error: err });
+        return res.status(500).json({ message: err.message });
         // console.log(err)
     }
 }
@@ -530,10 +528,11 @@ const getChatSettings = async (req, res, next) => {
             chatsettings: chatsettings
         })
     } catch (err) {
-        return res.status(500).json({ error: err });
+        return res.status(500).json({ message: err.message });
     }
 
 }
+
 module.exports = {
     register,
     login,

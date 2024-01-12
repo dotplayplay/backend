@@ -1,8 +1,7 @@
 const { Server } = require("socket.io");
 const crypto = require("crypto");
 const axios = require("axios");
-const salt =
-    "Qede00000000000w00wd001bw4dc6a1e86083f95500b096231436e9b25cbdd0075c4";
+const salt = "Qede00000000000w00wd001bw4dc6a1e86083f95500b096231436e9b25cbdd0075c4";
 const DiceGame = require("../model/dice_game");
 const DiceEncrypt = require("../model/dice_encryped_seeds");
 const PPFWallet = require("../model/PPF-wallet");
@@ -16,11 +15,13 @@ const {
     handleHiloCashout,
     initHiloGame,
 } = require("../controller/hiloController");
+const { CrashGameEngine } = require("../controller/crashControllers");
 const USDT_wallet = require("../model/Usdt-wallet");
 const PPD_wallet = require("../model/PPD-wallet");
 const PPL_wallet = require("../model/PPL-wallet");
 const minesgameInit = require("../model/minesgameInit");
 const Profile = require("../model/Profile");
+const { handlePlinkoBet } = require("../controller/plinkoController");
 let maxRange = 100;
 
 const detectWallet = (type) => {
@@ -119,6 +120,12 @@ async function createsocket(httpServer) {
             origin: "http://localhost:5173",
         },
     });
+  
+    //Crash Game
+  new CrashGameEngine(io).run().catch((err) => {
+    console.log("Crash Game failed to start ::> ", err);
+  });
+
 
     // let fghhs = await DiceGame.find()
     let activeplayers = [];
@@ -403,21 +410,33 @@ async function createsocket(httpServer) {
                 });
         }
     });
+  
+  let active_keno_games = [];
+  const handleKenoActiveBet = (event) => {
+    if (active_keno_games.length > 30) {
+      active_keno_games.shift();
+      active_keno_games.push(event);
+    } else {
+      active_keno_games.push(event);
+    }
+    io.emit("active-bets-keno", active_keno_games);
+  };
 
-    const latestBetUpdate = async (data, game) => {
-        const user = await Profile.findById(data.user_id);
-        const stats = {
-            gane_type: game,
-            player: user.hidden_from_public ? user.username : "Hidden",
-            bet_id: data.bet_id,
-            token_img: data.token_img,
-            payout: data.has_won
-                ? (data.wining_amount / data.bet_amount) * 100
-                : (data.bet_amount / data.bet_amount) * 100,
-            profit_amount: data.has_won ? data.wining_amount : data.bet_amount,
-        };
-        return stats;
+  //Live Bet Update
+  const latestBetUpdate = async (data, game) => {
+    // const user = await Profile.findById(data.user_id)
+    const stats = {
+      gane_type: game,
+      player: data.username,
+      bet_id: data.bet_id,
+      token_img: data.token_img,
+      payout: data.has_won
+        ? (data.wining_amount / data.bet_amount) * 100
+        : (data.bet_amount / data.bet_amount) * 100,
+      profit_amount: data.has_won ? data.wining_amount : data.bet_amount,
     };
+    return stats;
+  };
 
     const handleGrabCoinDrop = (async (data) => {
         const { user_id, id, username } = data
@@ -485,6 +504,15 @@ async function createsocket(httpServer) {
             const latestBet = latestBetUpdate(data, "Crash Game");
             io.emit("latest-bet", latestBet);
         });
+      
+       //KENO GAME SOCKET
+    socket.on("keno-activebets", async (data) => {
+      //   handleCrashActiveBet(data);
+      handleKenoActiveBet(data);
+      //Get New Bet and Update Latest Bet UI
+      const latestBet = await latestBetUpdate(data, "Keno Game");
+      io.emit("latest-bet", latestBet);
+    });
 
         //HILO GAME
         socket.on("hilo-init", (data) => {
@@ -507,6 +535,14 @@ async function createsocket(httpServer) {
                 io.emit(event, payload);
             });
         });
+      
+      //PLINKO GAME BET
+    socket.on("plinko-bet", (data) => {
+      handlePlinkoBet(data);
+      //Get New Bet and Update Latest Bet UI
+      const latestBet = latestBetUpdate(data, "Plinko Game");
+      io.emit("latest-bet", latestBet);
+    });
     });
 }
 
