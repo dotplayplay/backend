@@ -41,7 +41,89 @@ const Userschema = new schema({
     time: {
         type: Date,
         required: true,
+    },
+    email: {
+        type: String,
+        required: false,
+    },
+    sender_username: {
+        type: String,
+        required: false,
+    },
+    tipped_user: {
+        type: String,
+        required: false,
+    },
+    tipped_amount: {
+        type: Number,
+        required: false,
+    },
+    tipped_comment: {
+        type: String,
+        required: false,
+    },
+    tipped_coin_image: {
+        type: String,
+        required: false,
+    },
+    tip_Token: {
+        type: String,
+        required: false,
+    },
+    coin_rain_amount: {
+        type: Number,
+        required: false,
+    },
+    coin_rain_comment: {
+        type: String,
+        required: false,
+    },
+    coin_rain_image: {
+        type: String,
+        required: false,
+    },
+    
+    coin_drop_image: {
+        type: String,
+        required: false,
+    },
+    coin_rain_num: {
+        type: Number,
+        required: false,
+    },
+    coin_rain_token: {
+        type: String,
+        required: false,
+    },
+    coin_drop_amount: {
+        type: Number,
+        required: false,
+    },
+    coin_drop_comment: {
+        type: String,
+        required: false,
+    },
+    coin_drop_num: {
+        type: Number,
+        required: false,
+    },
+    coin_drop_balance: {
+        type: Number,
+        required: false,
+    },
+    coin_drop_token: {
+        type: String,
+        required: false,
+    },
+    coin_drop_participant: {
+        type: [mongoose.Schema.Types.Mixed],
+        default: []
+    },
+    coin_rain_participant: {
+        type: [mongoose.Schema.Types.Mixed],
+        default: []
     }
-}, { timestamp : true})
+}, { timestamps: true });
+
 
 module.exports = mongoose.model('public_chat', Userschema)
