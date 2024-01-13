@@ -4,7 +4,6 @@ const DiceGame = require("../../model/dice_game");
 const MineGame = require("../../model/minesgameInit");
 const { dailyGamesWon } = require("../../utils/dashboard");
 const { today } = require("../../utils/time");
-
 const winningList = [];
   
 
