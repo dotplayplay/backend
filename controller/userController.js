@@ -52,7 +52,7 @@ const CreateAccount = (async (req, res) => {
             InitializeDiceGame(user_id)
             createCashbackTable(user_id)
             InitializeMinesGame(user_id)
-            InitializePlinkoGame(user_id)
+            // InitializePlinkoGame(user_id)
             handleCreatePPDunlocked(user_id)
             CreateAffiliate(user_id)
             const Token = createToken(user_id)
