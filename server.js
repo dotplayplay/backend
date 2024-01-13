@@ -21,6 +21,7 @@ const minegame = require("./routes/mines");
 const Wallet = require("./routes/wallet.js");
 const diceGame = require("./routes/diceGame");
 const kenoGame = require("./routes/kenoGame");
+const kenoMultiGame = require("./routes/kenoMultiGame");
 const Deposit = require("./routes/deposit");
 const Withdraw = require("./routes/withdraw");
 const Bonus = require("./routes/bonus");
@@ -52,6 +53,7 @@ main();
 app.use("/api/user/crash-game", CrashGame);
 app.use("/api/user/dice-game", diceGame);
 app.use("/api/user/keno-game", kenoGame);
+app.use("/api/user/keno-multi-game", kenoMultiGame);
 app.use("/api/user/mine-game", minegame);
 app.use("/api/user/plinko-game", plinkoGame);
 app.use("/api/hilo-game", HiloGame);
@@ -85,13 +87,14 @@ app.get("/", (req, res) => {
   res.send("Welcome to Dotplayplay backend server");
 });
 
-mongoose.set('strictQuery', false);
-const dbUri = `mongodb+srv://highscoreteh:eNiIQbm4ZMSor8VL@cluster0.xmpkpjc.mongodb.net/main_page?retryWrites=true&w=majority`
+mongoose.set("strictQuery", false);
+// const dbUri = `mongodb+srv://highscoreteh:eNiIQbm4ZMSor8VL@cluster0.xmpkpjc.mongodb.net/main_page?retryWrites=true&w=majority`;
 
-// const dbUri = `mongodb://localhost:27017/dpp`;
-mongoose.connect(dbUri, { useNewUrlParser: true,  useUnifiedTopology: true })
-    .then((result)=>  console.log('Database connected'))
-    .catch((err)=> console.log(err))
+const dbUri = `mongodb://localhost:27017/dpp`;
+mongoose
+  .connect(dbUri, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then((result) => console.log("Database connected"))
+  .catch((err) => console.log(err));
 const PORT = process.env.PORT || 8000;
 server.listen(PORT, () => {
   console.log("Running on port " + PORT);

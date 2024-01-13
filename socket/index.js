@@ -243,6 +243,7 @@ async function createsocket(httpServer) {
   // })
 
   let active_keno_games = [];
+  let active_multi_keno_games = [];
   const handleKenoActiveBet = (event) => {
     if (active_keno_games.length > 30) {
       active_keno_games.shift();
@@ -251,6 +252,16 @@ async function createsocket(httpServer) {
       active_keno_games.push(event);
     }
     io.emit("active-bets-keno", active_keno_games);
+  };
+
+  const handleKenoMultiActiveBet = (event) => {
+    if (active_multi_keno_games.length > 30) {
+      active_multi_keno_games.shift();
+      active_multi_keno_games.push(event);
+    } else {
+      active_multi_keno_games.push(event);
+    }
+    io.emit("active-multi-bets-keno", event);
   };
 
   let newMessage = await Chats.find();
@@ -265,6 +276,21 @@ async function createsocket(httpServer) {
     const stats = {
       gane_type: game,
       player: user.hidden_from_public ? user.username : "Hidden",
+      bet_id: data.bet_id,
+      token_img: data.token_img,
+      payout: data.has_won
+        ? (data.wining_amount / data.bet_amount) * 100
+        : (data.bet_amount / data.bet_amount) * 100,
+      profit_amount: data.has_won ? data.wining_amount : data.bet_amount,
+    };
+    return stats;
+  };
+
+  const latestBetUpdate2 = async (data, game) => {
+    // const user = await Profile.findById(data.user_id);
+    const stats = {
+      game_type: game,
+      player: data.username,
       bet_id: data.bet_id,
       token_img: data.token_img,
       payout: data.has_won
@@ -300,7 +326,16 @@ async function createsocket(httpServer) {
       //   handleCrashActiveBet(data);
       handleKenoActiveBet(data);
       //Get New Bet and Update Latest Bet UI
-      const latestBet = latestBetUpdate(data, "Keno Game");
+      const latestBet = await latestBetUpdate2(data, "Keno Game");
+      io.emit("latest-bet", latestBet);
+    });
+
+    //KENO MULTI BETS
+    socket.on("keno-multi-bets", async (data) => {
+      //   handleCrashActiveBet(data);
+      handleKenoMultiActiveBet(data);
+      //Get New Bet and Update Latest Bet UI
+      const latestBet = await latestBetUpdate2(data, "Keno Multi Game");
       io.emit("latest-bet", latestBet);
     });
 

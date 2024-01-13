@@ -24,6 +24,9 @@ const {
 } = require("../profile_mangement/cashbacks");
 const { InitializeMinesGame } = require("../controller/minesControllers");
 const { InitializeKenoGame } = require("../controller/kenoControllers");
+const {
+  InitializeKenoMultiGame,
+} = require("../controller/kenoMultiControllers");
 const { twoFactorAuth } = require("../utils/twoFactorAuth");
 const { twoFactorAuthVerify } = require("../utils/twoFactorAuthVerify");
 const { createNotify } = require("./notify");
