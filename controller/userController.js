@@ -80,47 +80,35 @@ const CreateAccount = async (req, res) => {
     } catch (err) {
       res.status(401).json({ error: err });
     }
-  } else {
-    const result = await Profile.find({ user_id });
-    const default_wallet = await Wallet.find({ user_id });
-    const Token = createToken(user_id);
-    res
-      .status(200)
-      .json({ Token, default_wallet: default_wallet[0], result: result[0] });
-  }
-};
+    const exist = await User.findOne({ user_id })
+    if (!exist) {
+        try {
+            await User.create(fullData)
+            createPPF(user_id)
+            createPPL(user_id)
+            createPPD(user_id)
+            createUsdt(user_id)
+            InitializeDiceGame(user_id)
+            createCashbackTable(user_id)
+            InitializeMinesGame(user_id)
+            // InitializePlinkoGame(user_id)
+            handleCreatePPDunlocked(user_id)
+            CreateAffiliate(user_id)
+            const Token = createToken(user_id)
+            const default_wallet = await handleDefaultWallet(user_id)
+            let result = await createProfile(email, username, invited_code, user_id)
+            createNotify("User Registration", user_id)
+            res.status(200).json({ Token, default_wallet, result })
+        }
+        catch (err) {
+            res.status(401).json({ error: err })
+        }
 
-const Register = async (req, res) => {
-  const data = req.body;
-  let email = data.user.email;
-  let emailVerified = data.user.emailVerified;
-  let google_auth = false;
-  let user_id = data.user.uid;
-  const created_at = currentTime;
-  const lastLoginAt = currentTime;
-  const last_login_ip = req.socket.remoteAddress;
-  let password = data.user.apiKey;
-  let provider = data.user.providerData[0].providerId;
-  let username = "";
-  let invited_code = data.reff;
-  const fullData = {
-    email,
-    user_id,
-    created_at,
-    lastLoginAt,
-    password,
-    provider,
-    emailVerified,
-    google_auth,
-    last_login_ip,
-  };
-  const characters =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  function generateString(length) {
-    let result = "";
-    const charactersLength = characters.length;
-    for (let i = 0; i < length; i++) {
-      result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    } else {
+        const result = await Profile.find({ user_id })
+        const default_wallet = await Wallet.find({ user_id })
+        const Token = createToken(user_id)
+        res.status(200).json({ Token, default_wallet: default_wallet[0], result: result[0] })
     }
     return result;
   }

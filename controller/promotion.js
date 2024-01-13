@@ -223,10 +223,9 @@ const getAllSpin = async (req, res, next) => {
 }
 //Roll Competition
 const rollcompetition = async (req, res, next) => {
-    const id = req.id;
-    // const id = '3d2f3f2d3f2fg3fg3gwqr'
+    const {user_id} = req.id;
     try {
-        const user = await Profile.findOne({ user_id: id })
+        const user = await Profile.findOne({ user_id: user_id })
         if (!user) {
             return res.status(404).json({
                 success: false,
@@ -245,6 +244,7 @@ const rollcompetition = async (req, res, next) => {
         if (user_rolled) {
             return res.status(404).json({
                 success: false,
+                is_rolled: true,
                 message: "You can only roll once per day"
             })
         }
@@ -255,10 +255,10 @@ const rollcompetition = async (req, res, next) => {
             result.push(roll)
         }
         const rolled = await RollCompetition.create({
-            user_id: id,
+            username: user.username,
+            user_id: user_id,
             rolled_figure: result.join("")
         })
-        // parseInt(result.join(""), 10)
         return res.status(200).json({
             success: true,
             rolled
@@ -269,21 +269,9 @@ const rollcompetition = async (req, res, next) => {
 }
 const check_level_and_is_rolled = async (req, res, next) => {
     try {
-        const id = req.id;
-        // const id = '3d2f3f2d3f2fg3fg3gwqr'
-        const date = new Date()
-        const currentTime = Date.now()
-        const endOfTheDay = date.setHours(24, 59, 59, 999)
-
-        const remainingTime = endOfTheDay - currentTime
-
-        const hours = Math.floor(remainingTime / (1000 * 60 * 60));
-        const minutes = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((remainingTime % (1000 * 60)) / 1000);
-
-        const nxt_roll = `${hours}:${minutes}:${seconds}`;
+        const {user_id} = req.id;
         //Get if loggged in user have roll and vip_level greater than 3
-        const user = await Profile.findOne({ user_id: id })
+        const user = await Profile.findOne({ user_id: user_id });
         if (!user) {
             return res.status(404).json({
                 success: false,
@@ -292,10 +280,11 @@ const check_level_and_is_rolled = async (req, res, next) => {
         }
 
         if (user.vip_level < 3) {
-            return res.status(404).json({
+            return res.status(200).json({
                 success: false,
-                message: "Only user with vip level above 3 are allowed to participate in the Roll Competition",
-                nxt_roll: nxt_roll
+                is_rolled: false,
+                level: user.vip_level,
+                message: "Only user with (VIP3) and above are allowed to participate in the Roll Competition"
             })
         }
         //Check if user already rolled before
@@ -305,8 +294,7 @@ const check_level_and_is_rolled = async (req, res, next) => {
                 return res.status(200).json({
                     success: true,
                     message: "You can only roll once per day",
-                    is_rolled: user_rolled.is_rolled,
-                    nxt_roll: nxt_roll
+                    is_rolled: user_rolled.is_rolled
                 })
             }
         }
@@ -335,7 +323,7 @@ const winners = async (req, res, next) => {
 
 // Schedule task to delete all Spin and Roll Competition  run every day at midnight
 const resetSpinAndRollCompetitionCron = () => {
-    schedule.scheduleJob('0 0 * * *', async (fireDate) => {
+    schedule.scheduleJob('0 2 * * *', async (fireDate) => {
         try {
             // Backup all documents in the RollCompetitionBackUp collection
             const backupData = await RollCompetition.find({});
