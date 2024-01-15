@@ -4,6 +4,8 @@ const PPFWallet = require("../model/PPF-wallet");
 const USDTWallet = require("../model/Usdt-wallet");
 const keno_game = require("../model/keno_game");
 const Profile = require("../model/Profile");
+const { format } = require("date-fns");
+const currentTime = format(new Date(), "yyyy-MM-dd HH:mm:ss");
 const salt = "000000000000000000076973be291d219d283d4af9135601ff37df46491cca7e";
 
 const kenoStart = async (req, res) => {

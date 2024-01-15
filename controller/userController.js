@@ -69,7 +69,7 @@ const CreateAccount = async (req, res) => {
       InitializeKenoGame(user_id);
       createCashbackTable(user_id);
       InitializeMinesGame(user_id);
-      InitializePlinkoGame(user_id);
+      // InitializePlinkoGame(user_id);
       handleCreatePPDunlocked(user_id);
       CreateAffiliate(user_id);
       const Token = createToken(user_id);
@@ -80,6 +80,7 @@ const CreateAccount = async (req, res) => {
     } catch (err) {
       res.status(401).json({ error: err });
     }
+
   } else {
     const result = await Profile.find({ user_id });
     const default_wallet = await Wallet.find({ user_id });
