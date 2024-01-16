@@ -33,6 +33,7 @@ const { createServer } = require("node:http");
 //Test
 const { testCashback } = require("./profile_mangement/week_cashback");
 const { testResetCashback } = require("./profile_mangement/rechargebonus");
+const Currency = require("./routes/currency");
 
 require("dotenv").config();
 // ============ Initilize the app ========================
@@ -70,6 +71,7 @@ app.use("/api/transaction-history", TransactionHistory);
 app.use("/admin/all-players", AllPLays);
 app.use("/api/home-page-updates", homePageUpdates);
 app.use("/api/promotion", Promotion);
+app.use("/api/system", Currency);
 //TODO: REMOVE
 app.post("/api/test-cashback", testCashback);
 //TODO: REMOVE
@@ -85,9 +87,9 @@ app.get("/", (req, res) => {
 });
 
 mongoose.set('strictQuery', false);
-// const dbUri = `mongodb+srv://highscoreteh:eNiIQbm4ZMSor8VL@cluster0.xmpkpjc.mongodb.net/main_page?retryWrites=true&w=majority`
+const dbUri = `mongodb+srv://highscoreteh:eNiIQbm4ZMSor8VL@cluster0.xmpkpjc.mongodb.net/main_page?retryWrites=true&w=majority`
 
-const dbUri = `mongodb://localhost:27017/dpp`;
+// const dbUri = `mongodb://localhost:27017/dpp`;
 mongoose.connect(dbUri, { useNewUrlParser: true, useUnifiedTopology: true })
   .then((result) => console.log('Database connected'))
   .catch((err) => console.log(err))

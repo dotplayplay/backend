@@ -483,8 +483,8 @@ const topUp = async (req, res) => {
     }
 
     await Promise.all([
-      PPLWallet.updateOne({user_id }, {balance: 10_000 }),
-      USDTWallet.updateOne({user_id }, {balance: 10_000 }),
+      PPLWallet.updateOne({user_id }, {balance: 1_000 }),
+      USDTWallet.updateOne({user_id }, {balance: 1_000 }),
     ])
     res.status(200).json("You are now rich!");
   } catch(e) {

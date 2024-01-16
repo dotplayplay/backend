@@ -449,8 +449,11 @@ class CrashGameEngine {
       // console.log("Bet ", bet)
       const rate = getPayout(bet);
       const won = wonCallback(bet);
+      bet.won = won;
       const balanceUpdate = won ? bet.bet * rate - bet.bet : -bet.bet;
       // console.log("Updating user wallet balance > ", balanceUpdate, bet, won)
+      
+      
       if (bet.currencyName !== "PPF") {
         handleWagerIncrease({
           bet_amount: bet.bet,
@@ -499,6 +502,16 @@ class CrashGameEngine {
           { session }
         ).then(([bh]) => {
           (bet.betId = bh.bet_id), (bet.betType = bet_type);
+          const winningAmount = bet.won ? bet.bet * rate - bet.bet : bet.bet;
+          if (this.betsCallback) this.betsCallback({
+            game_type: "Crash Game",
+            hidden: bet.hidden,
+            player: bet.hidden ? "Hidden" : bet.name,
+            bet_id: bh.bet_id,
+            token_img: bh.token_img,
+            payout: bh.won ? bh.payout * 100 : 100,
+            profit_amount: bh.won ? winningAmount : bh.bet
+          });
           let bil = {
             user_id: bh.user_id,
             transaction_type: "Crash Game",
@@ -510,7 +523,6 @@ class CrashGameEngine {
             status: won,
             bill_id: bh.bet_id,
           };
-
           return Bills.create([bil], { session });
         })
       );
@@ -518,7 +530,8 @@ class CrashGameEngine {
     return betPromisses;
   }
 
-  async run() {
+  async run(betsCallback) {
+    this.betsCallback = betsCallback;
     try {
       clearTimeout(this.loopTimeout);
       let game = await CrashGameModel.findOne({ concluded: false }).sort({
@@ -562,6 +575,7 @@ class CrashGameEngine {
           betTime: b.bet_time,
           autoEscapeRate: b.auto_escape,
         }));
+      
       this.game.xBets = game.bets
         .filter((b) => b.bet_type !== 0)
         .map((b) => ({
