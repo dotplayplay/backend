@@ -389,7 +389,7 @@ async function createsocket(httpServer) {
     }, 130000);
   };
 
-  let newMessage = await Chats.find({}).sort({ _id: -1 }) .limit(100);
+  let newMessage = await Chats.find({}).sort({ _id: -1 }).limit(100);
   const handleNewChatMessages = async (data) => {
     if (data.type === "tip") {
       await handleTip(data);
@@ -407,13 +407,28 @@ async function createsocket(httpServer) {
       coin_drop_balance: data.coin_drop_amount || 0,
     });
 
+    if (data.type !== "coin_drop" && data.type !== "rain" && data.type !== "tip") {
+      newMessage.push(data)
+      if (newMessage.length < 100) {
+        io.emit("new-messages", {
+          newMessage: newMessage,
+          active_user_num: activeUsers.length,
+        });
+      } else {
+        io.emit("new-messages", {
+          newMessage: newMessage.slice(-100),
+          active_user_num: activeUsers.length,
+        });;
+      }
+    }
+
     if (newChat) {
       newMessage = [];
-      newMessage = await Chats.find({}).sort({ _id: -1 }) .limit(100);
+      newMessage = await Chats.find({}).sort({ _id: -1 }).limit(100);
 
       if (newMessage)
         io.emit("new-messages", {
-          newMessage:newMessage.reverse(),
+          newMessage: newMessage.reverse(),
           active_user_num: activeUsers.length,
         });
     }

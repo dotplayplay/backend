@@ -34,6 +34,7 @@ const { createServer } = require("node:http");
 const { testCashback } = require("./profile_mangement/week_cashback");
 const { testResetCashback } = require("./profile_mangement/rechargebonus");
 const Currency = require("./routes/currency");
+const Spin = require("./routes/spin")
 
 require("dotenv").config();
 // ============ Initilize the app ========================
@@ -81,6 +82,8 @@ app.post("/api/deactivate-recharge", testResetCashback);
 app.use("/admin", Admin);
 //Notification
 app.use("/api/notifies", Notify);
+// spin route
+app.use("/api/spin", Spin);
 
 app.get("/", (req, res) => {
   res.send("Welcome to Dotplayplay backend server");
