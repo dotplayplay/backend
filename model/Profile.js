@@ -120,6 +120,9 @@ const Userschema = new schema({
         type: Number,
         required: true,
     },
+    last_bonus:{
+        type: Date,
+    }
 }, { timestamp : true})
 
 module.exports = mongoose.model('Profile', Userschema)
