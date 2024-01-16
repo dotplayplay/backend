@@ -208,8 +208,8 @@ const SingleUserByID = async (req, res) => {
 // ============= get previous messages ====================
 const previousChats = (async (req, res) => {
   try {
-    let newMessage = await Chats.find()
-    res.status(200).json(newMessage)
+    let newMessage = await Chats.find({}).sort({ _id: -1 }) .limit(100);
+    res.status(200).json(newMessage.reverse())
   }
   catch (err) {
     res.status(500).json({ error: err })
@@ -219,7 +219,7 @@ const previousChats = (async (req, res) => {
 const mentionUsers = (async (req, res, next) => {
   try {
     const usernames = await Profile.find()
-    const usernamesArray = usernames.map(obj => ({ vip_level: obj.vip_level, username: obj.username }));
+    const usernamesArray = usernames.map(obj => ({user_id:obj.user_id, vip_level: obj.vip_level, username: obj.username }));
     return res.status(200).json(usernamesArray)
   }
   catch (error) {

@@ -125,8 +125,8 @@ const handleTip = async (data) => {
 async function createsocket(httpServer) {
   const io = new Server(httpServer, {
     cors: {
-      origin: "https://dotplayplay.netlify.app"
-      // origin: "http://localhost:5173",
+      // origin: "https://dotplayplay.netlify.app"
+      origin: "http://localhost:5173",
     },
   });
 
@@ -389,7 +389,7 @@ async function createsocket(httpServer) {
     }, 130000);
   };
 
-  let newMessage = await Chats.find();
+  let newMessage = await Chats.find({}).sort({ _id: -1 }) .limit(100);
   const handleNewChatMessages = async (data) => {
     if (data.type === "tip") {
       await handleTip(data);
@@ -409,11 +409,11 @@ async function createsocket(httpServer) {
 
     if (newChat) {
       newMessage = [];
-      newMessage = await Chats.find();
+      newMessage = await Chats.find({}).sort({ _id: -1 }) .limit(100);
 
       if (newMessage)
         io.emit("new-messages", {
-          newMessage,
+          newMessage:newMessage.reverse(),
           active_user_num: activeUsers.length,
         });
     }
