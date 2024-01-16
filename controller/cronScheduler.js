@@ -158,6 +158,14 @@ scheduleTask([
             minute: 0,
             hour: 0,
         }), module: '../profile_mangement/rechargebonus.js', task: 'handleEndRechargePeriod'
+    },
+    //Syncs Currency Rates
+    {
+        identifier: 'currencyRatesSync', expression: JSON.stringify({
+            tz: "UTC",
+            minute: 0,
+            hour: 0,
+        }), module: './currencyRatesController.js', task: 'syncCurrencyRates'
     }
 ]);
 /*

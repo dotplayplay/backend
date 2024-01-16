@@ -44,7 +44,7 @@ const CrashBetSchema = new schema({
 CrashBetSchema.pre('save', async function (next) {
     try {
         const counter = await Counter.findByIdAndUpdate({ _id: 'bet_id' }, { $inc: { seq: 1 } }, { new: true, upsert: true });
-        this.bet_id = (BigInt("1500") + BigInt(counter.seq)).toString();
+        this.bet_id = (BigInt("1500000000") + BigInt(counter.seq)).toString();
         next();
     } catch (error) {
         return next(error);
