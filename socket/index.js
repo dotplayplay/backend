@@ -407,8 +407,12 @@ async function createsocket(httpServer) {
       coin_drop_balance: data.coin_drop_amount || 0,
     });
 
-    if (data.type !== "coin_drop" && data.type !== "rain" && data.type !== "tip") {
-      newMessage.push(data)
+    if (
+      data.type !== "coin_drop" &&
+      data.type !== "rain" &&
+      data.type !== "tip"
+    ) {
+      newMessage.push(data);
       if (newMessage.length < 100) {
         io.emit("new-messages", {
           newMessage: newMessage,
@@ -418,7 +422,7 @@ async function createsocket(httpServer) {
         io.emit("new-messages", {
           newMessage: newMessage.slice(-100),
           active_user_num: activeUsers.length,
-        });;
+        });
       }
     }
 
