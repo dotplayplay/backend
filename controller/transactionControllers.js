@@ -82,7 +82,7 @@ const handleSwap = async (req, res) => {
     const senderCoinIcon = pplIcon;
     const receiverCoinIcon = ppdIcon;
     const amountToBeSwapped = swappingDetails.amount;
-    const equivalentAmountInPPD = amountToBeSwapped * 10;
+    const equivalentAmountInPPD = amountToBeSwapped / 10;
     if (await checkWalletBalance(PPL_wallet, amountToBeSwapped, user_id)) {
       await deductFromWalletBalance(PPL_wallet, amountToBeSwapped, user_id);
       await addToWalletBalance(PPD_wallet, equivalentAmountInPPD, user_id);
@@ -105,7 +105,7 @@ const handleSwap = async (req, res) => {
     const senderCoinIcon = pplIcon;
     const receiverCoinIcon = usdtIcon;
     const amountToBeSwapped = swappingDetails.amount;
-    const equivalentAmountInUSDT = amountToBeSwapped * 10;
+    const equivalentAmountInUSDT = amountToBeSwapped / 10;
     if (await checkWalletBalance(PPL_wallet, amountToBeSwapped, user_id)) {
       await deductFromWalletBalance(PPL_wallet, amountToBeSwapped, user_id);
       await addToWalletBalance(USDT_wallet, equivalentAmountInUSDT, user_id);
@@ -128,7 +128,7 @@ const handleSwap = async (req, res) => {
     const senderCoinIcon = ppdIcon;
     const receiverCoinIcon = pplIcon;
     const amountToBeSwapped = swappingDetails.amount;
-    const equivalentAmountInPPL = amountToBeSwapped * 0.1;
+    const equivalentAmountInPPL = amountToBeSwapped * 10;
     if (await checkWalletBalance(PPD_wallet, amountToBeSwapped, user_id)) {
       await deductFromWalletBalance(PPD_wallet, amountToBeSwapped, user_id);
       await addToWalletBalance(PPL_wallet, equivalentAmountInPPL, user_id);
@@ -175,7 +175,7 @@ const handleSwap = async (req, res) => {
     const senderCoinIcon = usdtIcon;
     const receiverCoinIcon = pplIcon;
     const amountToBeSwapped = swappingDetails.amount;
-    const equivalentAmountInPPL = amountToBeSwapped * 0.1;
+    const equivalentAmountInPPL = amountToBeSwapped * 10;
     if (await checkWalletBalance(USDT_wallet, amountToBeSwapped, user_id)) {
       await deductFromWalletBalance(USDT_wallet, amountToBeSwapped, user_id);
       await addToWalletBalance(PPL_wallet, equivalentAmountInPPL, user_id);
