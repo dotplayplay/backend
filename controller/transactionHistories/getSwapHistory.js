@@ -1,13 +1,26 @@
 const mongoose = require("mongoose");
 const SwapHistory = require("../../model/transactionHistoryModels/SwapHistory");
 
-const getSwapHistory = ( async (req, res) => {
-    try{
-        const {user_id} = req.id;
-        const current_user_transaction_history = await SwapHistory.find({user_id });
-        res.status(200).json(current_user_transaction_history);
-    }catch(error){
-        console.log(error);
-    }})
+const getSwapHistory = async (req, res) => {
+  try {
+    const { user_id } = req.id;
+    const asset = req.query.asset;
+    const query = {
+      user_id,
+    };
 
-    module.exports = { getSwapHistory };
+    if (asset) {
+      query.$or = [];
+      query.$or.push({ senderCoin: asset });
+      query.$or.push({ receiverCoin: asset });
+    }
+
+    const current_user_transaction_history = await SwapHistory.find(query);
+
+    res.status(200).json(current_user_transaction_history);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+module.exports = { getSwapHistory };
