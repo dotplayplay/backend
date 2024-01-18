@@ -1,4 +1,3 @@
-const mongoose = require("mongoose");
 const SwapHistory = require("../../model/transactionHistoryModels/SwapHistory");
 
 const getSwapHistory = async (req, res) => {
