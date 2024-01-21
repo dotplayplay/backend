@@ -30,16 +30,12 @@ const allMedals = async (req, res) => {
 
 const allUserMedals = async (req, res) => {
   try {
-    const medals = await MedalModel.find();
+    const { user_id } = req.id;
 
-    const user_id = req.id?.user_id;
-
-    if (!user_id) {
-      // handle user not logged in res
-      return res.status(200).json({ data: medals });
-    }
-
-    const userMedals = await UserMedalModel.find({ user_id });
+    const [medals, userMedals] = await Promise.all([
+      MedalModel.find(),
+      UserMedalModel.find({ user_id }),
+    ]);
 
     const um = userMedals.map((x) => x.medals).flat();
 

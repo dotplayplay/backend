@@ -14,10 +14,10 @@ const router = express.Router();
 // api/medal/*
 router.get("/seed", seedMedalData); // should be developer only...
 router.get("/all-medals", allMedals);
-router.get("/all-user-medals", allUserMedals);
 
 // auth middleware
 router.use(requireAuth);
+router.get("/all-user-medals", allUserMedals);
 router.get("/win/talkative", winTalkative);
 router.get("/win/fearless-one", winFearlessOne);
 
