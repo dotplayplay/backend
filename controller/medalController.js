@@ -1,6 +1,7 @@
 const MedalConstants = require("../constants/medal_constants");
 const { MedalModel, UserMedalModel } = require("../model/medal");
 const { medals } = require("../utils/MockData");
+const MedalService = require("../services/medal");
 
 const seedMedalData = async (req, res) => {
   // to run only once...
@@ -22,7 +23,7 @@ const allMedals = async (req, res) => {
     const medals = await MedalModel.find();
     res.status(200).json({ data: medals });
   } catch (error) {
-    console.error("Error fetching medals:", error);
+    console.error("Error >>>>>>>>>>>>>>>:", error);
     res.status(500).json({ error: "Unable to fetch all medals" });
   }
 };
@@ -33,39 +34,49 @@ const allUserMedals = async (req, res) => {
     const medals = await UserMedalModel.find({ user_id });
     res.status(200).json({ data: medals });
   } catch (error) {
-    console.error("Error fetching medals:", error);
+    console.error("Error >>>>>>>>>>>>>>>:", error);
     res.status(500).json({ error: "Unable to fetch all medals" });
   }
 };
 
-const achieveTalkative = async (req, res) => {
+const winTalkative = async (req, res) => {
   try {
     const { user_id } = req.id;
     // @to-do: perform normal checks
-    const medal = await MedalModel.findOne({ name: MedalConstants.Talkative });
-    if (!medal) {
-      return res.status(404).json({ error: "Invalid Medal Type" });
-    }
 
-    // find user medal
-    let userMedal = await UserMedalModel.findOne({ user_id });
+    const { code, message } = await MedalService.winMedal({
+      user_id,
+      medalName: MedalConstants.Talkative,
+    });
 
-    if (userMedal) {
-      // ensure no duplicate
-      userMedal.medals.push(medal);
-      userMedal.save();
-    } else {
-      userMedal = await UserMedalModel.create({
-        user_id,
-        medals: [medal],
-      });
-    }
-
-    res.status(200).json({ message: "Wohoo! User earned a Talkative medal" });
+    return res.status(code).json({ message });
   } catch (error) {
-    console.error("Error fetching medals:", error);
-    res.status(500).json({ error: "User unable to earn talkative medal" });
+    console.error("Error >>>>>>>>>>>>>>>:", error);
+    res.status(500).json({ error: "User unable to win medal" });
   }
 };
 
-module.exports = { seedMedalData, allMedals, allUserMedals, achieveTalkative };
+const winFearlessOne = async (req, res) => {
+  try {
+    const { user_id } = req.id;
+    // @to-do: perform normal checks
+
+    const { code, message } = await MedalService.winMedal({
+      user_id,
+      medalName: MedalConstants.FearlessOne,
+    });
+
+    return res.status(code).json({ message });
+  } catch (error) {
+    console.error("Error >>>>>>>>>>>>>>>:", error);
+    res.status(500).json({ error: "User unable to win medal" });
+  }
+};
+
+module.exports = {
+  seedMedalData,
+  allMedals,
+  allUserMedals,
+  winTalkative,
+  winFearlessOne,
+};

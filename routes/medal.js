@@ -4,7 +4,8 @@ const {
   seedMedalData,
   allMedals,
   allUserMedals,
-  achieveTalkative,
+  winTalkative,
+  winFearlessOne,
 } = require("../controller/medalController");
 const requireAuth = require("../middleware/requireAuth");
 
@@ -17,6 +18,7 @@ router.get("/all-medals", allMedals);
 // auth middleware
 router.use(requireAuth);
 router.get("/all-user-medals", allUserMedals);
-router.get("/achieve/talkative", achieveTalkative);
+router.get("/win/talkative", winTalkative);
+router.get("/win/fearless-one", winFearlessOne);
 
 module.exports = router;
