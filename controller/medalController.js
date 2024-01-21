@@ -30,9 +30,24 @@ const allMedals = async (req, res) => {
 
 const allUserMedals = async (req, res) => {
   try {
-    const { user_id } = req.id;
-    const medals = await UserMedalModel.find({ user_id });
-    res.status(200).json({ data: medals });
+    const medals = await MedalModel.find();
+
+    const user_id = req.id?.user_id;
+
+    if (!user_id) {
+      // handle user not logged in res
+      return res.status(200).json({ data: medals });
+    }
+
+    const userMedals = await UserMedalModel.find({ user_id });
+
+    const um = userMedals.map((x) => x.medals).flat();
+
+    const result = medals.map((x) => {
+      return { ...x._doc, hasEarned: um.some((z) => z.equals(x._id)) };
+    });
+
+    res.status(200).json({ data: result });
   } catch (error) {
     console.error("Error >>>>>>>>>>>>>>>:", error);
     res.status(500).json({ error: "Unable to fetch all medals" });
