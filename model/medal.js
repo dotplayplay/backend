@@ -29,6 +29,22 @@ const UserMedalSchema = new mongoose.Schema(
       require: true,
     },
     medals: [{ type: mongoose.Types.ObjectId, ref: "medal" }],
+    earnedFirstMedalCoin: {
+      type: Boolean,
+      default: false,
+    },
+    earnedSecondMedalCoin: {
+      type: Boolean,
+      default: false,
+    },
+    earnedThirdMedalCoin: {
+      type: Boolean,
+      default: false,
+    },
+    earnedFourthMedalCoin: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );
