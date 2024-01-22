@@ -101,6 +101,295 @@ const winTheLoadedKing = async (req, res) => {
   }
 };
 
+const winHighestContributor = async (req, res) => {
+  try {
+    const { user_id } = req.id;
+    // @to-do: perform normal checks
+
+    const { code, message } = await MedalService.winMedal({
+      user_id,
+      medalName: MedalConstants.HighestContributor,
+    });
+
+    return res.status(code).json({ message });
+  } catch (error) {
+    console.error("Error >>>>>>>>>>>>>>>:", error);
+    res.status(500).json({ error: "User unable to win medal" });
+  }
+};
+
+const winTheTopGun = async (req, res) => {
+  try {
+    const { user_id } = req.id;
+    // @to-do: perform normal checks
+
+    const { code, message } = await MedalService.winMedal({
+      user_id,
+      medalName: MedalConstants.TheTopGun,
+    });
+
+    return res.status(code).json({ message });
+  } catch (error) {
+    console.error("Error >>>>>>>>>>>>>>>:", error);
+    res.status(500).json({ error: "User unable to win medal" });
+  }
+};
+
+const winTheRainMaster = async (req, res) => {
+  try {
+    const { user_id } = req.id;
+    // @to-do: perform normal checks
+
+    const { code, message } = await MedalService.winMedal({
+      user_id,
+      medalName: MedalConstants.TheRainMaster,
+    });
+
+    return res.status(code).json({ message });
+  } catch (error) {
+    console.error("Error >>>>>>>>>>>>>>>:", error);
+    res.status(500).json({ error: "User unable to win medal" });
+  }
+};
+
+const winPacoLover = async (req, res) => {
+  try {
+    const { user_id } = req.id;
+    // @to-do: perform normal checks
+
+    const { code, message } = await MedalService.winMedal({
+      user_id,
+      medalName: MedalConstants.PacoLover,
+    });
+
+    return res.status(code).json({ message });
+  } catch (error) {
+    console.error("Error >>>>>>>>>>>>>>>:", error);
+    res.status(500).json({ error: "User unable to win medal" });
+  }
+};
+
+const winInvincibleLuckyDog = async (req, res) => {
+  try {
+    const { user_id } = req.id;
+    // @to-do: perform normal checks
+
+    const { code, message } = await MedalService.winMedal({
+      user_id,
+      medalName: MedalConstants.InvincibleLuckyDog,
+    });
+
+    return res.status(code).json({ message });
+  } catch (error) {
+    console.error("Error >>>>>>>>>>>>>>>:", error);
+    res.status(500).json({ error: "User unable to win medal" });
+  }
+};
+
+const winJBTOP1 = async (req, res) => {
+  try {
+    const { user_id } = req.id;
+    // @to-do: perform normal checks
+
+    const { code, message } = await MedalService.winMedal({
+      user_id,
+      medalName: MedalConstants.JBTOP1,
+    });
+
+    return res.status(code).json({ message });
+  } catch (error) {
+    console.error("Error >>>>>>>>>>>>>>>:", error);
+    res.status(500).json({ error: "User unable to win medal" });
+  }
+};
+
+const winRollKing = async (req, res) => {
+  try {
+    const { user_id } = req.id;
+    // @to-do: perform normal checks
+
+    const { code, message } = await MedalService.winMedal({
+      user_id,
+      medalName: MedalConstants.RollKing,
+    });
+
+    return res.status(code).json({ message });
+  } catch (error) {
+    console.error("Error >>>>>>>>>>>>>>>:", error);
+    res.status(500).json({ error: "User unable to win medal" });
+  }
+};
+
+const winTheRainStormer = async (req, res) => {
+  try {
+    const { user_id } = req.id;
+    // @to-do: perform normal checks
+
+    const { code, message } = await MedalService.winMedal({
+      user_id,
+      medalName: MedalConstants.TheRainStormer,
+    });
+
+    return res.status(code).json({ message });
+  } catch (error) {
+    console.error("Error >>>>>>>>>>>>>>>:", error);
+    res.status(500).json({ error: "User unable to win medal" });
+  }
+};
+
+const winChickenDinner = async (req, res) => {
+  try {
+    const { user_id } = req.id;
+    // @to-do: perform normal checks
+
+    const { code, message } = await MedalService.winMedal({
+      user_id,
+      medalName: MedalConstants.ChickenDinner,
+    });
+
+    return res.status(code).json({ message });
+  } catch (error) {
+    console.error("Error >>>>>>>>>>>>>>>:", error);
+    res.status(500).json({ error: "User unable to win medal" });
+  }
+};
+
+const winLoyalPlayer = async (req, res) => {
+  try {
+    const { user_id } = req.id;
+    // @to-do: perform normal checks
+
+    const { code, message } = await MedalService.winMedal({
+      user_id,
+      medalName: MedalConstants.LoyalPlayer,
+    });
+
+    return res.status(code).json({ message });
+  } catch (error) {
+    console.error("Error >>>>>>>>>>>>>>>:", error);
+    res.status(500).json({ error: "User unable to win medal" });
+  }
+};
+
+const winCallMeRichman = async (req, res) => {
+  try {
+    const { user_id } = req.id;
+    // @to-do: perform normal checks
+
+    const { code, message } = await MedalService.winMedal({
+      user_id,
+      medalName: MedalConstants.CallMeRichman,
+    });
+
+    return res.status(code).json({ message });
+  } catch (error) {
+    console.error("Error >>>>>>>>>>>>>>>:", error);
+    res.status(500).json({ error: "User unable to win medal" });
+  }
+};
+
+const winTheOldTimer = async (req, res) => {
+  try {
+    const { user_id } = req.id;
+    // @to-do: perform normal checks
+
+    const { code, message } = await MedalService.winMedal({
+      user_id,
+      medalName: MedalConstants.TheOldTimer,
+    });
+
+    return res.status(code).json({ message });
+  } catch (error) {
+    console.error("Error >>>>>>>>>>>>>>>:", error);
+    res.status(500).json({ error: "User unable to win medal" });
+  }
+};
+
+const winTheBoss = async (req, res) => {
+  try {
+    const { user_id } = req.id;
+    // @to-do: perform normal checks
+
+    const { code, message } = await MedalService.winMedal({
+      user_id,
+      medalName: MedalConstants.TheBoss,
+    });
+
+    return res.status(code).json({ message });
+  } catch (error) {
+    console.error("Error >>>>>>>>>>>>>>>:", error);
+    res.status(500).json({ error: "User unable to win medal" });
+  }
+};
+
+const winETHTOP = async (req, res) => {
+  try {
+    const { user_id } = req.id;
+    // @to-do: perform normal checks
+
+    const { code, message } = await MedalService.winMedal({
+      user_id,
+      medalName: MedalConstants.ETHTOP,
+    });
+
+    return res.status(code).json({ message });
+  } catch (error) {
+    console.error("Error >>>>>>>>>>>>>>>:", error);
+    res.status(500).json({ error: "User unable to win medal" });
+  }
+};
+
+const winBANANATOP1 = async (req, res) => {
+  try {
+    const { user_id } = req.id;
+    // @to-do: perform normal checks
+
+    const { code, message } = await MedalService.winMedal({
+      user_id,
+      medalName: MedalConstants.BANANATOP1,
+    });
+
+    return res.status(code).json({ message });
+  } catch (error) {
+    console.error("Error >>>>>>>>>>>>>>>:", error);
+    res.status(500).json({ error: "User unable to win medal" });
+  }
+};
+
+const winNANOTOP1 = async (req, res) => {
+  try {
+    const { user_id } = req.id;
+    // @to-do: perform normal checks
+
+    const { code, message } = await MedalService.winMedal({
+      user_id,
+      medalName: MedalConstants.NANOTOP1,
+    });
+
+    return res.status(code).json({ message });
+  } catch (error) {
+    console.error("Error >>>>>>>>>>>>>>>:", error);
+    res.status(500).json({ error: "User unable to win medal" });
+  }
+};
+
+const winBTCTOP1 = async (req, res) => {
+  try {
+    const { user_id } = req.id;
+    // @to-do: perform normal checks
+
+    const { code, message } = await MedalService.winMedal({
+      user_id,
+      medalName: MedalConstants.BTCTOP1,
+    });
+
+    return res.status(code).json({ message });
+  } catch (error) {
+    console.error("Error >>>>>>>>>>>>>>>:", error);
+    res.status(500).json({ error: "User unable to win medal" });
+  }
+};
+
 module.exports = {
   seedMedalData,
   allMedals,
@@ -108,4 +397,21 @@ module.exports = {
   winTalkative,
   winFearlessOne,
   winTheLoadedKing,
+  winHighestContributor,
+  winTheTopGun,
+  winTheRainMaster,
+  winPacoLover,
+  winInvincibleLuckyDog,
+  winJBTOP1,
+  winRollKing,
+  winTheRainStormer,
+  winChickenDinner,
+  winLoyalPlayer,
+  winCallMeRichman,
+  winTheOldTimer,
+  winTheBoss,
+  winETHTOP,
+  winBANANATOP1,
+  winNANOTOP1,
+  winBTCTOP1,
 };
