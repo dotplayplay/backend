@@ -6,6 +6,7 @@ const {
   allUserMedals,
   winTalkative,
   winFearlessOne,
+  winTheLoadedKing,
 } = require("../controller/medalController");
 const requireAuth = require("../middleware/requireAuth");
 
@@ -20,5 +21,6 @@ router.use(requireAuth);
 router.get("/all-user-medals", allUserMedals);
 router.get("/win/talkative", winTalkative);
 router.get("/win/fearless-one", winFearlessOne);
+router.get("/win/loaded-king", winTheLoadedKing);
 
 module.exports = router;

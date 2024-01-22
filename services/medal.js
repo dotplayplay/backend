@@ -16,6 +16,8 @@ const winMedal = async ({ medalName, user_id }) => {
         medals: [medal],
       });
 
+      await updateAchieversCount(medal);
+
       await rewardWithCoins(userMedal);
 
       return { code: 200, message: `Wohoo! User earned a ${medalName} medal` };
@@ -28,6 +30,8 @@ const winMedal = async ({ medalName, user_id }) => {
     userMedal.medals.push(medal);
     userMedal.save();
 
+    await updateAchieversCount(medal);
+
     await rewardWithCoins(userMedal);
 
     return { code: 200, message: `User earned a ${medalName} medal` };
@@ -37,26 +41,42 @@ const winMedal = async ({ medalName, user_id }) => {
   }
 };
 
+const updateAchieversCount = async (medal) => {
+  try {
+    // this function runs when a medal is added to any user's model.
+    const res = await MedalModel.findOne({ name: medal.name });
+    if (!res) {
+      console.log("Unable to update achievers count, invalid medal");
+      return;
+    }
+    const currentCount = parseInt(res.achieversCount);
+    res.achieversCount = currentCount + 1;
+    res.save();
+  } catch (error) {
+    console.log("Error updating achievers count", error);
+  }
+};
+
 const rewardWithCoins = async (userMedal) => {
   switch (userMedal.medals.length) {
     case 5:
-      await blessWithCoins(userMedal, RewardConstants.firstLevel);
+      await rewardUser(userMedal, RewardConstants.firstLevel);
       return;
     case 10:
-      await blessWithCoins(userMedal, RewardConstants.secondLevel);
+      await rewardUser(userMedal, RewardConstants.secondLevel);
       return;
     case 15:
-      await blessWithCoins(userMedal, RewardConstants.thirdLevel);
+      await rewardUser(userMedal, RewardConstants.thirdLevel);
       return;
     case 20:
-      await blessWithCoins(userMedal, RewardConstants.fourthLevel);
+      await rewardUser(userMedal, RewardConstants.fourthLevel);
       return;
     default:
     // do nothing
   }
 };
 
-const blessWithCoins = async (userMedal, amount) => {
+const rewardUser = async (userMedal, amount) => {
   try {
     const { user_id } = userMedal;
     let balance = await PPDWallet.findOne({ user_id });

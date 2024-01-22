@@ -84,10 +84,28 @@ const winFearlessOne = async (req, res) => {
   }
 };
 
+const winTheLoadedKing = async (req, res) => {
+  try {
+    const { user_id } = req.id;
+    // @to-do: perform normal checks
+
+    const { code, message } = await MedalService.winMedal({
+      user_id,
+      medalName: MedalConstants.TheLoadedKing,
+    });
+
+    return res.status(code).json({ message });
+  } catch (error) {
+    console.error("Error >>>>>>>>>>>>>>>:", error);
+    res.status(500).json({ error: "User unable to win medal" });
+  }
+};
+
 module.exports = {
   seedMedalData,
   allMedals,
   allUserMedals,
   winTalkative,
   winFearlessOne,
+  winTheLoadedKing,
 };
