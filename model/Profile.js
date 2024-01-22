@@ -5,7 +5,7 @@ const Userschema = new schema({
     born: {
         type: String,
         required: true,
-    }, 
+    },
     firstname: {
         type: String,
         required: true,
@@ -21,12 +21,12 @@ const Userschema = new schema({
     user_id: {
         type: String,
         required: true,
-        unique : true
-    }, 
+        unique: true
+    },
     email: {
         type: String,
         required: true,
-        unique : true
+        unique: true
     },
     hide_profile: {
         type: Boolean,
@@ -120,6 +120,10 @@ const Userschema = new schema({
         type: Number,
         required: true,
     },
-}, { timestamp : true})
+    dailyActiveChat: {
+        type: [mongoose.Schema.Types.Mixed],
+        default: []
+    }
+}, { timestamp: true })
 
 module.exports = mongoose.model('Profile', Userschema)

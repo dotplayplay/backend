@@ -83,7 +83,7 @@ app.use("/admin", Admin);
 //Notification
 app.use("/api/notifies", Notify);
 // spin route
-app.use("/api/spin", Spin);
+app.use("/api/bonus", Spin);
 
 app.get("/", (req, res) => {
   res.send("Welcome to Dotplayplay backend server");
