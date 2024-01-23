@@ -84,7 +84,7 @@ app.use("/admin", Admin);
 //Notification
 app.use("/api/notifies", Notify);
 // spin route
-app.use("/api/spin", Spin);
+app.use("/api/bonus", Spin);
 app.use("/api/medal", Medal);
 
 app.get("/", (req, res) => {
