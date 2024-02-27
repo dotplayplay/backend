@@ -8,14 +8,6 @@ const { format } = require("date-fns");
 const currentTime = format(new Date(), "yyyy-MM-dd HH:mm:ss");
 const salt = "000000000000000000076973be291d219d283d4af9135601ff37df46491cca7e";
 
-const kenoStart = async (req, res) => {
-  try {
-    res.status(200).json({ msg: "hello" });
-  } catch (error) {
-    res.status(500).json({ error });
-  }
-};
-
 function getResult(hash) {
   const allNums = [
     1, 30, 11, 40, 2, 29, 12, 39, 3, 28, 13, 38, 4, 27, 14, 37, 5, 26, 15, 36,
@@ -300,7 +292,6 @@ const bet = async (req, res) => {
 // );
 
 module.exports = {
-  kenoStart,
   handleCashout,
   InitializeKenoGame,
   getKenoGameHistory,
