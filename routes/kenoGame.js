@@ -5,7 +5,6 @@ const requireAuth = require("../middleware/requireAuth");
 // auth middleware
 router.use(requireAuth);
 const {
-  kenoStart,
   getKenoGameHistory,
   seedSettings,
   handleCashout,
@@ -14,7 +13,6 @@ const {
   bet,
 } = require("../controller/kenoControllers");
 
-router.get("/start", kenoStart);
 router.get("/get-history", getKenoGameHistory);
 router.post("/seed-settings", seedSettings);
 router.post("/handle-cashout", handleCashout);

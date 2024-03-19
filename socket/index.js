@@ -24,10 +24,10 @@ const minesgameInit = require("../model/minesgameInit");
 const Profile = require("../model/Profile");
 const { handlePlinkoBet } = require("../controller/plinkoController");
 const { PlinkoGameSocket } = require("../controller/plinkoControllerV2");
+const BonusModel = require("../model/bonus")
 let maxRange = 100;
 
 const detectWallet = (type) => {
-  console.log({ type });
   if (typeof type === "string") {
     if (type.toLowerCase().includes("usdt")) {
       return USDT_wallet;
@@ -41,26 +41,28 @@ const detectWallet = (type) => {
   }
 };
 
-const deductFromWalletBalance = async (wallet, amount, user_id) => {
+const deductFromWalletBalance = async (wallet, amount, user_id, type, token) => {
   const wallet_details = await wallet.findOne({ user_id });
   if (wallet_details) {
     const available_balance = wallet_details.balance;
     if (amount > available_balance) return "less";
     const new_balance = parseFloat(available_balance) - parseFloat(amount);
     await wallet.findOneAndUpdate({ user_id }, { balance: new_balance });
+    await BonusModel.create({ user_id, type, token, amount, transaction_type: "debit" })
     return "done";
   } else {
     return "not-found";
   }
 };
 
-const addToWalletBalance = async (wallet, amount, user_id) => {
+const addToWalletBalance = async (wallet, amount, user_id, type, token) => {
   let new_balance = amount;
   const wallet_details = await wallet.findOne({ user_id });
   if (wallet_details) {
     const available_balance = wallet_details.balance;
     new_balance = parseFloat(available_balance) + parseFloat(amount);
     await wallet.findOneAndUpdate({ user_id }, { balance: new_balance });
+    await BonusModel.create({ user_id, type, token, amount, transaction_type: "credit" })
     return "done";
   } else {
     return "not-found";
@@ -77,7 +79,7 @@ const handleCoinDrop = async (data) => {
     return;
   }
 
-  return deductFromWalletBalance(wallet, amount, user_id);
+  return deductFromWalletBalance(wallet, amount, user_id, data.type, data.coin_drop_token);
 };
 
 const handleRain = async (data, activeUsers) => {
@@ -87,7 +89,9 @@ const handleRain = async (data, activeUsers) => {
   const isDeducted = await deductFromWalletBalance(
     wallet,
     coin_rain_amount,
-    user_id
+    user_id,
+    data.type,
+    data.coin_rain_token
   );
   console.log({
     isDeducted,
@@ -104,7 +108,7 @@ const handleRain = async (data, activeUsers) => {
           share,
           grabbed_at: new Date(),
         });
-        await addToWalletBalance(wallet, share, activeUsers[i].id);
+        await addToWalletBalance(wallet, share, activeUsers[i].id, data.type, data.coin_rain_token);
       }
     }
   }
@@ -118,9 +122,9 @@ const handleTip = async (data) => {
   const user_id = data.user_id;
   const receiverUsername = data.tipped_user;
   const receiver = await Profile.findOne({ username: receiverUsername });
-  let deduction = await deductFromWalletBalance(wallet, amount, user_id);
+  let deduction = await deductFromWalletBalance(wallet, amount, user_id, data.type, data.tip_Token);
   if (deduction === "done")
-    await addToWalletBalance(wallet, amount, receiver.user_id);
+    await addToWalletBalance(wallet, amount, receiver.user_id, data.type, data.tip_Token);
 };
 
 async function createsocket(httpServer) {
@@ -391,7 +395,44 @@ async function createsocket(httpServer) {
     }, 130000);
   };
 
-  // let newMessage = await Chats.find({}).sort({ _id: -1 }).limit(100);
+  const activeDays = {}
+  async function activeDaily(data) {
+    const date = new Date()
+    const todayKey = `${date.getUTCFullYear()}-${date.getUTCMonth() + 1}-${date.getDate()}`
+    if (!activeDays[todayKey]) {
+      activeDays[todayKey] = []
+      activeDays[todayKey].push(data.user_id)
+      await updateUserStatus(data.user_id, todayKey)
+    } else {
+      if (activeDays[todayKey].includes(data.user_id)) {
+      } else {
+        activeDays[todayKey].push(data.user_id)
+        await updateUserStatus(data.user_id, todayKey)
+      }
+    }
+
+    async function updateUserStatus(user_id, todayKey) {
+      const user = await Profile.findOne({ user_id })
+      if (user.dailyActiveChat.length > 0) {
+        const lastDate = user.dailyActiveChat[user.dailyActiveChat.length - 1]
+        const lastDateValue = new Date(lastDate)
+        const lastDateMatch = `${lastDateValue.getUTCFullYear()}-${lastDateValue.getUTCMonth() + 1}-${lastDateValue.getDate()}`
+        if (lastDateMatch !== todayKey) {
+          user.dailyActiveChat.push(new Date)
+        }
+      } else {
+        user.dailyActiveChat.push(new Date)
+      }
+      await user.save()
+    }
+  }
+
+
+
+
+  
+
+  let newMessage = await Chats.find({}).sort({ _id: -1 }).limit(100);
   const handleNewChatMessages = async (data) => {
     if (data.type === "tip") {
       await handleTip(data);
@@ -508,14 +549,13 @@ async function createsocket(httpServer) {
         coin_drop.coin_drop_balance = coin_drop_balance - share;
         const wallet = detectWallet(coin_drop_token);
 
-        await addToWalletBalance(wallet, share, user_id);
+        await addToWalletBalance(wallet, share, user_id, data.type, coin_drop_token);
         await coin_drop.save();
 
         io.emit("grabCoinDropResponse", {
           data: coin_drop,
           message: "Coin drop grabbed successfully",
         });
-        // Notify other participants about the new participant
       } else {
         io.emit("grabCoinDropResponse", {
           message: "User already exists in coin drop participants",
@@ -536,9 +576,10 @@ async function createsocket(httpServer) {
       io.emit("latest-bet", latestBet);
     });
 
-    socket.on("message", (data) => {
+    socket.on("message", async (data) => {
       handleNewChatMessages(data);
       requestActiveUsers(data.profile);
+      await activeDaily(data)
     });
 
     socket.on("grab_coin", (data) => {
