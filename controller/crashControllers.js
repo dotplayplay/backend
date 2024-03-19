@@ -385,6 +385,7 @@ class CrashGameEngine {
           rate: e.autoEscapeRate,
         }))
       );
+      
 
       const normalBets = this.getBetPromises(
         this.game.bets,
@@ -461,6 +462,8 @@ class CrashGameEngine {
           token: bet.currencyName,
         });
       }
+
+
 
       if (bet.currencyName === "USDT") {
         betPromisses.push(
@@ -1009,6 +1012,7 @@ const resetCrashDB = async () => {
   //   CrashGameModel.deleteMany({}),
   //   CrashGameHash.deleteMany({}),
   // ]);
+
   await generateHashes(input, 2_000);
   console.log("Reset complete");
 };
