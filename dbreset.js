@@ -6,7 +6,7 @@ mongoose
   .connect(dbUri, { useNewUrlParser: true, useUnifiedTopology: true })
   .then((result) => {
     console.log("Database connected");
-    return resetCrashDB();
+    return resetCrashDB(); 
   })
   .catch((err) => console.log(err))
   .finally(() => process.exit(0));

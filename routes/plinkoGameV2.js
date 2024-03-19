@@ -2,17 +2,15 @@ const express = require('express');
 const router = express.Router();
 const mainRouter = express.Router();
 const requireAuth = require('../middleware/requireAuth');
-const {userBets, gameDetail, recentBets, updateSeeds, gameSeeds } = require('../controller/hiloController');
+const {userBets, gameDetail, updateSeeds, gameSeeds } = require('../controller/plinkoControllerV2');
 
-
-mainRouter.get('/recent-bets', recentBets);
 mainRouter.get('/details/:betID', gameDetail);
+
+// auth middleware
 router.use(requireAuth);
 router.get('/seeds', gameSeeds);
-// auth middleware
-
-router.get('/user/bets', userBets);
-router.post('/user/update-seeds', updateSeeds);
+router.post('/my-bet', userBets);
+router.post('/update-seeds', updateSeeds);
 
 mainRouter.use(router);
 
