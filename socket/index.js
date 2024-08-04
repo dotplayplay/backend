@@ -23,6 +23,7 @@ const PPL_wallet = require("../model/PPL-wallet");
 const minesgameInit = require("../model/minesgameInit");
 const Profile = require("../model/Profile");
 const { handlePlinkoBet } = require("../controller/plinkoController");
+const { PlinkoGameSocket } = require("../controller/plinkoControllerV2");
 const BonusModel = require("../model/bonus")
 let maxRange = 100;
 
@@ -134,7 +135,7 @@ async function createsocket(httpServer) {
     },
   });
 
-  //Crash Game
+  // Crash Game
   new CrashGameEngine(io)
     .run((latestBet) => {
       io.emit("latest-bet", latestBet);
@@ -144,6 +145,7 @@ async function createsocket(httpServer) {
     });
 
   // let fghhs = await DiceGame.find()
+
   let activeplayers = [];
   const fetchActivePlayers = async (e) => {
     if (activeplayers.length > 21) {
@@ -428,6 +430,8 @@ async function createsocket(httpServer) {
 
 
 
+  
+
   let newMessage = await Chats.find({}).sort({ _id: -1 }).limit(100);
   const handleNewChatMessages = async (data) => {
     if (data.type === "tip") {
@@ -620,14 +624,17 @@ async function createsocket(httpServer) {
       });
     });
 
-    //PLINKO GAME BET
-    socket.on("plinko-bet", (data) => {
-      handlePlinkoBet(data);
-      //Get New Bet and Update Latest Bet UI
-      const latestBet = latestBetUpdate(data, "Plinko Game");
-      io.emit("latest-bet", latestBet);
-    });
+    // //PLINKO GAME BET
+    // socket.on("plinko-bet", (data) => {
+    //   handlePlinkoBet(data);
+    //   //Get New Bet and Update Latest Bet UI
+    //   const latestBet = latestBetUpdate(data, "Plinko Game");
+    //   io.emit("latest-bet", latestBet);
+    // });
   });
+
+  // Plinko GAME
+  new PlinkoGameSocket(io).listen();
 }
 
 module.exports = { createsocket };
